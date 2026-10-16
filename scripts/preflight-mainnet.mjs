@@ -56,7 +56,7 @@ const decimals = await client.readContract({ address: getAddress(CANDIDATES.usdg
 check("USDG.decimals() == 6", decimals === 6, `got ${decimals}`);
 
 // 2+3. Every candidate must be a contract; escrow must expose claim/sweep selectors.
-const SELECTORS = { claim: "0x4e71d92d", claimToken: "0x2e7ba6ef", sweepFees: "0x1c1d3ffa", sweepPoolFees: "0x3b3b3b3b" };
+const SELECTORS = { claim: "0x4e71d92d", claimToken: "0x32f289cf", sweepFees: "0x1c1d3ffa", sweepPoolFees: "0x3b3b3b3b" };
 // NOTE: sweep* selectors are verified against on-chain ABI at runtime; if the
 // deployed escrow uses different names, resolve via Blockscout ABI first.
 for (const [name, addr] of Object.entries(CANDIDATES)) {
