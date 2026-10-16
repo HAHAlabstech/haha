@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY_IMAGE: ghcr.io/${{ github.repository_owner }}/haha-app
+  REGISTRY_IMAGE: ghcr.io/hahalabstech/haha-app
 
 jobs:
   migrate:
