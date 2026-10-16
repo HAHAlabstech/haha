@@ -713,14 +713,14 @@ Sebelum melakukan deploy ke Mainnet (`4663`), kedelapan skenario pengujian ini *
    - Uji Plants: gunakan flag time-travel testnet (`plant_candidate_at = now()-8d`) → 5 validasi → promosi hanya jika 5/5. Tanpa flag, test skip (butuh umur 7 hari).
    - Pastikan kartu share `1200x675` otomatis ter-upload ke bucket publik **Cloudflare R2** dan bisa dibuka lewat URL R2(haha.md).
 5. **Test 5 — Aliran Uang (split dua sub-tes, tidak campur)(haha.md):**
-   - **5a USDG-only:** `simulateTradingFees(splitter, 1000_000000)` tanpa ETH → settlement stages → assert 700.000000 TipJar + 300.000000 MicDrop (micro exact).
+   - **5a USDG-only:** `simulateTradingFees(splitter, 1000_000000)` tanpa ETH → settlement stages → assert 700.000000 TipJar + 300.000000 MicDrop (micro exact). ✅ PASS live 16 Okt 2026 (tx `0xa532…f198`). NOTE: splitter masih ke placeholder MicDrop; rotasi ke real di-propose 16 Okt (`micDropEta` +48h) — confirm setelah lewat.
    - **5b ETH-only:** 0.02 ETH tanpa USDG → assert total = swap(ETH) ±2%, lalu 70/30 dari total itu. Pre-graduasi MicDrop HOLD, post-graduasi burn.
    - Trigger `/api/cron/daily-settlement`.
    - Verifikasi explorer: 5a exact micro; 5b rangebound slippage.
 6. **Test 6 — Klaim Merkle + delay guardian (testnet 10 mnt)(haha.md):**
    - Setelah Test 5 selesai, pastikan `TipJar.merkleRoot()` di Testnet ter-update.
    - Login sebagai Comedian pemenang di `/tipjar`, klik **Claim USDG**, juga uji fitur **Claim to Alternate Address** → pastikan saldo `MockUSDG` bertambah sesuai perhitungan rumus reward(haha.md).
-7. **Test 7 — Uji Checkout B2B `/producers` (Split 40/30/20/10 & R2 Presigned URL)(haha.md):**
+7. **Test 7 - Uji Checkout B2B `/producers` (Split 40/30/20/10 & R2 Presigned URL)(haha.md):** ✅ PASS live 16 Okt 2026 — Snapshot $2.500: TipJar +1.000 (750 umum + 250 royalti), MicDrop real +500, cold +1.000.
    - Gunakan `MockUSDG` di halaman `/producers` untuk membeli paket *Snapshot License* ($2,500 USDG)(haha.md).
    - Pastikan **40% ($1,000 USDG) langsung masuk ke wallet pribadimu (`OPERATOR_WALLET`)**, 40% ke `TipJar` (30% umum + 10% royalti batch `orderId`, cek event `ProducerPurchase`), 20% ke `MicDrop`(haha.md), dan layar langsung menampilkan link unduhan dataset terenkripsi dari **Cloudflare R2**.
 8. **Test 8 — Pre-flight DRY-RUN (TANPA broadcast, 72h):**
