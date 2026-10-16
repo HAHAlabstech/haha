@@ -79,13 +79,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
+            cd /srv/haha
             for i in $(seq 1 20); do
-              if curl -fsS http://localhost:3000/api/health >/dev/null; then
-                echo HEALTHY; exit 0
+              if docker compose exec -T app node -e "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).then(()=>console.log('HEALTHY'))"; then
+                exit 0
               fi
               sleep 15
             done
-            echo UNHEALTHY; docker compose -C /srv/haha logs --tail=200 app; exit 1
+            echo UNHEALTHY; docker compose logs --tail=200 app; exit 1
       - name: preflight (read-only, no broadcast)
         uses: appleboy/ssh-action@v1
         with:
