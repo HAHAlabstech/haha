@@ -6,15 +6,19 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IPonsFeeEscrow} from "./interfaces/IPonsFeeEscrow.sol";
+import {IPonsCurve, IPonsHook} from "./interfaces/IPonsSweep.sol";
 
 /// @title FeeSplitter — USDG-ONLY creator-fee splitter (70% TipJar / 30% MicDrop)
 /// @notice The Pons V2 launch pair is USDG, so creator fees always arrive as
 ///         USDG. The ETH swap path is deliberately REMOVED (plan §5.1 T10):
 ///         this contract never handles native ETH and has no swap logic.
-///         Harvest ordering is sweep-then-claim (K1 explicit dependency):
-///         `sweepFees` (pre-graduation curve) + `sweepPoolFees`
-///         (post-graduation pool) are attempted best-effort (only one applies
-///         per graduation state), then `claimToken(USDC)` pulls USDG strictly.
+///         Harvest ordering is sweep-then-claim (K1 explicit dependency).
+///         Sweeps live on the CURVE (`sweepFees`, pre-graduation) and the HOOK
+///         (`sweepPoolFees`, post-graduation) — NOT on the escrow (verified
+///         against Pons docs 16 Okt 2026; the escrow only holds claimable
+///         balances). Curve/hook refs + poolId are bound via 48h timelock
+///         after the $HAHA launch is verified (confirmSetLaunchRefs), then
+///         `claimToken(USDC)` pulls USDG strictly from escrow.
 /// @dev All splits are micro-exact: tipShare = total * 70 / 100 (floor),
 ///      dropShare = total - tipShare, so tipShare + dropShare == total always.
 ///      Gas is funded out-of-band from the 40% B2B ops share — this contract
@@ -39,6 +43,11 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
     /// @notice Reserved router slot (USDG-only: unused). Kept so the 48h
     ///         timelock setter surface matches the plan; always address(0).
     address public router;
+    /// @notice Pons V2 sweep refs, bound post-launch via 48h timelock
+    ///         (confirmSetLaunchRefs). Zero pre-launch: sweeps skipped.
+    IPonsCurve public sweepCurve;
+    IPonsHook public sweepHook;
+    bytes32 public sweepPoolId;
     uint256 public lastHarvest;
 
     address public pendingKeeper;
@@ -49,6 +58,10 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
     uint256 public tipJarEta;
     address public pendingMicDrop;
     uint256 public micDropEta;
+    address public pendingSweepCurve;
+    address public pendingSweepHook;
+    bytes32 public pendingSweepPoolId;
+    uint256 public sweepRefsEta;
 
     event FeeSplitExecuted(uint256 indexed totalMicro, uint256 tipShare, uint256 dropShare);
     event KeeperProposed(address indexed keeper, uint256 eta);
@@ -59,6 +72,8 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
     event TipJarConfirmed(address indexed tipJar);
     event MicDropProposed(address indexed micDrop, uint256 eta);
     event MicDropConfirmed(address indexed micDrop);
+    event SweepRefsProposed(address indexed curve, address indexed hook, bytes32 poolId, uint256 eta);
+    event SweepRefsConfirmed(address indexed curve, address indexed hook, bytes32 poolId);
 
     error DeadlineExpired();
     error BelowMinOut();
@@ -189,15 +204,45 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
         micDropEta = 0;
     }
 
+    /// @notice Bind the $HAHA launch sweep refs after post-launch verification
+    ///         (Lampiran A). Zero curve/hook pre-launch: sweeps are skipped.
+    function proposeSetLaunchRefs(address curve_, address hook_, bytes32 poolId_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        pendingSweepCurve = curve_;
+        pendingSweepHook = hook_;
+        pendingSweepPoolId = poolId_;
+        sweepRefsEta = block.timestamp + TIMELOCK;
+        emit SweepRefsProposed(curve_, hook_, poolId_, sweepRefsEta);
+    }
+
+    function confirmSetLaunchRefs() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (sweepRefsEta == 0) revert NoPendingChange();
+        if (block.timestamp < sweepRefsEta) revert TimelockNotReady();
+        sweepCurve = IPonsCurve(pendingSweepCurve);
+        sweepHook = IPonsHook(pendingSweepHook);
+        sweepPoolId = pendingSweepPoolId;
+        emit SweepRefsConfirmed(pendingSweepCurve, pendingSweepHook, pendingSweepPoolId);
+        pendingSweepCurve = address(0);
+        pendingSweepHook = address(0);
+        pendingSweepPoolId = bytes32(0);
+        sweepRefsEta = 0;
+    }
+
     // ---- internals ----
 
-    /// @dev Sweep-then-claim. Sweeps are best-effort (pre vs post graduation
-    ///      entrypoints); the token claim is best-effort on an EMPTY escrow so
-    ///      leftover balances stay harvestable, while `minUsdgOut` (keeper)
-    ///      and the received-vs-quoted check (stale) still enforce value.
+    /// @dev Sweep-then-claim. Sweeps live on the curve (pre-graduation) and the
+    ///      hook (post-graduation) with min-outs of 0 (buyback OFF, HAHA pair
+    ///      is USDG so no conversion leg exists); each is best-effort since
+    ///      only one applies per graduation state. The escrow token claim is
+    ///      best-effort on an EMPTY escrow so leftover balances stay
+    ///      harvestable, while `minUsdgOut` (keeper) and the received-vs-quoted
+    ///      check (stale) still enforce value.
     function _sweepAndClaim() internal {
-        try feeEscrow.sweepFees(address(this)) {} catch {}
-        try feeEscrow.sweepPoolFees(address(this)) {} catch {}
+        if (address(sweepCurve) != address(0)) {
+            try sweepCurve.sweepFees(0) {} catch {}
+        }
+        if (address(sweepHook) != address(0)) {
+            try sweepHook.sweepPoolFees(sweepPoolId, 0, 0) {} catch {}
+        }
         try feeEscrow.claimToken(address(usdg)) {} catch {}
         // Native/base variant, best-effort (USDG-only escrows: no-op).
         try feeEscrow.claim() {} catch {}

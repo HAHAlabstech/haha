@@ -50,8 +50,13 @@ contract FeeSplitterTest is HahaSetup {
     }
 
     function test_HarvestStale_Gated24h() public {
+        // Fresh splitter (no time elapsed since lastHarvest): gate holds.
+        FeeSplitter fresh = new FeeSplitter(
+            address(usdg), address(escrow), address(tipJar), placeholderDrop, admin, keeper
+        );
         vm.expectRevert(FeeSplitter.NotStaleYet.selector);
-        splitter.harvestStale(5_000_000_000, 200);
+        fresh.harvestStale(5_000_000_000, 200);
+        // Bound splitter (48h elapsed in setUp): stale path works.
         vm.warp(block.timestamp + 24 hours + 1);
         escrow.simulateTradingFees(address(splitter), 1_000_000_000);
         splitter.harvestStale(5_000_000_000, 200);
@@ -94,6 +99,33 @@ contract FeeSplitterTest is HahaSetup {
         vm.prank(keeper);
         splitter.harvestAndSplit(0, block.timestamp + 1 hours);
         assertEq(usdg.balanceOf(address(micDrop)), 300_000_000, "real MicDrop funded");
+    }
+
+    function test_SweepViaCurveAndHookRefs() public {
+        // K1 mainnet path: sweeps live on curve/hook (bound via 48h timelock),
+        // escrow only holds claimable. Pending drains to zero, split exact.
+        bindSweepRefs();
+        assertEq(address(splitter.sweepCurve()), address(sweepCurve));
+        escrow.simulateTradingFees(address(splitter), 600_000_000);
+        escrow.simulateCreatorTax(address(splitter), 400_000_000);
+        vm.prank(keeper);
+        splitter.harvestAndSplit(1_000_000_000, block.timestamp + 1 hours);
+        assertEq(usdg.balanceOf(address(tipJar)), 700_000_000, "tipJar 70%");
+        assertEq(usdg.balanceOf(placeholderDrop), 300_000_000, "micDrop 30%");
+        assertEq(escrow.pendingFees(address(splitter)), 0, "curve swept");
+        assertEq(escrow.pendingCreatorTax(address(splitter)), 0, "hook swept");
+    }
+
+    function test_SweepRefsTimelock48h() public {
+        vm.prank(admin);
+        splitter.proposeSetLaunchRefs(address(sweepCurve), address(sweepHook), bytes32(uint256(7)));
+        vm.prank(admin);
+        vm.expectRevert(FeeSplitter.TimelockNotReady.selector);
+        splitter.confirmSetLaunchRefs();
+        vm.warp(block.timestamp + 48 hours);
+        vm.prank(admin);
+        splitter.confirmSetLaunchRefs();
+        assertEq(splitter.sweepPoolId(), bytes32(uint256(7)));
     }
 
     function testFuzz_SplitAlwaysExact(uint96 amountMicro) public {

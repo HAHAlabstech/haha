@@ -26,9 +26,11 @@ contract DeployMainnet is Script {
         // 1. USDG must be 6 decimals — NEVER hardcode 18.
         if (IDecimals(usdg).decimals() != 6) revert PreflightFailed("USDG.decimals != 6");
 
-        // 2. Escrow must expose the sweep + claim surface we depend on.
-        _mustRespond(escrow, abi.encodeWithSignature("sweepFees(address)", address(0)), "escrow.sweepFees");
-        _mustRespond(escrow, abi.encodeWithSignature("sweepPoolFees(address)", address(0)), "escrow.sweepPoolFees");
+        // 2. Escrow must expose the claim surface. Sweeps live on the
+        //    per-token curve (`sweepFees(minBuybackTokensOut)`) and hook
+        //    (`sweepPoolFees(poolId,minQ,minB)`) — NOT on escrow — so they are
+        //    verified at harvest-time per token + mainnet fork-test, NOT here.
+        //    (An escrow exposing sweep fns would be a DIFFERENT contract.)
         _mustRespond(escrow, abi.encodeWithSignature("claimToken(address)", usdg), "escrow.claimToken");
         (bool ok,) = escrow.staticcall(abi.encodeWithSignature("claim()"));
         if (!ok) revert PreflightFailed("escrow.claim");

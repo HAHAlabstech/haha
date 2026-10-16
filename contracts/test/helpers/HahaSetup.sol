@@ -6,6 +6,7 @@ import {MockUSDG} from "../../src/mocks/MockUSDG.sol";
 import {MockHAHA} from "../../src/mocks/MockHAHA.sol";
 import {MockPonsFeeEscrow} from "../../src/mocks/MockPonsFeeEscrow.sol";
 import {MockPonsFactory} from "../../src/mocks/MockPonsFactory.sol";
+import {MockPonsCurve, MockPonsHookSweep} from "../../src/mocks/MockPonsSweep.sol";
 import {MockUniversalRouter} from "../../src/mocks/MockUniversalRouter.sol";
 import {MockPoolManager, MockPonsHook} from "../../src/mocks/MockPoolManager.sol";
 import {FeeSplitter} from "../../src/FeeSplitter.sol";
@@ -35,6 +36,8 @@ contract HahaSetup is Test {
     MockHAHA internal haha;
     MockPonsFeeEscrow internal escrow;
     MockPonsFactory internal factory;
+    MockPonsCurve internal sweepCurve;
+    MockPonsHookSweep internal sweepHook;
     MockUniversalRouter internal router;
     MockPoolManager internal poolManager;
     MockPonsHook internal hook;
@@ -70,6 +73,15 @@ contract HahaSetup is Test {
         splitter = new FeeSplitter(
             address(usdg), address(escrow), address(tipJar), placeholderDrop, admin, keeper
         );
+        sweepCurve = new MockPonsCurve(address(escrow), address(splitter));
+        sweepHook = new MockPonsHookSweep(address(escrow), address(splitter));
+        // Production-representative: sweep refs bound (post-Lampiran-A).
+        // Tests needing the zero-refs path assert on a fresh splitter instead.
+        vm.prank(admin);
+        splitter.proposeSetLaunchRefs(address(sweepCurve), address(sweepHook), bytes32(uint256(1)));
+        vm.warp(block.timestamp + 48 hours);
+        vm.prank(admin);
+        splitter.confirmSetLaunchRefs();
         router = new MockUniversalRouter(address(usdg), address(haha), address(splitter));
         micDrop = new MicDrop(address(usdg), address(splitter), address(router), admin, keeper);
         staking = new CrowdStaking(address(haha), address(tipJar), admin, keeper, 10 ether);
@@ -78,6 +90,15 @@ contract HahaSetup is Test {
             [uint256(2_500_000_000), uint256(1_000_000_000), uint256(500_000_000), uint256(500_000_000)];
         gateway =
             new ProducerGateway(address(usdg), admin, address(tipJar), address(micDrop), admin, prices);
+    }
+
+    /// @notice Bind splitter sweep refs to the mock curve/hook (48h timelock).
+    function bindSweepRefs() internal {
+        vm.prank(admin);
+        splitter.proposeSetLaunchRefs(address(sweepCurve), address(sweepHook), bytes32(uint256(1)));
+        vm.warp(block.timestamp + 48 hours);
+        vm.prank(admin);
+        splitter.confirmSetLaunchRefs();
     }
 
     /// @notice Timelock-rotate the splitter from the placeholder to the real MicDrop.
