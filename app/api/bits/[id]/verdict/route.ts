@@ -1,0 +1,134 @@
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
+
+const MAX_BODY_BYTES = 64 * 1024;
+
+function getPrisma(): PrismaClient {
+  const g = globalThis as unknown as { __hahaPrisma?: PrismaClient };
+  g.__hahaPrisma ??= new PrismaClient();
+  return g.__hahaPrisma;
+}
+
+function bad(error: string, status: number) {
+  return NextResponse.json({ error }, { status });
+}
+
+// POST /api/bits/[id]/verdict {wallet, verdict: got_it|missed_it, answer?, explanation?}
+// got_it -> bombed. missed_it -> one ComedianReveal (reject second) + disputed
+// + 5 blind CrowdAssignments (author excluded, position_ai randomized).
+// TODO(worker): straightman answer + reveal normalization move to BullMQ jobs.
+export async function POST(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  const { id } = await ctx.params;
+  if (!id) return bad("missing id", 400);
+
+  let raw: string;
+  try {
+    raw = await req.text();
+  } catch {
+    return bad("Failed to read request body", 400);
+  }
+  if (raw.length > MAX_BODY_BYTES) return bad("Request too large", 413);
+  let body: unknown;
+  try {
+    body = JSON.parse(raw) as unknown;
+  } catch {
+    return bad("Invalid JSON", 400);
+  }
+  const b = body as Record<string, unknown>;
+  const wallet = (
+    typeof b.wallet === "string" ? b.wallet : ""
+  ).toLowerCase();
+  if (!/^0x[0-9a-f]{40}$/.test(wallet)) return bad("invalid wallet", 400);
+  const verdict = typeof b.verdict === "string" ? b.verdict : "";
+  if (verdict !== "got_it" && verdict !== "missed_it") {
+    return bad("verdict must be got_it or missed_it", 400);
+  }
+
+  try {
+    const prisma = getPrisma();
+    const bit = await prisma.bit.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        user_id: true,
+        user: { select: { wallet: true } },
+      },
+    });
+    if (!bit) return bad("bit not found", 404);
+    if (bit.user.wallet.toLowerCase() !== wallet) {
+      return bad("only the author can submit the verdict", 403);
+    }
+
+    if (verdict === "got_it") {
+      await prisma.bit.update({
+        where: { id },
+        data: { status: "bombed" },
+      });
+      return NextResponse.json(
+        { bitId: id, status: "bombed" },
+        { headers: { "cache-control": "no-store" } },
+      );
+    }
+
+    const answer = typeof b.answer === "string" ? b.answer : "";
+    const explanation = typeof b.explanation === "string" ? b.explanation : "";
+    if (!answer || answer.length > 200) {
+      return bad("answer must be 1-200 chars", 400);
+    }
+    if (explanation.length > 400) {
+      return bad("explanation must be <=400 chars", 400);
+    }
+    const existing = await prisma.comedianReveal.findUnique({
+      where: { bit_id: id },
+      select: { id: true },
+    });
+    if (existing) return bad("reveal already submitted", 409);
+
+    await prisma.comedianReveal.create({
+      data: { bit_id: id, answer, explanation },
+    });
+
+    // 5 blind jurors: onboarded, not the author. Shuffle in JS (no DB random).
+    const candidates = await prisma.user.findMany({
+      where: { onboarding_passed: true, id: { not: bit.user_id } },
+      select: { id: true },
+      take: 25,
+    });
+    for (let i = candidates.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = candidates[i] as { id: string };
+      candidates[i] = candidates[j] as { id: string };
+      candidates[j] = tmp;
+    }
+    const picked = candidates.slice(0, 5);
+    const expires_at = new Date(Date.now() + 48 * 3600 * 1000);
+    await prisma.$transaction(
+      picked.map((j) =>
+        prisma.crowdAssignment.create({
+          data: {
+            bit_id: id,
+            juror_id: j.id,
+            position_ai: Math.random() < 0.5 ? "A" : "B",
+            expires_at,
+          },
+        }),
+      ),
+    );
+    await prisma.bit.update({
+      where: { id },
+      data: { status: "disputed" },
+    });
+    return NextResponse.json(
+      { bitId: id, status: "disputed", jurors: picked.length },
+      { headers: { "cache-control": "no-store" } },
+    );
+  } catch {
+    return bad("verdict unavailable", 503);
+  }
+}

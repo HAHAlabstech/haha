@@ -1,0 +1,113 @@
+x-lean-logs: &lean-logs
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+x-env-app: &env-app
+  env_file:
+    - path: .env.app
+      required: false
+    - path: .env
+      required: false
+
+services:
+  # Only caddy publishes host ports (80/443). Docker publish bypasses UFW,
+  # so app/db/redis must NOT use `ports:` — internal `expose:` only.
+  # LEAN BOX (VPS sharing, 2GB): hard memory caps + tiny JSON logs.
+  # Containers may burst into swap (VPS has 2GB swap); sustained RSS is capped.
+  app:
+    image: ${REGISTRY_IMAGE:-haha-app}:${TAG:-latest}
+    expose:
+      - "3000"
+    <<: *env-app
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=384"
+    depends_on:
+      - db
+      - redis
+    mem_limit: 512m
+    memswap_limit: 768m
+    logging: *lean-logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  worker:
+    image: ${REGISTRY_IMAGE:-haha-app}:${TAG:-latest}
+    command: ["node", "worker/index.js"]
+    env_file:
+      - path: .env.worker
+        required: false
+      - path: .env
+        required: false
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=448"
+    depends_on:
+      - db
+      - redis
+    mem_limit: 512m
+    memswap_limit: 1g
+    logging: *lean-logs
+    restart: unless-stopped
+
+  db:
+    image: pgvector/pgvector:pg16
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: "-c shared_buffers=128MB -c effective_cache_size=512MB -c max_connections=20 -c work_mem=4MB -c maintenance_work_mem=64MB"
+    expose:
+      - "5432"
+    ports:
+      # Loopback-only (aman dari UFW-bypass): migrate/seed/debug dari VPS/laptop via SSH tunnel.
+      - "127.0.0.1:5432:5432"
+    mem_limit: 384m
+    memswap_limit: 512m
+    logging: *lean-logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U haha -d haha"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redisdata:/data
+    expose:
+      - "6379"
+    mem_limit: 160m
+    memswap_limit: 160m
+    logging: *lean-logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - path: .env.app
+        required: false
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  caddydata:
+  caddyconfig:

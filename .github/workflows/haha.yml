@@ -1,0 +1,92 @@
+name: haha-ci-deploy
+
+# CI/CD deploy ONLY — never cron. All keepers/schedulers are BullMQ
+# repeatable jobs inside the VPS `worker` service.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY_IMAGE: ghcr.io/${{ github.repository_owner }}/haha-app
+
+jobs:
+  migrate:
+    name: prisma migrate deploy (on VPS via SSH, DB loopback-only)
+    runs-on: ubuntu-latest
+    steps:
+      - name: migrate over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            cd /srv/haha
+            export DATABASE_URL="postgresql://haha:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/haha"
+            export DIRECT_URL="$DATABASE_URL"
+            npx -y prisma@6 migrate deploy
+
+  build-push:
+    name: build + push image
+    runs-on: ubuntu-latest
+    needs: [migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY_IMAGE }}:${{ github.sha }},${{ env.REGISTRY_IMAGE }}:latest
+
+  deploy:
+    name: compose up via SSH + healthcheck + preflight
+    runs-on: ubuntu-latest
+    needs: [build-push]
+    steps:
+      - uses: actions/checkout@v4
+      - name: copy compose files + up
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            cd /srv/haha
+            git pull --ff-only
+            echo "${{ github.sha }}" > .tag
+            TAG=${{ github.sha }} docker compose pull app worker
+            TAG=${{ github.sha }} docker compose up -d
+      - name: healthcheck
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            for i in $(seq 1 20); do
+              if curl -fsS http://localhost:3000/api/health >/dev/null; then
+                echo HEALTHY; exit 0
+              fi
+              sleep 15
+            done
+            echo UNHEALTHY; docker compose -C /srv/haha logs --tail=200 app; exit 1
+      - name: preflight (read-only, no broadcast)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            cd /srv/haha
+            TAG=${{ github.sha }} docker compose run --rm app node scripts/preflight-mainnet.mjs

@@ -1,0 +1,388 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+enum Category {
+  punchline
+  subtext
+  irl
+  double_meaning
+}
+
+enum BitStatus {
+  screening
+  answered
+  disputed
+  in_crowd
+  killed_it
+  bombed
+  heckled_off
+  rejected_prescreen
+}
+
+enum ComedianTier {
+  open_mic
+  opener
+  feature
+  headliner
+  legend
+}
+
+enum CrowdTier {
+  walk_in
+  regular
+  front_row
+  critic
+}
+
+enum VoteChoice {
+  A
+  B
+  both_right
+  both_wrong
+}
+
+enum FairnessChoice {
+  fair
+  unfair
+}
+
+model User {
+  id                String         @id @default(cuid())
+  wallet            String         @unique
+  email             String?        @unique
+  handle            String         @unique
+  country           String?
+  comedian_tier     ComedianTier   @default(open_mic)
+  comedian_rep      Int            @default(0)
+  crowd_tier        CrowdTier      @default(walk_in)
+  crowd_rep         Int            @default(0)
+  onboarding_passed Boolean        @default(false)
+  plant_total       Int            @default(0)
+  plant_correct     Int            @default(0)
+  referral_code     String         @unique @default(cuid())
+  referred_by_id    String?
+  bonus_quota       Int            @default(0)
+  device_hash       String?
+  ip_subnet         String?
+  funding_source    String?
+  human_verified_at DateTime?
+  created_at        DateTime       @default(now())
+
+  bits        Bit[]
+  assignments CrowdAssignment[]
+  rewards     Reward[]
+  appeals     Appeal[]
+}
+
+model Season {
+  id                    String   @id @default(cuid())
+  name                  String   @unique
+  base_model            String   @default("mimo-v2.6-pro")
+  system_playbook       String   @db.Text
+  kind                  String   @default("mimo_playbook_max")
+  training_dataset_hash String?
+  holdout_set_id        String?
+  holdout_n             Int      @default(0)
+  holdout_score         Float    @default(0)
+  eval_harness          String   @default("crowd_retrial_blind_v1")
+  trained_at            DateTime @default(now())
+  is_active             Boolean  @default(false)
+  released_at           DateTime @default(now())
+  notes                 String?
+
+  bits       Bit[]
+  ai_answers StraightManAnswer[]
+}
+
+model Bit {
+  id                     String    @id @default(cuid())
+  user_id                String
+  category               Category
+  language               String    @default("en")
+  scenario               String    @db.VarChar(600)
+  question               String    @db.VarChar(200)
+  status                 BitStatus @default(screening)
+  reject_reason          String?
+  season_id              String
+  // Seed/onboarding/plants must reference season S1 (created before first bit).
+  stage                  String    @default("open_mic")
+  is_holdout             Boolean   @default(false)
+  is_plant_bank          Boolean   @default(false)
+  plant_correct_pos      String?
+  plant_candidate_at     DateTime?
+  plant_validation_count Int       @default(0)
+  retrial_round          Int       @default(0)
+  share_public           Boolean   @default(true)
+  share_card_r2_url      String?
+  content_hash           String    @unique
+  embedding              Unsupported("vector(384)")?
+  created_at             DateTime  @default(now())
+
+  user            User               @relation(fields: [user_id], references: [id])
+  season          Season             @relation(fields: [season_id], references: [id])
+  ai_answer       StraightManAnswer?
+  comedian_reveal ComedianReveal?
+  assignments     CrowdAssignment[]
+  outcome         Outcome?
+  appeals         Appeal[]
+
+  @@index([status, category])
+  @@index([user_id, created_at])
+  @@index([is_holdout, status])
+  @@index([plant_candidate_at])
+  // NOTE: HNSW vector index is created via migration SQL, not Prisma:
+  // CREATE INDEX bit_embedding_hnsw_idx ON "Bit" USING hnsw (embedding vector_cosine_ops);
+}
+
+model StraightManAnswer {
+  id              String   @id @default(cuid())
+  bit_id          String   @unique
+  season_id       String
+  answer          String   @db.VarChar(300)
+  reasoning       String   @db.VarChar(300)
+  normalized_text String?  @db.VarChar(450)
+  confidence      Float
+  model_version   String   @default("mimo-v2.6-pro")
+  response_hash   String?
+  latency_ms      Int
+  created_at      DateTime @default(now())
+
+  bit    Bit    @relation(fields: [bit_id], references: [id])
+  season Season @relation(fields: [season_id], references: [id])
+}
+
+model ComedianReveal {
+  id              String   @id @default(cuid())
+  bit_id          String   @unique
+  answer          String   @db.VarChar(200)
+  explanation     String   @db.VarChar(400)
+  normalized_text String?  @db.VarChar(450)
+  created_at      DateTime @default(now())
+  // App-level: reject second create for same bit_id (prisma middleware + Test 3).
+  // GDPR-erasure: null text fields, keep hash (stored off-model).
+
+  bit Bit @relation(fields: [bit_id], references: [id])
+}
+
+model CrowdAssignment {
+  id            String          @id @default(cuid())
+  bit_id        String
+  juror_id      String
+  is_plant      Boolean         @default(false)
+  is_validation Boolean         @default(false)
+  is_retrial    Boolean         @default(false)
+  round         Int             @default(1)
+  vote_weight   Float           @default(1.0)
+  position_ai   String
+  vote          VoteChoice?
+  fairness      FairnessChoice?
+  expires_at    DateTime
+  voted_at      DateTime?
+  created_at    DateTime        @default(now())
+
+  bit   Bit  @relation(fields: [bit_id], references: [id])
+  juror User @relation(fields: [juror_id], references: [id])
+
+  @@unique([bit_id, juror_id])
+  @@index([juror_id, voted_at])
+  @@index([bit_id, expires_at])
+}
+
+model Outcome {
+  id                String    @id @default(cuid())
+  bit_id            String    @unique
+  result            BitStatus
+  comedian_votes    Float
+  ai_votes          Float
+  total_weight      Float     @default(0)
+  both_wrong_weight Float     @default(0)
+  juror_count       Int       @default(0)
+  fair_ratio        Float
+  win_strength      Float
+  decided_at        DateTime  @default(now())
+
+  bit Bit @relation(fields: [bit_id], references: [id])
+}
+
+model Epoch {
+  id                  String   @id @default(cuid())
+  epoch_number        Int      @unique
+  start_at            DateTime
+  end_at              DateTime
+  fee_in_base_units   BigInt   @default(0)
+  fee_in_asset        String   @default("USDG")
+  tipjar_micro_usdg   BigInt   @default(0)
+  comedian_micro_usdg BigInt   @default(0)
+  crowd_micro_usdg    BigInt   @default(0)
+  merkle_root         String?
+  merkle_r2_url       String?
+  tx_hash             String?
+
+  rewards Reward[]
+}
+
+model CronJobRun {
+  id              String   @id @default(cuid())
+  job_name        String
+  stage           String
+  // Non-nullable (default 0 when not epoch-scoped): Postgres NULLs do not
+  // dedup in UNIQUE, so nullable epoch_number would break idempotency.
+  // Callers must always set epoch_number (0 if N/A); dedup also enforced
+  // via idempotency_key.
+  epoch_number    Int      @default(0)
+  status          String   @default("started")
+  idempotency_key String   @unique
+  attempt         Int      @default(1)
+  max_attempts    Int      @default(5)
+  last_error      String?
+  updated_at      DateTime @updatedAt
+  created_at      DateTime @default(now())
+
+  @@unique([job_name, epoch_number, stage], map: "cronjobrun_job_epoch_stage_unique")
+  @@index([job_name, status])
+}
+
+model Reward {
+  id                    String  @id @default(cuid())
+  epoch_id              String
+  user_id               String
+  role                  String
+  is_beta_point         Boolean @default(false)
+  points_earned         Float   @default(0)
+  amount_micro_usdg     BigInt  @default(0)
+  cumulative_micro_usdg BigInt  @default(0)
+  // NOTE: TipJar Merkle leaf = aggregate across (wallet, all epochs, all roles)
+  // summed at settlement time. Reward rows stay per (epoch, role) for audit;
+  // do NOT treat one Reward row as one leaf.
+  merkle_proof          Json?
+  claimed_tx            String?
+  created_at            DateTime @default(now())
+
+  epoch Epoch @relation(fields: [epoch_id], references: [id])
+  user  User  @relation(fields: [user_id], references: [id])
+
+  @@index([user_id, epoch_id])
+  @@index([epoch_id, role])
+}
+
+model MicDropEvent {
+  id                   String   @id @default(cuid())
+  asset_in             String   @default("USDG")
+  amount_in_base_units BigInt   @default(0)
+  haha_bought_wei      BigInt   @default(0)
+  haha_burned_wei      BigInt   @default(0)
+  tx_hash              String   @unique
+  executed_at          DateTime @default(now())
+}
+
+model VaultPricing {
+  id                  String    @id @default(cuid())
+  category            Category
+  outcome             BitStatus
+  ref_price_micro_usd BigInt
+  source_note         String
+  effective_from      DateTime  @default(now())
+
+  @@unique([category, outcome])
+}
+
+model VaultSnapshot {
+  id                    String   @id @default(cuid())
+  entry_count           Int
+  by_category_json      Json
+  replacement_micro_usd BigInt   @default(0)
+  merkle_root           String
+  r2_dataset_key        String?
+  dek_wrapped           String?
+  tx_hash               String?
+  created_at            DateTime @default(now())
+}
+
+model Producer {
+  id             String    @id @default(cuid())
+  org_name       String
+  contact        String
+  wallet_address String?
+  plan           String
+  api_key_hash   String?   @unique
+  r2_download_url String?
+  status         String    @default("active")
+  expires_at     DateTime?
+  created_at     DateTime  @default(now())
+
+  revenue_events RevenueEvent[]
+}
+
+model RevenueEvent {
+  id               String   @id @default(cuid())
+  producer_id      String
+  amount_micro_usd BigInt   @default(0)
+  type             String
+  split_json       Json
+  tx_hash          String?  @unique
+  created_at       DateTime @default(now())
+
+  producer Producer @relation(fields: [producer_id], references: [id])
+}
+
+model Appeal {
+  id              String    @id @default(cuid())
+  bit_id          String
+  user_id         String
+  reason          String    @db.VarChar(500)
+  status          String    @default("pending")
+  ai_judge_verdict Json?
+  retrial_round   Int       @default(2)
+  retrial_outcome String?
+  resolved_by     String    @default("CROWD_RETRIAL")
+  resolved_at     DateTime?
+  created_at      DateTime  @default(now())
+
+  bit  Bit  @relation(fields: [bit_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+}
+
+model Report {
+  id           String    @id @default(cuid())
+  bit_id       String?
+  reporter_id  String
+  reason       String    @db.VarChar(500)
+  status       String    @default("open")
+  action_taken String?
+  created_at   DateTime  @default(now())
+  erased_at    DateTime?
+
+  @@index([status, created_at])
+}
+
+model SiweSession {
+  id         String    @id @default(cuid())
+  wallet     String
+  nonce      String    @unique
+  issued_at  DateTime  @default(now())
+  expires_at DateTime
+  revoked_at DateTime?
+
+  @@index([wallet, expires_at])
+}
+
+model ProducerKeyToken {
+  id          String    @id @default(cuid())
+  producer_id String
+  batch_id    String
+  token_hash  String    @unique
+  used_at     DateTime?
+  expires_at  DateTime
+  created_at  DateTime  @default(now())
+
+  @@index([producer_id, expires_at])
+}
