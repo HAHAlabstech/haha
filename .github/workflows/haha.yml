@@ -24,7 +24,8 @@ jobs:
           script: |
             set -euo pipefail
             cd /srv/haha
-            export DATABASE_URL="postgresql://haha:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/haha"
+            export PW=$(grep "^DB_PASSWORD=" .env | cut -d= -f2-)
+            export DATABASE_URL="postgresql://haha:$PW@127.0.0.1:5432/haha"
             export DIRECT_URL="$DATABASE_URL"
             npx -y prisma@6.19.3 migrate deploy
 
