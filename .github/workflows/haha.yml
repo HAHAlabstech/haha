@@ -26,7 +26,7 @@ jobs:
             cd /srv/haha
             export DATABASE_URL="postgresql://haha:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/haha"
             export DIRECT_URL="$DATABASE_URL"
-            npx -y prisma@6 migrate deploy
+            npx -y prisma@6.19.3 migrate deploy
 
   build-push:
     name: build + push image
