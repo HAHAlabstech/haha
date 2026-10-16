@@ -63,9 +63,6 @@ services:
     ports:
       # Loopback-only (aman dari UFW-bypass): migrate/seed/debug dari VPS/laptop via SSH tunnel.
       - "127.0.0.1:5432:5432"
-    ports:
-      # Loopback-only (aman dari UFW-bypass): migrate/seed/debug dari VPS/laptop via SSH tunnel.
-      - "127.0.0.1:5432:5432"
     mem_limit: 384m
     memswap_limit: 512m
     logging: *lean-logs
