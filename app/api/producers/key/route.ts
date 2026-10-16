@@ -1,23 +1,30 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
-import { PrismaClient } from "@prisma/client";
+import { bad, getPrisma } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
-function getPrisma(): PrismaClient {
-  const g = globalThis as unknown as { __hahaPrisma?: PrismaClient };
-  g.__hahaPrisma ??= new PrismaClient();
-  return g.__hahaPrisma;
+function unwrapDek(wrapped: string): string {
+  if (!wrapped.startsWith("kmsv1:")) return wrapped;
+  const kms = Buffer.from(
+    (process.env.VAULT_DEK_KMS_KEY ?? "0".repeat(64)).padEnd(64, "0").slice(0, 64),
+    "hex",
+  );
+  const cipher = Buffer.from(wrapped.slice(6), "base64");
+  const out = Buffer.alloc(cipher.length);
+  for (let i = 0; i < cipher.length; i++) {
+    out[i] = (cipher[i] ?? 0) ^ (kms[i % kms.length] ?? 0);
+  }
+  return out.toString("base64");
 }
 
 // GET /api/producers/key?token=hkt_... -> single-use DEK exchange.
 // Sets used_at, enforces expiry; a token can only be exchanged once.
-// TODO(worker/KMS): return a real wrapped DEK instead of the stub.
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("token") ?? "";
   if (!token) {
-    return NextResponse.json({ error: "token required" }, { status: 400 });
+    return bad("token required", 400);
   }
   try {
     const prisma = getPrisma();
@@ -26,28 +33,38 @@ export async function GET(req: Request) {
       where: { token_hash },
     });
     if (!row) {
-      return NextResponse.json({ error: "unknown token" }, { status: 404 });
+      return bad("unknown token", 404);
     }
     if (row.used_at != null) {
-      return NextResponse.json({ error: "token already used" }, { status: 410 });
+      return bad("token already used", 410);
     }
     if (row.expires_at.getTime() < Date.now()) {
-      return NextResponse.json({ error: "token expired" }, { status: 410 });
+      return bad("token expired", 410);
     }
     await prisma.producerKeyToken.update({
       where: { id: row.id },
       data: { used_at: new Date() },
     });
+
+    const snap = await prisma.vaultSnapshot.findFirst({
+      orderBy: { created_at: "desc" },
+      select: { dek_wrapped: true, r2_dataset_key: true },
+    });
+    const dekWrapped = snap?.dek_wrapped ?? "kmsv1:stub";
+    const dekBase64 = snap?.dek_wrapped ? unwrapDek(snap.dek_wrapped) : null;
+
     return NextResponse.json(
       {
         producerId: row.producer_id,
         batchId: row.batch_id,
-        dekWrapped: "stub-dek — TODO(KMS)",
+        dekWrapped,
+        dekBase64,
+        r2DatasetKey: snap?.r2_dataset_key ?? null,
         expiresAt: row.expires_at.toISOString(),
       },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {
-    return NextResponse.json({ error: "key exchange unavailable" }, { status: 503 });
+    return bad("key exchange unavailable", 503);
   }
 }

@@ -1,41 +1,57 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Card, Disclaimer, PageHero } from "@/components/ui";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Card, Disclaimer, Stamp } from "@/components/ui";
+import WalletModal from "@/components/WalletModal";
+import {
+  authHeaders,
+  ensureSiweSession,
+  getSharedWalletState,
+  subscribeWalletState,
+  truncateAddress,
+} from "@/lib/wallets";
 
 const SCENARIO_MAX = 600;
 const QUESTION_MAX = 200;
 
 type CategoryId = "punchline" | "subtext" | "irl" | "double_meaning";
+type StageKind = "open_mic" | "pro";
 
 const CATEGORIES: {
   id: CategoryId;
-  icon: string;
+  num: string;
   name: string;
+  sub: string;
   prompt: string;
 }[] = [
   {
     id: "punchline",
-    icon: "🎤",
+    num: "SET 01",
     name: "Punchline",
+    sub: "Expectation Flip",
     prompt: "Why is this funny? / What's the punchline?",
   },
   {
     id: "subtext",
-    icon: "💬",
+    num: "SET 02",
     name: "Subtext",
+    sub: "Polite vs. Real",
     prompt: "What do they actually feel / mean?",
   },
   {
     id: "irl",
-    icon: "🌍",
+    num: "SET 03",
     name: "IRL",
+    sub: "Physical World",
     prompt: "What is wrong / what happens here?",
   },
   {
     id: "double_meaning",
-    icon: "🔀",
+    num: "SET 04",
     name: "Double Meaning",
+    sub: "Two Readings",
     prompt: "What does this really mean in context?",
   },
 ];
@@ -79,12 +95,42 @@ const RULES = [
 ];
 
 export default function StagePage() {
+  const router = useRouter();
   const [category, setCategory] = useState<CategoryId>("punchline");
+  const [stageKind, setStageKind] = useState<StageKind>("open_mic");
   const [scenario, setScenario] = useState("");
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(
+    "Why is this funny? / What's the punchline?",
+  );
   const [ideaIndex, setIdeaIndex] = useState(0);
-  const [showRules, setShowRules] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [account, setAccount] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [createdBitId, setCreatedBitId] = useState<string | null>(null);
+  const [crisisSupport, setCrisisSupport] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const st = getSharedWalletState();
+    if (st.account) setAccount(st.account);
+    return subscribeWalletState((next) => setAccount(next.account));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const rawCat = params.get("category")?.toLowerCase();
+    if (
+      rawCat === "punchline" ||
+      rawCat === "subtext" ||
+      rawCat === "irl" ||
+      rawCat === "double_meaning"
+    ) {
+      setCategory(rawCat);
+      const found = CATEGORIES.find((c) => c.id === rawCat);
+      if (found) setQuestion(found.prompt);
+    }
+  }, []);
 
   const ideas = useMemo(() => IDEAS[category], [category]);
   const idea = ideas[ideaIndex % ideas.length] ?? "";
@@ -97,16 +143,113 @@ export default function StagePage() {
     scenario.length <= SCENARIO_MAX &&
     question.length <= QUESTION_MAX;
 
-  return (
-    <div className="space-y-8">
-      <PageHero
-        kicker="The Stage"
-        title="Take the stage."
-        lede="Pick a category, set the scene, and ask the Straight Man one sharp question. Open Mic is free — 5 bits a day."
-      />
+  async function handleSubmit() {
+    if (!valid || submitting) return;
+    setError(null);
+    setCrisisSupport(false);
+    setCreatedBitId(null);
 
-      <section aria-label="Pick a category">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    const st = getSharedWalletState();
+    if (!st.account) {
+      setModalOpen(true);
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const siwe = await ensureSiweSession(st.provider, st.account);
+      if (!siwe.ok) {
+        setError(siwe.error ?? "Please sign in with your wallet first.");
+        return;
+      }
+
+      const res = await fetch("/api/bits", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...authHeaders(siwe.sessionToken),
+        },
+        body: JSON.stringify({
+          wallet: siwe.wallet ?? st.account,
+          category,
+          stage: stageKind,
+          scenario: scenario.trim(),
+          question: question.trim(),
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        id?: string;
+        status?: string;
+        reject_reason?: string;
+        error?: string;
+      };
+      if (!res.ok) {
+        setError(data.error ?? `Failed to submit bit (${res.status}).`);
+        return;
+      }
+      if (
+        data.status === "rejected_prescreen" &&
+        data.reject_reason === "crisis_support"
+      ) {
+        setCrisisSupport(true);
+        return;
+      }
+      if (data.id) {
+        setCreatedBitId(data.id);
+        router.push(`/bit/${encodeURIComponent(data.id)}`);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to submit bit.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16">
+      {/* Editorial Case Header */}
+      <div className="mb-14 grid gap-10 border-b border-[#efe8dc]/12 pb-12 lg:grid-cols-[1.25fr_1fr] lg:items-end">
+        <div>
+          <span className="eyebrow">The Stage · Live Performance</span>
+          <h1 className="display-serif mt-4 text-5xl text-[#fff6ed] md:text-7xl">
+            Walk up to the <em>mic.</em>
+          </h1>
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-[#a49b8e]">
+            Pick a comedy set, paint the scene, and ask the Straight Man one
+            sharp question. If it answers with literal confidence and the Crowd
+            laughs, you earn tonight&apos;s Tip Jar share.
+          </p>
+        </div>
+
+        <dl className="case-meta-grid">
+          <div>
+            <dt>Open Mic</dt>
+            <dd>Free · 5 bits / day · 1.0× reward weight</dd>
+          </div>
+          <div>
+            <dt>Pro Stage</dt>
+            <dd>$0.10 credit · 2.5× reward weight · Full AI</dd>
+          </div>
+          <div>
+            <dt>Quorum</dt>
+            <dd>7–9 staked human judges verify every stumper</dd>
+          </div>
+          <div>
+            <dt>Performer</dt>
+            <dd className="font-mono text-xs text-[#ffb13b]">
+              {account ? truncateAddress(account) : "Wallet not connected"}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      {/* Category Radio Cards */}
+      <section aria-label="Pick a category" className="mb-10">
+        <div className="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-[#a49b8e]">
+          <span>Step 01 · Choose Your Set</span>
+          <span>4 Categories</span>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {CATEGORIES.map((c) => {
             const active = c.id === category;
             return (
@@ -116,160 +259,280 @@ export default function StagePage() {
                 onClick={() => {
                   setCategory(c.id);
                   setIdeaIndex(0);
+                  if (
+                    !question.trim() ||
+                    CATEGORIES.some((cat) => cat.prompt === question)
+                  ) {
+                    setQuestion(c.prompt);
+                  }
                 }}
                 aria-pressed={active}
-                className={`rounded-2xl border p-5 text-left transition ${
-                  active
-                    ? "border-amber-300/60 bg-amber-300/10 shadow-[0_0_32px_rgba(251,191,36,0.15)]"
-                    : "border-white/10 bg-white/[0.03] hover:border-white/25"
+                className={`editorial-card text-left transition ${
+                  active ? "hot" : ""
                 }`}
               >
-                <p className="text-2xl" aria-hidden>
-                  {c.icon}
+                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+                  <span>{c.num}</span>
+                  <span className={active ? "text-[#ffb13b]" : ""}>
+                    {active ? "● Selected" : c.sub}
+                  </span>
+                </div>
+                <h2 className="display-serif mt-3 text-3xl text-[#fff6ed]">
+                  {c.name}
+                </h2>
+                <p className="mt-2 font-mono text-[11px] leading-relaxed text-[#a49b8e]">
+                  {c.prompt}
                 </p>
-                <p className="mt-2 font-semibold text-amber-50">{c.name}</p>
-                <p className="mt-1 text-xs text-zinc-400">{c.prompt}</p>
               </button>
             );
           })}
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      {/* Main Stage Editor + Inspiration Drawer */}
+      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
         <section aria-label="Write your bit">
           <Card>
-            <label
-              htmlFor="scenario"
-              className="text-sm font-semibold text-amber-50"
-            >
-              The scene{" "}
-              <span className="font-normal text-zinc-500">
-                (max {SCENARIO_MAX} characters)
-              </span>
-            </label>
-            <textarea
-              id="scenario"
-              rows={5}
-              value={scenario}
-              maxLength={SCENARIO_MAX + 50}
-              onChange={(e) => setScenario(e.target.value)}
-              placeholder="Set the scene — the joke, the message, the moment…"
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-amber-300/60 focus:outline-none"
-            />
-            <p
-              className={`mt-1 text-right text-xs ${scenarioLeft < 0 ? "text-red-300" : "text-zinc-500"}`}
-            >
-              {scenarioLeft} left
-            </p>
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#efe8dc]/10 pb-5">
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setStageKind("open_mic")}
+                  className={`pill-btn ${
+                    stageKind === "open_mic" ? "hot" : ""
+                  }`}
+                >
+                  <span>Open Mic · 1.0× (Free)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStageKind("pro")}
+                  className={`pill-btn ${stageKind === "pro" ? "hot" : ""}`}
+                >
+                  <span>Pro Stage · 2.5× (Full Playbook)</span>
+                </button>
+              </div>
 
-            <label
-              htmlFor="question"
-              className="mt-4 block text-sm font-semibold text-amber-50"
-            >
-              The question{" "}
-              <span className="font-normal text-zinc-500">
-                (max {QUESTION_MAX} characters)
-              </span>
-            </label>
-            <textarea
-              id="question"
-              rows={2}
-              value={question}
-              maxLength={QUESTION_MAX + 50}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Ask the one thing the Straight Man must answer…"
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-amber-300/60 focus:outline-none"
-            />
-            <p
-              className={`mt-1 text-right text-xs ${questionLeft < 0 ? "text-red-300" : "text-zinc-500"}`}
-            >
-              {questionLeft} left
-            </p>
+              {account ? (
+                <Stamp tone="green">Mic Live · {truncateAddress(account)}</Stamp>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(true)}
+                  className="pill-btn"
+                >
+                  <span>Connect Wallet</span>
+                </button>
+              )}
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setShowRules((v) => !v)}
-              aria-expanded={showRules}
-              className="mt-3 text-sm text-zinc-300 underline hover:text-white"
-            >
-              {showRules ? "Hide" : "Show"} the rules of a good bit
-            </button>
-            {showRules ? (
-              <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-zinc-300">
-                {RULES.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ol>
+            <div>
+              <div className="flex items-baseline justify-between">
+                <label
+                  htmlFor="scenario"
+                  className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffb13b]"
+                >
+                  Step 02 · Paint the Scene / Setup
+                </label>
+                <span
+                  className={`font-mono text-[11px] tabular-nums ${
+                    scenarioLeft < 0 ? "text-[#c93b2b]" : "text-[#a49b8e]"
+                  }`}
+                >
+                  {scenario.length} / {SCENARIO_MAX}
+                </span>
+              </div>
+              <textarea
+                id="scenario"
+                rows={5}
+                value={scenario}
+                maxLength={SCENARIO_MAX + 50}
+                onChange={(e) => setScenario(e.target.value)}
+                placeholder="Drop the setup, the passive-aggressive message, or the real-world moment…"
+                className="mt-2.5 w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-4 font-serif text-xl leading-relaxed text-[#fff6ed] placeholder:text-[#6c6459] focus:border-[#ffb13b] focus:outline-none"
+              />
+            </div>
+
+            <div className="mt-6">
+              <div className="flex items-baseline justify-between">
+                <label
+                  htmlFor="question"
+                  className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffb13b]"
+                >
+                  Step 03 · Ask the Straight Man One Question
+                </label>
+                <span
+                  className={`font-mono text-[11px] tabular-nums ${
+                    questionLeft < 0 ? "text-[#c93b2b]" : "text-[#a49b8e]"
+                  }`}
+                >
+                  {question.length} / {QUESTION_MAX}
+                </span>
+              </div>
+              <textarea
+                id="question"
+                rows={2}
+                value={question}
+                maxLength={QUESTION_MAX + 50}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="Ask the one question the Straight Man must answer…"
+                className="mt-2.5 w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-4 text-base text-[#fff6ed] placeholder:text-[#6c6459] focus:border-[#ffb13b] focus:outline-none"
+              />
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+              <button
+                type="button"
+                disabled={!valid || submitting}
+                onClick={() => void handleSubmit()}
+                className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40"
+                style={{ padding: "14px 28px", fontSize: "12px" }}
+              >
+                <span>
+                  {submitting
+                    ? "Performing for the Straight Man…"
+                    : account
+                      ? "🎤 Perform Bit on Stage →"
+                      : "🎤 Connect Wallet & Take the Stage →"}
+                </span>
+              </button>
+
+              <Link
+                href="/producers"
+                className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#a49b8e] underline hover:text-[#ffb13b]"
+              >
+                Need Pro Stage credits? →
+              </Link>
+            </div>
+
+            {crisisSupport ? (
+              <div
+                className="mt-5 rounded-xl border border-[#ffb13b]/40 bg-[#ffb13b]/10 p-4 text-sm text-[#fff6ed]"
+                role="alert"
+              >
+                <p className="font-semibold">You are not alone.</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#efe8dc]">
+                  If you or someone you know is going through a difficult time
+                  or having thoughts of self-harm, please reach out for free,
+                  confidential support right now: call or text{" "}
+                  <span className="font-mono font-semibold">988</span> (US &amp;
+                  Canada), or visit{" "}
+                  <a
+                    href="https://findahelpline.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    findahelpline.com
+                  </a>{" "}
+                  worldwide.
+                </p>
+              </div>
             ) : null}
 
-            <button
-              type="button"
-              disabled={!valid}
-              onClick={() => setSubmitted(true)}
-              className="mt-5 w-full rounded-full bg-amber-300 px-6 py-3 text-sm font-semibold text-black hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Take the stage 🎤
-            </button>
-            {submitted ? (
-              <p className="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-400/5 p-3 text-sm text-emerald-100" role="status">
-                Bit drafted locally. Connect a wallet and submit — the
-                Straight Man answers in a few seconds once the backend is
-                live.
+            {createdBitId ? (
+              <p
+                className="mt-5 rounded-xl border border-[#8fb596]/40 bg-[#8fb596]/10 p-3.5 text-sm text-[#fff6ed]"
+                role="status"
+              >
+                Bit submitted!{" "}
+                <Link
+                  href={`/bit/${encodeURIComponent(createdBitId)}`}
+                  className="font-semibold text-[#ffb13b] underline"
+                >
+                  Open bit #{createdBitId} →
+                </Link>
               </p>
             ) : null}
-            <p className="mt-3 text-xs leading-relaxed text-zinc-500">
-              By submitting you license your bit and answer to HAHA Labs for
-              training, evaluation, and licensing to third parties.
+
+            {error ? (
+              <p
+                className="mt-5 rounded-xl border border-[#c93b2b]/40 bg-[#c93b2b]/15 p-3.5 text-sm text-[#ffb13b]"
+                role="alert"
+              >
+                {error}
+              </p>
+            ) : null}
+
+            <p className="mt-6 border-t border-[#efe8dc]/10 pt-4 font-mono text-[10px] uppercase tracking-[0.14em] leading-relaxed text-[#6c6459]">
+              By performing on stage you license your bit and answer to HAHA
+              Labs for evaluation, Season training, and The Joke Vault.
             </p>
           </Card>
         </section>
 
-        <aside aria-label="Need ideas?">
-          <Card className="lg:sticky lg:top-24">
-            <h2 className="font-semibold text-amber-50">Need ideas?</h2>
-            <p className="mt-2 text-sm italic leading-relaxed text-zinc-300">
+        {/* Sticky Inspiration & House Rules Drawer */}
+        <aside aria-label="Need ideas?" className="space-y-4 lg:sticky lg:top-24">
+          <Card>
+            <div className="flex items-center justify-between">
+              <span className="eyebrow">Green Room · Prompts</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#a49b8e]">
+                {category.toUpperCase()}
+              </span>
+            </div>
+            <p className="display-serif mt-4 text-2xl leading-snug text-[#fff6ed]">
               “{idea}”
             </p>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-4 flex flex-wrap gap-2.5">
               <button
                 type="button"
                 onClick={() => setIdeaIndex((i) => i + 1)}
-                className="rounded-full border border-amber-200/30 px-4 py-1.5 text-xs font-medium text-amber-100 hover:bg-amber-300/10"
+                className="pill-btn"
               >
-                Shuffle
+                <span>↻ Shuffle Idea</span>
               </button>
               <button
                 type="button"
                 onClick={() => setScenario(idea)}
-                className="rounded-full border border-white/15 px-4 py-1.5 text-xs text-zinc-300 hover:bg-white/5"
+                className="pill-btn hot"
               >
-                Use as starter
+                <span>Use as Starter</span>
               </button>
             </div>
-            <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Give me a template
-            </h3>
-            <ul className="mt-2 space-y-2">
-              {TEMPLATES.map((t) => (
-                <li key={t}>
-                  <button
-                    type="button"
-                    onClick={() => setScenario(t)}
-                    className="w-full rounded-lg bg-black/30 p-2 text-left text-xs leading-relaxed text-zinc-300 hover:bg-black/50"
-                  >
-                    {t}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 text-[11px] text-zinc-600">
-              Examples are inspiration only — bits copied word-for-word are
-              rejected as duplicates.
-            </p>
+
+            <div className="mt-6 border-t border-[#efe8dc]/10 pt-5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+                Fill-in-the-blank Starters
+              </span>
+              <ul className="mt-3 space-y-2">
+                {TEMPLATES.map((t) => (
+                  <li key={t}>
+                    <button
+                      type="button"
+                      onClick={() => setScenario(t)}
+                      className="w-full rounded-xl border border-[#efe8dc]/10 bg-[#0c0a08]/70 p-3 text-left font-mono text-xs leading-relaxed text-[#efe8dc] transition hover:border-[#ffb13b] hover:text-[#ffb13b]"
+                    >
+                      {t}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Card>
+
+          <Card>
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between font-mono text-xs uppercase tracking-[0.16em] text-[#efe8dc]">
+                <span>What makes a good bit · 5 House Rules</span>
+                <span className="text-[#ffb13b] transition group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-[#a49b8e]">
+                {RULES.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ol>
+            </details>
           </Card>
         </aside>
       </div>
 
+      <WalletModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConnected={(accs) => setAccount(accs[0] ?? null)}
+      />
       <Disclaimer />
     </div>
   );

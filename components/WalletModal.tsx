@@ -8,11 +8,14 @@ import type {
 import {
   connectAndEnsureChain,
   discoverProviders,
+  ensureSiweSession,
   getAccounts,
   getChainId,
   getLegacyProvider,
+  getSharedWalletState,
   onAccountsChanged,
   onChainChanged,
+  setSharedWalletState,
   switchOrAddChain,
   truncateAddress,
 } from "@/lib/wallets";
@@ -50,9 +53,14 @@ export default function WalletModal({
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Runtime chain config (chainEnv/chainId) — never NEXT_PUBLIC_*.
   useEffect(() => {
     if (!open) return;
+    const shared = getSharedWalletState();
+    if (shared.account && accounts.length === 0) {
+      setAccounts([shared.account]);
+      if (shared.label) setActiveLabel(shared.label);
+      if (shared.provider) setActiveProvider(shared.provider);
+    }
     let cancelled = false;
     fetch("/api/config")
       .then((r) => (r.ok ? r.json() : null))
@@ -63,7 +71,7 @@ export default function WalletModal({
     return () => {
       cancelled = true;
     };
-  }, [open ]);
+  }, [open, accounts.length]);
 
   const scan = useCallback(async () => {
     setScanning(true);
@@ -100,11 +108,15 @@ export default function WalletModal({
     if (open) void scan();
   }, [open, scan]);
 
-  // Track account / chain changes on the active provider.
   useEffect(() => {
     if (!activeProvider) return;
     const offAcc = onAccountsChanged(activeProvider, (accs) => {
       setAccounts(accs);
+      setSharedWalletState({
+        account: accs[0] ?? null,
+        provider: accs.length > 0 ? activeProvider : null,
+        sessionToken: null,
+      });
       onConnected?.(accs);
       if (accs.length === 0) setActiveLabel(null);
     });
@@ -133,6 +145,14 @@ export default function WalletModal({
         setActiveLabel(entry.label);
         setActiveProvider(entry.provider);
         setChainId(current);
+        setSharedWalletState({
+          account: accs[0] ?? null,
+          provider: entry.provider,
+          label: entry.label,
+        });
+        if (accs[0]) {
+          await ensureSiweSession(entry.provider, accs[0]).catch(() => {});
+        }
         onConnected?.(accs);
         if (accs.length > 0) onClose();
       } catch (e) {
@@ -150,6 +170,7 @@ export default function WalletModal({
     if (!activeProvider) return;
     const accs = await getAccounts(activeProvider).catch(() => []);
     setAccounts(accs);
+    setSharedWalletState({ account: accs[0] ?? null });
   }, [activeProvider]);
 
   const switchChain = useCallback(async () => {
@@ -174,56 +195,63 @@ export default function WalletModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-90 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
       aria-label="Connect wallet"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-amber-200/15 bg-[#14101c] p-6 shadow-[0_0_60px_rgba(251,191,36,0.12)]"
+        className="w-full max-w-md rounded-2xl border border-[#efe8dc]/20 bg-[#14100d] p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-amber-50">
-            Connect wallet
-          </h2>
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <span className="eyebrow">Box Office · EIP-6963</span>
+            <h2 className="display-serif mt-2 text-3xl text-[#fff6ed]">
+              Connect <em>wallet.</em>
+            </h2>
+          </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-full px-2 py-1 text-sm text-zinc-400 hover:bg-white/5 hover:text-zinc-100"
+            className="pill-btn"
+            style={{ padding: "6px 12px" }}
           >
             ✕
           </button>
         </div>
-        <p className="mb-4 text-sm text-zinc-400">
+        <p className="mb-5 text-sm leading-relaxed text-[#a49b8e]">
           {runtime
-            ? `HAHA is on ${runtime.chainName} (${runtime.chainId}).`
+            ? `HAHA runs on ${runtime.chainName} (Chain ${runtime.chainId}).`
             : "Loading network info…"}{" "}
-          Wallets connect via the EIP-6963 standard.
+          Sign in with your wallet to take the stage, judge in the Crowd, or
+          claim Tip Jar payouts.
         </p>
 
         {firstAccount && activeLabel ? (
-          <div className="mb-4 rounded-xl border border-emerald-300/20 bg-emerald-400/5 p-3 text-sm">
-            <p className="text-zinc-300">
-              Connected via <span className="font-medium">{activeLabel}</span>
-            </p>
-            <p className="font-mono text-emerald-200">
+          <div className="mb-4 rounded-xl border border-[#8fb596]/35 bg-[#8fb596]/10 p-3.5 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[11px] uppercase tracking-widest text-[#8fb596]">
+                Connected · {activeLabel}
+              </span>
+              <button
+                type="button"
+                onClick={() => void refreshAccounts()}
+                className="font-mono text-[10px] uppercase tracking-wider text-[#a49b8e] underline hover:text-[#efe8dc]"
+              >
+                Refresh
+              </button>
+            </div>
+            <p className="mt-1 font-mono text-sm text-[#fff6ed]">
               {truncateAddress(firstAccount)}
             </p>
-            <button
-              type="button"
-              onClick={() => void refreshAccounts()}
-              className="mt-2 text-xs text-zinc-400 underline hover:text-zinc-200"
-            >
-              Refresh accounts
-            </button>
           </div>
         ) : null}
 
         {onWrongChain ? (
-          <div className="mb-4 rounded-xl border border-red-300/25 bg-red-400/10 p-3 text-sm text-red-100">
+          <div className="mb-4 rounded-xl border border-[#c93b2b]/40 bg-[#c93b2b]/15 p-3.5 text-sm text-[#efe8dc]">
             <p>
               Wallet is on chain {chainId}, expected {expectedChain}.
             </p>
@@ -231,51 +259,58 @@ export default function WalletModal({
               type="button"
               onClick={() => void switchChain()}
               disabled={busy === "__switch"}
-              className="mt-2 rounded-lg bg-red-400/20 px-3 py-1.5 text-xs font-medium hover:bg-red-400/30 disabled:opacity-50"
+              className="pill-btn hot mt-2.5"
             >
-              {busy === "__switch" ? "Switching…" : "Switch network"}
+              {busy === "__switch" ? "Switching…" : "Switch network →"}
             </button>
           </div>
         ) : null}
 
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {entries.map((entry) => (
             <button
               key={entry.label}
               type="button"
               disabled={busy !== null}
               onClick={() => void connectEntry(entry)}
-              className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-sm text-zinc-100 hover:border-amber-200/40 hover:bg-white/[0.06] disabled:opacity-50"
+              className="flex w-full items-center justify-between rounded-xl border border-[#efe8dc]/12 bg-[#1c1611] px-4 py-3.5 text-left text-sm text-[#efe8dc] transition hover:border-[#ffb13b] hover:bg-[#ffb13b]/10 disabled:opacity-50"
             >
               <span className="font-medium">{entry.label}</span>
-              <span className="text-xs text-zinc-400">
-                {busy === entry.label ? "Waiting for wallet…" : "Connect →"}
+              <span className="font-mono text-[11px] uppercase tracking-widest text-[#ffb13b]">
+                {busy === entry.label ? "Signing…" : "Connect →"}
               </span>
             </button>
           ))}
         </div>
 
-        {scanning ? (
-          <p className="mt-3 text-xs text-zinc-500">Scanning for wallets…</p>
-        ) : (
-          <button
-            type="button"
-            onClick={() => void scan()}
-            className="mt-3 text-xs text-zinc-400 underline hover:text-zinc-200"
-          >
-            Rescan for wallets
-          </button>
-        )}
+        <div className="mt-4 flex items-center justify-between">
+          {scanning ? (
+            <p className="font-mono text-[11px] uppercase tracking-wider text-[#a49b8e]">
+              Scanning EIP-6963 providers…
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void scan()}
+              className="font-mono text-[11px] uppercase tracking-wider text-[#a49b8e] underline hover:text-[#ffb13b]"
+            >
+              Rescan wallets
+            </button>
+          )}
+        </div>
 
         {error ? (
-          <p className="mt-3 text-sm text-red-200" role="alert">
+          <p
+            className="mt-3 rounded-lg border border-[#c93b2b]/35 bg-[#c93b2b]/10 p-3 text-xs text-[#ffb13b]"
+            role="alert"
+          >
             {error}
           </p>
         ) : null}
 
-        <p className="mt-4 text-[11px] leading-relaxed text-zinc-500">
-          No seed phrases, no private keys — signing happens inside your
-          wallet only. Rewards vary and depend on the Tip Jar.
+        <p className="mt-5 border-t border-[#efe8dc]/10 pt-4 font-mono text-[10px] uppercase tracking-[0.14em] leading-relaxed text-[#6c6459]">
+          Zero seed phrases · SIWE session verified · Rewards depend on the Tip
+          Jar
         </p>
       </div>
     </div>

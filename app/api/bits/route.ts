@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
-import { PrismaClient, type Category } from "@prisma/client";
+import { type PrismaClient, type Category } from "@prisma/client";
+import {
+  bad,
+  enqueueJob,
+  getPrisma,
+  requireWalletSession,
+} from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -12,24 +18,14 @@ const CATEGORIES = new Set<string>([
   "double_meaning",
 ]);
 
-// Daily bit quota per comedian tier (plus user.bonus_quota).
+// Canonical daily bit quota per comedian tier (plan §4.2, plus user.bonus_quota).
 const DAILY_QUOTA: Record<string, number> = {
-  open_mic: 3,
-  opener: 5,
-  feature: 10,
-  headliner: 20,
-  legend: 50,
+  open_mic: 5,
+  opener: 8,
+  feature: 12,
+  headliner: 18,
+  legend: 25,
 };
-
-function getPrisma(): PrismaClient {
-  const g = globalThis as unknown as { __hahaPrisma?: PrismaClient };
-  g.__hahaPrisma ??= new PrismaClient();
-  return g.__hahaPrisma;
-}
-
-function bad(error: string, status: number) {
-  return NextResponse.json({ error }, { status });
-}
 
 /** lower/trim/strip-punctuation/collapse-whitespace normalization. */
 function norm(s: string): string {
@@ -74,12 +70,12 @@ async function ensureUser(prisma: PrismaClient, wallet: string) {
 async function ensureSeason(prisma: PrismaClient) {
   const active = await prisma.season.findFirst({
     where: { is_active: true },
-    select: { id: true },
+    select: { id: true, name: true },
   });
   if (active) return active;
   const s1 = await prisma.season.findUnique({
     where: { name: "S1" },
-    select: { id: true },
+    select: { id: true, name: true },
   });
   if (s1) return s1;
   try {
@@ -89,13 +85,13 @@ async function ensureSeason(prisma: PrismaClient) {
         system_playbook: "HAHA S1 default playbook (stub).",
         is_active: true,
       },
-      select: { id: true },
+      select: { id: true, name: true },
     });
   } catch (e) {
     if (prismaCode(e) === "P2002") {
       const retry = await prisma.season.findUnique({
         where: { name: "S1" },
-        select: { id: true },
+        select: { id: true, name: true },
       });
       if (retry) return retry;
     }
@@ -103,9 +99,45 @@ async function ensureSeason(prisma: PrismaClient) {
   }
 }
 
+// GET /api/bits -> recent public non-holdout killed_it bits + daily counts.
+export async function GET() {
+  try {
+    const prisma = getPrisma();
+    const dayAgo = new Date(Date.now() - 24 * 3600 * 1000);
+    const [bitsToday, killedToday, spotlight] = await Promise.all([
+      prisma.bit.count({ where: { created_at: { gt: dayAgo } } }),
+      prisma.bit.count({
+        where: { status: "killed_it", created_at: { gt: dayAgo } },
+      }),
+      prisma.bit.findMany({
+        where: {
+          status: "killed_it",
+          is_holdout: false,
+          share_public: true,
+        },
+        orderBy: { created_at: "desc" },
+        take: 6,
+        select: {
+          id: true,
+          category: true,
+          scenario: true,
+          question: true,
+          stage: true,
+          created_at: true,
+          season: { select: { name: true } },
+        },
+      }),
+    ]);
+    return NextResponse.json(
+      { bitsToday, killedToday, spotlight },
+      { headers: { "cache-control": "no-store" } },
+    );
+  } catch {
+    return bad("bits unavailable", 503);
+  }
+}
+
 // POST /api/bits {wallet, category, stage, scenario<=600, question<=200}
-// SIWE stub-check: requires a live SiweSession for the wallet.
-// TODO(worker): prescreen + embedding belong in BullMQ (worker/jobs/prescreen.js).
 export async function POST(req: Request) {
   let raw: string;
   try {
@@ -137,28 +169,24 @@ export async function POST(req: Request) {
     return bad("question must be 1-200 chars", 400);
   }
   const stage =
-    typeof b.stage === "string" && b.stage.length > 0 ? b.stage : "open_mic";
+    b.stage === "pro"
+      ? "pro"
+      : typeof b.stage === "string" && b.stage.length > 0
+        ? b.stage
+        : "open_mic";
   if (stage.length > 32) return bad("invalid stage", 400);
 
   try {
     const prisma = getPrisma();
-    const session = await prisma.siweSession.findFirst({
-      where: {
-        wallet,
-        revoked_at: null,
-        expires_at: { gt: new Date() },
-      },
-      orderBy: { issued_at: "desc" },
-      select: { id: true },
-    });
-    if (!session) return bad("siwe session required", 401);
+    const auth = await requireWalletSession(req, prisma, wallet);
+    if (!auth.ok) return auth.response;
 
     const user = await ensureUser(prisma, wallet);
     const dayAgo = new Date(Date.now() - 24 * 3600 * 1000);
     const used = await prisma.bit.count({
       where: { user_id: user.id, created_at: { gt: dayAgo } },
     });
-    const quota = (DAILY_QUOTA[user.comedian_tier] ?? 3) + user.bonus_quota;
+    const quota = (DAILY_QUOTA[user.comedian_tier] ?? 5) + user.bonus_quota;
     if (used >= quota) return bad("daily quota exceeded", 429);
 
     const content_hash = createHash("sha256")
@@ -184,8 +212,10 @@ export async function POST(req: Request) {
       },
       select: { id: true },
     });
+
+    const job = await enqueueJob("bits", "prescreen", { bitId: bit.id });
     return NextResponse.json(
-      { bitId: bit.id },
+      { bitId: bit.id, queued: job.queued, jobId: job.jobId ?? null },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {

@@ -92,6 +92,14 @@ export function getServerContracts(
       if (isAddressLike(raw)) out[key] = raw;
     },
   );
+  if (env.CHAIN_ENV !== "mainnet") {
+    if (!isAddressLike(env.USDG_ADDRESS) && isAddressLike(env.TESTNET_MOCK_USDG)) {
+      out.usdg = env.TESTNET_MOCK_USDG;
+    }
+    if (!isAddressLike(env.HAHA_TOKEN_ADDRESS) && isAddressLike(env.TESTNET_MOCK_HAHA)) {
+      out.hahaToken = env.TESTNET_MOCK_HAHA;
+    }
+  }
   return out;
 }
 
@@ -130,18 +138,19 @@ export const tipJarAbi = [
       { name: "cumulativeMicro", type: "uint256" },
       { name: "deadline", type: "uint256" },
       { name: "nonce", type: "uint256" },
-      {
-        name: "sig",
-        type: "tuple",
-        components: [
-          { name: "v", type: "uint8" },
-          { name: "r", type: "bytes32" },
-          { name: "s", type: "bytes32" },
-        ],
-      },
+      { name: "v", type: "uint8" },
+      { name: "r", type: "bytes32" },
+      { name: "s", type: "bytes32" },
       { name: "proof", type: "bytes32[]" },
     ],
     outputs: [],
+  },
+  {
+    type: "function",
+    name: "nonces",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
   },
   {
     type: "function",
@@ -152,10 +161,17 @@ export const tipJarAbi = [
   },
   {
     type: "function",
-    name: "merkleRoot",
+    name: "totalPaidOut",
     stateMutability: "view",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "merkleRoot",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "bytes32" }],
   },
   {
     type: "function",
@@ -164,9 +180,27 @@ export const tipJarAbi = [
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
   },
+  {
+    type: "function",
+    name: "proposeRoot",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "epoch", type: "uint256" },
+      { name: "newRoot", type: "bytes32" },
+      { name: "totalCumulative", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "activateRoot",
+    stateMutability: "nonpayable",
+    inputs: [],
+    outputs: [],
+  },
 ] as const;
 
-/** Minimal ERC-20 ABI slice (USDG balance/decimals). */
+/** Minimal ERC-20 ABI slice (USDG/HAHA balance/decimals/approve). */
 export const erc20Abi = [
   {
     type: "function",
@@ -181,5 +215,87 @@ export const erc20Abi = [
     stateMutability: "view",
     inputs: [{ name: "account", type: "address" }],
     outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "allowance",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "approve",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+] as const;
+
+/** Minimal ProducerGateway ABI for B2B plan checkout. */
+export const producerGatewayAbi = [
+  {
+    type: "function",
+    name: "purchasePlan",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "planType", type: "uint8" },
+      { name: "amountMicroUsdg", type: "uint256" },
+      { name: "orderId", type: "bytes32" },
+      { name: "batchId", type: "bytes32" },
+    ],
+    outputs: [{ name: "derivedBatchId", type: "bytes32" }],
+  },
+  {
+    type: "function",
+    name: "planPriceMicro",
+    stateMutability: "view",
+    inputs: [{ name: "planType", type: "uint8" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const;
+
+/** Minimal CrowdStaking ABI for juror staking & checks. */
+export const crowdStakingAbi = [
+  {
+    type: "function",
+    name: "stakes",
+    stateMutability: "view",
+    inputs: [{ name: "juror", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "extraBitStake",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "stake",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "amount", type: "uint256" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "initiateUnstake",
+    stateMutability: "nonpayable",
+    inputs: [],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "completeUnstake",
+    stateMutability: "nonpayable",
+    inputs: [],
+    outputs: [],
   },
 ] as const;

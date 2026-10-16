@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { enqueueJob } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +18,12 @@ function cronAuth(req: Request): NextResponse | null {
 export async function POST(req: Request) {
   const denied = cronAuth(req);
   if (denied) return denied;
-  // TODO(worker): enqueue seasonUpgrade job (worker/jobs/seasonUpgrade.js).
+  const enqueued = await enqueueJob("season-upgrade", "upgrade", {
+    triggeredAt: new Date().toISOString(),
+  });
   return NextResponse.json(
-    { accepted: true, job: "season-upgrade" },
+    { accepted: true, enqueued, job: "season-upgrade" },
     { headers: { "cache-control": "no-store" } },
   );
 }
+

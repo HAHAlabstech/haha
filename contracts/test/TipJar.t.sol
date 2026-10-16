@@ -71,6 +71,10 @@ contract TipJarTest is HahaSetup {
         vm.warp(block.timestamp + 10 minutes + 1);
         vm.expectRevert(TipJar.InsolventRoot.selector);
         tipJar.activateRoot();
+        // Guardian can still veto an insolvent root after ETA so it never bricks.
+        vm.prank(admin);
+        tipJar.vetoRoot();
+        assertEq(tipJar.pendingEta(), 0);
     }
 
     function test_ClaimHappyPath() public {

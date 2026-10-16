@@ -95,6 +95,7 @@ contract CrowdStaking is AccessControl, ReentrancyGuard {
     {
         if (stakes[juror] < amount) revert InsufficientStake();
         stakes[juror] -= amount;
+        unstakeAvailableAt[juror] = 0;
         slashEscrow[juror] += amount;
         slashReleaseAt[juror] = block.timestamp + SLASH_RECOVERY_WINDOW;
         emit Slashed(juror, amount, reason);
@@ -125,6 +126,7 @@ contract CrowdStaking is AccessControl, ReentrancyGuard {
     /// @notice Lock anti-spam stake for one above-quota bit.
     function stakeForExtraBit(bytes32 bitId) external nonReentrant {
         if (extraBitStake == 0) revert ZeroAmount();
+        if (extraSeized[bitId][msg.sender]) revert AlreadySeized();
         extraStakes[bitId][msg.sender] += extraBitStake;
         haha.safeTransferFrom(msg.sender, address(this), extraBitStake);
         emit ExtraBitStaked(bitId, msg.sender, extraBitStake);

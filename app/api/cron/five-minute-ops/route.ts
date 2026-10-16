@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { enqueueJob } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +18,12 @@ function cronAuth(req: Request): NextResponse | null {
 export async function POST(req: Request) {
   const denied = cronAuth(req);
   if (denied) return denied;
-  // TODO(worker): enqueue fiveMinuteOps job (worker/jobs/fiveMinuteOps.js).
+  const enqueued = await enqueueJob("five-minute-ops", "tick", {
+    triggeredAt: new Date().toISOString(),
+  });
   return NextResponse.json(
-    { accepted: true, job: "five-minute-ops" },
+    { accepted: true, enqueued, job: "five-minute-ops" },
     { headers: { "cache-control": "no-store" } },
   );
 }
+

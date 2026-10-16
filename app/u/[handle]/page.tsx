@@ -1,62 +1,186 @@
-import { Card, Disclaimer, SectionTitle } from "@/components/ui";
+"use client";
 
-export function generateStaticParams() {
-  return [];
+import { use, useEffect, useState } from "react";
+import Link from "next/link";
+import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
+import { truncateAddress } from "@/lib/wallets";
+
+interface UserProfileResponse {
+  found: boolean;
+  profile: {
+    wallet: string | null;
+    handle: string;
+    comedian_tier: string;
+    comedian_rep: number;
+    crowd_tier: string;
+    crowd_rep: number;
+    onboarding_passed?: boolean;
+  };
+  stats: {
+    bits_count: number;
+    killed_it_count: number;
+    crowd_votes_count: number;
+    earned_usdg_micro: string;
+  };
+  recent_bits: {
+    id: string;
+    category: string;
+    scenario: string;
+    question: string;
+    stage: string;
+    status: string;
+    created_at: string;
+  }[];
 }
 
-const TIERS = ["Open Mic", "Opener", "Feature", "Headliner", "Legend"];
+const COMEDIAN_TIER_LABELS: Record<string, string> = {
+  open_mic: "Open Mic",
+  opener: "Opener",
+  feature: "Feature",
+  headliner: "Headliner",
+  legend: "Legend",
+};
 
-export default async function ProfilePage({
+const CROWD_TIER_LABELS: Record<string, string> = {
+  walk_in: "Walk-in",
+  regular: "Regular",
+  front_row: "Front Row",
+  critic: "Critic",
+};
+
+export default function ProfilePage({
   params,
 }: {
   params: Promise<{ handle: string }>;
 }) {
-  const { handle } = await params;
+  const { handle } = use(params);
   const display = decodeURIComponent(handle).replace(/^@/, "");
+  const [data, setData] = useState<UserProfileResponse | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/u/${encodeURIComponent(display)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (!cancelled && res?.profile) {
+          setData(res as UserProfileResponse);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [display]);
+
+  const comedianLabel =
+    COMEDIAN_TIER_LABELS[data?.profile.comedian_tier ?? "open_mic"] ??
+    "Open Mic";
+  const crowdLabel =
+    CROWD_TIER_LABELS[data?.profile.crowd_tier ?? "walk_in"] ?? "Walk-in";
+
+  let earnedDisplay = "—";
+  if (data?.stats) {
+    try {
+      const val = Number(BigInt(data.stats.earned_usdg_micro || "0")) / 1e6;
+      earnedDisplay = `$${val.toFixed(2)}`;
+    } catch {
+      earnedDisplay = "$0.00";
+    }
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <div
-          aria-hidden
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-300/15 text-2xl"
-        >
-          🎤
-        </div>
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-12">
+      <div className="flex flex-wrap items-end justify-between gap-6 border-b border-[#efe8dc]/12 pb-10">
         <div>
-          <h1 className="text-2xl font-bold text-amber-50 md:text-3xl">
-            @{display}
+          <span className="eyebrow">Performer &amp; Juror Dossier</span>
+          <h1 className="display-serif mt-3 text-5xl text-[#fff6ed] md:text-6xl">
+            @{data?.profile.handle ?? display}
           </h1>
-          <p className="mt-1 text-sm text-zinc-400">
-            {TIERS[0]} comedian · Walk-in juror
+          <p className="mt-3 font-mono text-xs uppercase tracking-[0.16em] text-[#a49b8e]">
+            {comedianLabel} Comedian · {crowdLabel} Juror
+            {data?.profile.wallet
+              ? ` · ${truncateAddress(data.profile.wallet)}`
+              : ""}
           </p>
         </div>
+        <Stamp>{comedianLabel}</Stamp>
       </div>
 
       <section aria-label="Stats">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { label: "Bits", value: "—" },
-            { label: "Killed it", value: "—" },
-            { label: "Crowd votes", value: "—" },
-            { label: "Earned (USDG)", value: "—" },
+            {
+              label: "01 · Bits Performed",
+              value: data ? data.stats.bits_count.toString() : "—",
+            },
+            {
+              label: "02 · Killed It",
+              value: data ? data.stats.killed_it_count.toString() : "—",
+            },
+            {
+              label: "03 · Crowd Ballots",
+              value: data ? data.stats.crowd_votes_count.toString() : "—",
+            },
+            { label: "04 · Earned (USDG)", value: earnedDisplay },
           ].map((s) => (
             <Card key={s.label}>
-              <p className="text-2xl font-bold text-amber-50">{s.value}</p>
-              <p className="mt-1 text-xs text-zinc-400">{s.label}</p>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+                {s.label}
+              </span>
+              <p className="display-serif mt-3 text-4xl text-[#fff6ed] tabular-nums">
+                {s.value}
+              </p>
             </Card>
           ))}
         </div>
       </section>
 
       <section aria-label="Recent bits">
-        <SectionTitle>Recent bits</SectionTitle>
-        <Card>
-          <p className="text-sm text-zinc-400">
-            Public bits from @{display} will appear here. Holdout bits stay
-            hidden to protect their eval value.
-          </p>
-        </Card>
+        <SectionTitle eyebrow="Stage Archive" hint="Public bits only">
+          Recent <em>Performances.</em>
+        </SectionTitle>
+        {data && data.recent_bits.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2">
+            {data.recent_bits.map((b) => (
+              <div key={b.id} className="screen">
+                <div className="screen-bar">
+                  <span>
+                    {b.category} · {b.stage}
+                  </span>
+                  <span>{b.status}</span>
+                </div>
+                <div className="screen-body">
+                  <div>
+                    <p className="quote">“{b.scenario}”</p>
+                    <p className="mt-3 font-mono text-xs text-[#ffb13b]">
+                      {b.question}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between pt-3">
+                    <Stamp
+                      tone={b.status === "killed_it" ? "green" : "amber"}
+                    >
+                      {b.status}
+                    </Stamp>
+                    <Link
+                      href={`/bit/${encodeURIComponent(b.id)}`}
+                      className="font-mono text-xs uppercase tracking-widest text-[#ffb13b] underline"
+                    >
+                      Inspect Bit →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <p className="text-sm text-[#a49b8e]">
+              Public bits from @{display} will appear here. Holdout bits stay
+              sealed to protect their benchmark evaluation integrity.
+            </p>
+          </Card>
+        )}
       </section>
 
       <Disclaimer />

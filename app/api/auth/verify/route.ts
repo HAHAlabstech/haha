@@ -1,21 +1,16 @@
 import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
-import { PrismaClient } from "@prisma/client";
 import { verifyMessage } from "viem";
+import {
+  bad,
+  getPrisma,
+  sessionCookieHeader,
+  signSessionToken,
+} from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
 const MAX_BODY_BYTES = 64 * 1024;
-
-function getPrisma(): PrismaClient {
-  const g = globalThis as unknown as { __hahaPrisma?: PrismaClient };
-  g.__hahaPrisma ??= new PrismaClient();
-  return g.__hahaPrisma;
-}
-
-function bad(error: string, status: number) {
-  return NextResponse.json({ error }, { status });
-}
 
 /** Best-effort Turnstile check. Accepts everything when no secret is configured (pre-launch stub). */
 async function checkTurnstile(
@@ -50,9 +45,21 @@ function uniqueHandle(wallet: string, attempt: number): string {
   return `anon_${wallet.slice(2, 8)}${randomBytes(2).toString("hex")}`;
 }
 
-// POST /api/auth/verify {message, signature, nonce, turnstileToken}
+function deriveIpSubnet(req: Request): string | null {
+  const raw =
+    req.headers.get("x-real-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    null;
+  if (!raw) return null;
+  const ipv4 = raw.match(/^(\d+\.\d+\.\d+)\.\d+$/);
+  if (ipv4?.[1]) return `${ipv4[1]}.0/24`;
+  return createHash("sha256").update(raw).digest("hex").slice(0, 16);
+}
+
+// POST /api/auth/verify {message, signature, nonce, turnstileToken, deviceHash?}
 // Verifies the SIWE signature via viem, checks Turnstile (stub-accepts when
-// TURNSTILE_SECRET_KEY is unset), then upserts SiweSession + User.
+// TURNSTILE_SECRET_KEY is unset), then upserts SiweSession + User and issues
+// a signed HttpOnly haha_session cookie.
 export async function POST(req: Request) {
   let raw: string;
   try {
@@ -72,6 +79,10 @@ export async function POST(req: Request) {
   const message = typeof b.message === "string" ? b.message : "";
   const signature = typeof b.signature === "string" ? b.signature : "";
   const nonce = typeof b.nonce === "string" ? b.nonce : "";
+  const deviceHash =
+    typeof b.deviceHash === "string" && b.deviceHash.length <= 128
+      ? b.deviceHash
+      : null;
   if (!message || !signature || !nonce) {
     return bad("message, signature and nonce are required", 400);
   }
@@ -101,6 +112,7 @@ export async function POST(req: Request) {
 
   const wallet = address.toLowerCase();
   const expiresAt = new Date(Date.now() + 24 * 3600 * 1000);
+  const ipSubnet = deriveIpSubnet(req);
 
   try {
     const prisma = getPrisma();
@@ -112,14 +124,20 @@ export async function POST(req: Request) {
 
     let user = await prisma.user.findUnique({
       where: { wallet },
-      select: { id: true },
+      select: { id: true, handle: true, human_verified_at: true },
     });
     if (!user) {
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
           user = await prisma.user.create({
-            data: { wallet, handle: uniqueHandle(wallet, attempt) },
-            select: { id: true },
+            data: {
+              wallet,
+              handle: uniqueHandle(wallet, attempt),
+              human_verified_at: new Date(),
+              ...(deviceHash ? { device_hash: deviceHash } : {}),
+              ...(ipSubnet ? { ip_subnet: ipSubnet } : {}),
+            },
+            select: { id: true, handle: true, human_verified_at: true },
           });
           break;
         } catch (e) {
@@ -130,19 +148,35 @@ export async function POST(req: Request) {
           if (code !== "P2002" || attempt === 2) throw e;
         }
       }
+    } else if (!user.human_verified_at || deviceHash || ipSubnet) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...(user.human_verified_at ? {} : { human_verified_at: new Date() }),
+          ...(deviceHash ? { device_hash: deviceHash } : {}),
+          ...(ipSubnet ? { ip_subnet: ipSubnet } : {}),
+        },
+      });
     }
 
-    // referral_code uses the schema default (cuid); expose nothing secret here.
+    const sessionToken = signSessionToken(wallet, nonce, expiresAt.getTime());
     const res = NextResponse.json(
       {
         wallet,
+        handle: user?.handle ?? `anon_${wallet.slice(2, 10)}`,
+        sessionToken,
         expiresAt: expiresAt.toISOString(),
         turnstile: turnstile.stub ? "stub-accepted" : "verified",
         ...(turnstile.stub
           ? { warning: "TURNSTILE_SECRET_KEY unset — stub accept" }
           : {}),
       },
-      { headers: { "cache-control": "no-store" } },
+      {
+        headers: {
+          "cache-control": "no-store",
+          "set-cookie": sessionCookieHeader(sessionToken),
+        },
+      },
     );
     return res;
   } catch {

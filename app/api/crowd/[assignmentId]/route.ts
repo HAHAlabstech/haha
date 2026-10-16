@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { PrismaClient, type VoteChoice, type FairnessChoice } from "@prisma/client";
+import { type VoteChoice, type FairnessChoice } from "@prisma/client";
+import {
+  bad,
+  getPrisma,
+  isColluding,
+  shuffleInPlace,
+  TIER_WEIGHT,
+} from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -7,28 +14,9 @@ const MAX_BODY_BYTES = 64 * 1024;
 const VOTES_TO_DECIDE = 5;
 const EXTENSION_VOTES = 2;
 
-// Vote-weight snapshot per juror crowd tier at vote time (plan §4.3 canonical).
-const TIER_WEIGHT: Record<string, number> = {
-  walk_in: 1.0,
-  regular: 1.15,
-  front_row: 1.3,
-  critic: 1.5,
-};
-
-function getPrisma(): PrismaClient {
-  const g = globalThis as unknown as { __hahaPrisma?: PrismaClient };
-  g.__hahaPrisma ??= new PrismaClient();
-  return g.__hahaPrisma;
-}
-
-function bad(error: string, status: number) {
-  return NextResponse.json({ error }, { status });
-}
-
 // POST /api/crowd/[assignmentId] {wallet, vote: A|B|both_right|both_wrong, fairness: fair|unfair}
 // Canonical tally (plan §4.4, mirrors worker/lib/quorum.js): both_right counts
 // for AI ONLY, win = comedian/total; thin zones expand to 7 before final.
-// TODO(worker): settlement + holdout sampling move to BullMQ (dailySettlement).
 export async function POST(
   req: Request,
   ctx: { params: Promise<{ assignmentId: string }> },
@@ -74,7 +62,22 @@ export async function POST(
       where: { id: assignmentId },
       include: {
         juror: { select: { id: true, wallet: true, crowd_tier: true } },
-        bit: { select: { id: true, user_id: true } },
+        bit: {
+          select: {
+            id: true,
+            user_id: true,
+            is_plant_bank: true,
+            plant_correct_pos: true,
+            user: {
+              select: {
+                id: true,
+                device_hash: true,
+                ip_subnet: true,
+                funding_source: true,
+              },
+            },
+          },
+        },
       },
     });
     if (!assignment) return bad("assignment not found", 404);
@@ -97,6 +100,20 @@ export async function POST(
       },
     });
 
+    if (assignment.is_plant || assignment.bit.is_plant_bank) {
+      const expected = assignment.bit.plant_correct_pos ?? "A";
+      const passedPlant = vote === expected && fairness === "fair";
+      await prisma.user.update({
+        where: { id: assignment.juror.id },
+        data: {
+          plant_total: { increment: 1 },
+          ...(passedPlant
+            ? { plant_correct: { increment: 1 }, crowd_rep: { increment: 1 } }
+            : {}),
+        },
+      });
+    }
+
     const round = assignment.round;
     const voted = await prisma.crowdAssignment.findMany({
       where: {
@@ -104,7 +121,13 @@ export async function POST(
         round,
         vote: { not: null },
       },
-      select: { vote: true, fairness: true, vote_weight: true, position_ai: true },
+      select: {
+        juror_id: true,
+        vote: true,
+        fairness: true,
+        vote_weight: true,
+        position_ai: true,
+      },
     });
     if (voted.length < VOTES_TO_DECIDE) {
       return NextResponse.json(
@@ -121,11 +144,11 @@ export async function POST(
     for (const v of voted) {
       const w = v.vote_weight;
       totalW += w;
-      if (v.fairness === "fair") fairW += w;
       if (v.vote === "both_wrong") {
         bothWrongW += w;
         continue;
       }
+      if (v.fairness === "fair") fairW += w;
       if (v.vote === "both_right") {
         aiW += w;
         continue;
@@ -156,11 +179,21 @@ export async function POST(
         assignment.bit.user_id,
         ...seated.map((s) => s.juror_id),
       ]);
-      const candidates = await prisma.user.findMany({
+      const rawCandidates = await prisma.user.findMany({
         where: { onboarding_passed: true, id: { notIn: [...excluded] } },
-        select: { id: true },
-        take: 10,
+        select: {
+          id: true,
+          crowd_tier: true,
+          device_hash: true,
+          ip_subnet: true,
+          funding_source: true,
+        },
+        take: 30,
       });
+      const candidates = rawCandidates.filter(
+        (c) => !isColluding(assignment.bit.user, c),
+      );
+      shuffleInPlace(candidates);
       const picked = candidates.slice(0, EXTENSION_VOTES);
       const expires_at = new Date(Date.now() + 48 * 3600 * 1000);
       await prisma.$transaction(
@@ -171,6 +204,7 @@ export async function POST(
               juror_id: j.id,
               is_retrial: assignment.is_retrial,
               round,
+              vote_weight: TIER_WEIGHT[j.crowd_tier] ?? 1.0,
               position_ai: Math.random() < 0.5 ? "A" : "B",
               expires_at,
             },
@@ -178,7 +212,19 @@ export async function POST(
         ),
       );
       return NextResponse.json(
-        { saved: true, votes: voted.length, status: "extended", added: picked.length },
+        {
+          saved: true,
+          votes: voted.length,
+          status: "extended",
+          added: picked.length,
+        },
+        { headers: { "cache-control": "no-store" } },
+      );
+    }
+
+    if (thin && voted.length < VOTES_TO_DECIDE + EXTENSION_VOTES) {
+      return NextResponse.json(
+        { saved: true, votes: voted.length, status: "waiting_extension" },
         { headers: { "cache-control": "no-store" } },
       );
     }
@@ -190,31 +236,76 @@ export async function POST(
           ? "heckled_off"
           : "bombed";
 
-    const existingOutcome = await prisma.outcome.findUnique({
+    await prisma.outcome.upsert({
       where: { bit_id: assignment.bit_id },
-      select: { id: true },
+      update: {
+        result,
+        comedian_votes: comedianW,
+        ai_votes: aiW,
+        total_weight: totalW,
+        both_wrong_weight: bothWrongW,
+        juror_count: voted.length,
+        fair_ratio: fairRatio,
+        win_strength: winStrength,
+        decided_at: new Date(),
+      },
+      create: {
+        bit_id: assignment.bit_id,
+        result,
+        comedian_votes: comedianW,
+        ai_votes: aiW,
+        total_weight: totalW,
+        both_wrong_weight: bothWrongW,
+        juror_count: voted.length,
+        fair_ratio: fairRatio,
+        win_strength: winStrength,
+      },
     });
-    if (!existingOutcome) {
-      await prisma.outcome.create({
-        data: {
-          bit_id: assignment.bit_id,
-          result,
-          comedian_votes: comedianW,
-          ai_votes: aiW,
-          total_weight: totalW,
-          both_wrong_weight: bothWrongW,
-          juror_count: voted.length,
-          fair_ratio: fairRatio,
-          win_strength: winStrength,
-        },
-      });
-    }
+
     // Post-killed_it 15% holdout lottery (training-set sampling).
     const holdout = result === "killed_it" && Math.random() < 0.15;
     await prisma.bit.update({
       where: { id: assignment.bit_id },
-      data: { status: result as "killed_it" | "bombed" | "heckled_off", ...(holdout ? { is_holdout: true } : {}) },
+      data: {
+        status: result as "killed_it" | "bombed" | "heckled_off",
+        ...(holdout ? { is_holdout: true } : {}),
+      },
     });
+
+    // Update comedian reputation & resolve any open appeal on round >= 2.
+    if (result === "killed_it") {
+      await prisma.user.update({
+        where: { id: assignment.bit.user_id },
+        data: { comedian_rep: { increment: 1 } },
+      });
+    } else if (result === "heckled_off") {
+      await prisma.user.update({
+        where: { id: assignment.bit.user_id },
+        data: { comedian_rep: { decrement: 1 } },
+      });
+    }
+
+    if (round >= 2) {
+      await prisma.appeal.updateMany({
+        where: {
+          bit_id: assignment.bit_id,
+          status: { in: ["pending", "retrial_open"] },
+        },
+        data: {
+          status: "resolved",
+          retrial_outcome: result,
+          resolved_by: "CROWD_RETRIAL",
+          resolved_at: new Date(),
+        },
+      });
+      if (result !== "killed_it") {
+        await prisma.user.update({
+          where: { id: assignment.bit.user_id },
+          data: { comedian_rep: { decrement: 1 } },
+        });
+      }
+    }
+
     return NextResponse.json(
       { saved: true, votes: voted.length, status: result, holdout },
       { headers: { "cache-control": "no-store" } },

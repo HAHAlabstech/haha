@@ -103,6 +103,19 @@ contract CrowdStakingTest is HahaSetup {
         vm.expectRevert(CrowdStaking.AlreadySeized.selector);
         vm.prank(alice);
         staking.withdrawExtraBit(BIT_1);
+        vm.expectRevert(CrowdStaking.AlreadySeized.selector);
+        vm.prank(alice);
+        staking.stakeForExtraBit(BIT_1);
+    }
+
+    function test_SlashResetsPendingUnstake() public {
+        _stakeAlice(100 ether);
+        vm.prank(alice);
+        staking.initiateUnstake();
+        assertTrue(staking.unstakeAvailableAt(alice) > 0);
+        vm.prank(keeper);
+        staking.slash(alice, 40 ether, "plants<60%");
+        assertEq(staking.unstakeAvailableAt(alice), 0);
     }
 
     function testFuzz_SlashAccounting(uint96 stakeAmt, uint96 slashAmt) public {

@@ -1,24 +1,21 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import {
+  bad,
+  enqueueJob,
+  getPrisma,
+  isColluding,
+  shuffleInPlace,
+  TIER_WEIGHT,
+} from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
 const MAX_BODY_BYTES = 64 * 1024;
 
-function getPrisma(): PrismaClient {
-  const g = globalThis as unknown as { __hahaPrisma?: PrismaClient };
-  g.__hahaPrisma ??= new PrismaClient();
-  return g.__hahaPrisma;
-}
-
-function bad(error: string, status: number) {
-  return NextResponse.json({ error }, { status });
-}
-
 // POST /api/bits/[id]/verdict {wallet, verdict: got_it|missed_it, answer?, explanation?}
 // got_it -> bombed. missed_it -> one ComedianReveal (reject second) + disputed
-// + 5 blind CrowdAssignments (author excluded, position_ai randomized).
-// TODO(worker): straightman answer + reveal normalization move to BullMQ jobs.
+// + 5 blind CrowdAssignments (author & colluding jurors excluded, position_ai randomized,
+// vote_weight snapshotted by tier) + BullMQ normalize job.
 export async function POST(
   req: Request,
   ctx: { params: Promise<{ id: string }> },
@@ -57,12 +54,26 @@ export async function POST(
         id: true,
         status: true,
         user_id: true,
-        user: { select: { wallet: true } },
+        user: {
+          select: {
+            id: true,
+            wallet: true,
+            device_hash: true,
+            ip_subnet: true,
+            funding_source: true,
+          },
+        },
       },
     });
     if (!bit) return bad("bit not found", 404);
     if (bit.user.wallet.toLowerCase() !== wallet) {
       return bad("only the author can submit the verdict", 403);
+    }
+    if (
+      bit.status !== "answered" &&
+      bit.status !== "screening"
+    ) {
+      return bad(`cannot submit verdict when bit is ${bit.status}`, 409);
     }
 
     if (verdict === "got_it") {
@@ -94,18 +105,20 @@ export async function POST(
       data: { bit_id: id, answer, explanation },
     });
 
-    // 5 blind jurors: onboarded, not the author. Shuffle in JS (no DB random).
-    const candidates = await prisma.user.findMany({
+    // 5 blind jurors: onboarded, not the author or colluding accounts.
+    const rawCandidates = await prisma.user.findMany({
       where: { onboarding_passed: true, id: { not: bit.user_id } },
-      select: { id: true },
-      take: 25,
+      select: {
+        id: true,
+        crowd_tier: true,
+        device_hash: true,
+        ip_subnet: true,
+        funding_source: true,
+      },
+      take: 50,
     });
-    for (let i = candidates.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = candidates[i] as { id: string };
-      candidates[i] = candidates[j] as { id: string };
-      candidates[j] = tmp;
-    }
+    const candidates = rawCandidates.filter((c) => !isColluding(bit.user, c));
+    shuffleInPlace(candidates);
     const picked = candidates.slice(0, 5);
     const expires_at = new Date(Date.now() + 48 * 3600 * 1000);
     await prisma.$transaction(
@@ -114,6 +127,7 @@ export async function POST(
           data: {
             bit_id: id,
             juror_id: j.id,
+            vote_weight: TIER_WEIGHT[j.crowd_tier] ?? 1.0,
             position_ai: Math.random() < 0.5 ? "A" : "B",
             expires_at,
           },
@@ -124,8 +138,15 @@ export async function POST(
       where: { id },
       data: { status: "disputed" },
     });
+
+    const normJob = await enqueueJob("bits", "normalize", { bitId: id });
     return NextResponse.json(
-      { bitId: id, status: "disputed", jurors: picked.length },
+      {
+        bitId: id,
+        status: "disputed",
+        jurors: picked.length,
+        normalizeQueued: normJob.queued,
+      },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {

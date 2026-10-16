@@ -115,10 +115,12 @@ contract TipJar is AccessControl, EIP712, ReentrancyGuard {
         pendingEta = 0;
     }
 
-    /// @notice Cold guardian vetoes a staged root any time before activation.
+    /// @notice Cold guardian vetoes a staged root any time before activation,
+    ///         or after ETA if the staged root is insolvent and cannot activate.
     function vetoRoot() external onlyRole(GUARDIAN_ROLE) {
         if (pendingEta == 0) revert NoPendingRoot();
-        if (block.timestamp >= pendingEta) revert VetoWindowPassed();
+        bool insolvent = pendingTotal > usdg.balanceOf(address(this)) + totalPaidOut;
+        if (block.timestamp >= pendingEta && !insolvent) revert VetoWindowPassed();
         emit RootVetoed(pendingEpoch, pendingRoot);
         pendingRoot = bytes32(0);
         pendingEpoch = 0;

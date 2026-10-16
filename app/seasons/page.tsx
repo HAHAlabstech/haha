@@ -1,85 +1,141 @@
-import { Card, Disclaimer, PageHero, SectionTitle } from "@/components/ui";
+"use client";
 
-const SEASONS = [
+import { useEffect, useState } from "react";
+import { Card, Disclaimer, PageHero, SectionTitle, Stamp } from "@/components/ui";
+
+interface SeasonEntry {
+  id: string;
+  name: string;
+  kind: string;
+  base_model?: string;
+  holdout_n?: number;
+  holdout_score: number | null;
+  is_active: boolean;
+  body: string;
+}
+
+const DEFAULT_SEASONS: SeasonEntry[] = [
   {
+    id: "S1",
     name: "Straight Man S1",
-    status: "current",
-    model: "mimo_playbook_max",
-    score: "—",
-    body: "The first playbook. Open Mic bits face a weakened setup; Pro bits face the full model.",
+    kind: "mimo_playbook_max",
+    base_model: "mimo-v2.6-pro",
+    holdout_n: 0,
+    holdout_score: null,
+    is_active: true,
+    body: "The inaugural playbook. Open Mic bits face a weakened setup; Pro Stage bits face the full model and retrieval playbook.",
   },
 ];
 
 export default function SeasonsPage() {
+  const [seasons, setSeasons] = useState<SeasonEntry[]>(DEFAULT_SEASONS);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/seasons")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (
+          !cancelled &&
+          Array.isArray(data?.seasons) &&
+          data.seasons.length > 0
+        ) {
+          setSeasons(data.seasons as SeasonEntry[]);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
-    <div className="space-y-10">
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-14">
       <PageHero
-        kicker="Seasons"
-        title="Every season, harder to fool."
-        lede="Each season the Straight Man studies the bits that beat it. Human-win rates are measured on a private holdout set — progress you can check, not a promise."
+        kicker="Straight Man Evolution · Seasons"
+        title={
+          <>
+            Every season, <em>harder to fool.</em>
+          </>
+        }
+        lede="Each season the Straight Man studies the verified bits that stumped it. Human win-rates are benchmarked on a blind private holdout set — verifiable progress, never marketing fluff."
       />
 
       <section aria-label="How the Straight Man learns">
-        <SectionTitle>How it learns — honestly</SectionTitle>
-        <Card className="border-amber-200/20">
-          <p className="text-sm leading-relaxed text-zinc-200">
-            <span className="font-semibold text-amber-100">
+        <SectionTitle
+          eyebrow="Architecture"
+          hint="mimo_playbook_max + pgvector retrieval"
+        >
+          How the Straight Man <em>learns.</em>
+        </SectionTitle>
+        <Card hot>
+          <p className="text-base leading-relaxed text-[#efe8dc]">
+            <code className="font-mono text-sm text-[#ffb13b]">
               mimo_playbook_max:
-            </span>{" "}
-            the Straight Man improves through a compiled playbook of losing
-            patterns plus retrieved similar examples — not by fine-tuning
-            model weights, which the API does not expose. Every miss teaches
-            the playbook something it didn&apos;t know.
+            </code>{" "}
+            The Straight Man upgrades by compiling a structured playbook of
+            blindspot patterns plus k-NN retrieved examples from{" "}
+            <b>The Joke Vault</b>. Every verified miss teaches the next Season
+            playbook what to watch out for.
           </p>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl bg-black/30 p-4">
-              <h3 className="text-sm font-semibold text-amber-50">
-                Open Mic — weakened
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
+            <div className="rounded-xl border border-[#efe8dc]/12 bg-[#0c0a08] p-5">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#a49b8e]">
+                Tier 01 · 1.0× Weight
+              </span>
+              <h3 className="display-serif mt-2 text-2xl text-[#fff6ed]">
+                Open Mic — Weakened AI
               </h3>
-              <p className="mt-1 text-sm leading-relaxed text-zinc-400">
-                Fast, low-effort setup. Easier to beat — and worth the base
-                reward multiplier (1.0×).
+              <p className="mt-2 text-sm leading-relaxed text-[#a49b8e]">
+                Fast, literal baseline setup without playbook retrieval. Easier
+                to stump and ideal for testing new premises.
               </p>
             </div>
-            <div className="rounded-xl bg-black/30 p-4">
-              <h3 className="text-sm font-semibold text-amber-50">
-                Pro — full strength
+            <div className="rounded-xl border border-[#ffb13b]/40 bg-[#ffb13b]/10 p-5">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
+                Tier 02 · 2.5× Weight
+              </span>
+              <h3 className="display-serif mt-2 text-2xl text-[#fff6ed]">
+                Pro Stage — Full Playbook
               </h3>
-              <p className="mt-1 text-sm leading-relaxed text-zinc-400">
-                Full reasoning with the complete playbook. Harder to beat —
-                and worth 2.5× the base reward.
+              <p className="mt-2 text-sm leading-relaxed text-[#efe8dc]">
+                Full chain-of-thought reasoning armed with the complete Season
+                playbook and similar Vault bits. Worth 2.5× reward weight.
               </p>
             </div>
           </div>
-          <p className="mt-4 text-xs leading-relaxed text-zinc-500">
-            Without this label, “fool the AI” wouldn&apos;t be auditable:
-            every bit records which stage it faced, and only Pro results
-            enter the premium dataset.
-          </p>
         </Card>
       </section>
 
       <section aria-label="Season history">
-        <SectionTitle hint="holdout-scored, blind-judged">
-          Season history
+        <SectionTitle eyebrow="Lineage" hint="Holdout-scored · Blind-judged">
+          Season <em>History.</em>
         </SectionTitle>
-        <div className="grid gap-4">
-          {SEASONS.map((s) => (
-            <Card key={s.name}>
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="text-lg font-semibold text-amber-50">
-                  {s.name}{" "}
-                  <span className="ml-2 rounded-full bg-amber-300/15 px-2.5 py-0.5 text-xs font-medium text-amber-200">
-                    {s.status}
-                  </span>
-                </h3>
-                <p className="font-mono text-xs text-zinc-500">{s.model}</p>
+        <div className="grid gap-5">
+          {seasons.map((s) => (
+            <Card key={s.id || s.name}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-4">
+                  <h3 className="display-serif text-3xl text-[#fff6ed]">
+                    {s.name}
+                  </h3>
+                  <Stamp tone={s.is_active ? "amber" : "green"}>
+                    {s.is_active ? "● Current Season" : "Archived"}
+                  </Stamp>
+                </div>
+                <p className="font-mono text-xs uppercase tracking-widest text-[#a49b8e]">
+                  {s.kind}
+                  {s.base_model ? ` · ${s.base_model}` : ""}
+                </p>
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+              <p className="mt-3 text-sm leading-relaxed text-[#efe8dc]">
                 {s.body}
               </p>
-              <p className="mt-2 font-mono text-sm text-zinc-400">
-                Holdout score: {s.score}
+              <p className="mt-4 font-mono text-xs uppercase tracking-widest text-[#ffb13b]">
+                Holdout Accuracy:{" "}
+                {s.holdout_score != null && s.holdout_score > 0
+                  ? `${(s.holdout_score * 100).toFixed(1)}%`
+                  : "Calibrating on Season 01 holdout"}
               </p>
             </Card>
           ))}

@@ -2,11 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { encodeFunctionData, type Address } from "viem";
-import { Card, Disclaimer, PageHero, SectionTitle } from "@/components/ui";
+import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
 import { tipJarAbi } from "@/lib/haha-contracts";
 import type { ChainEnv, HahaRuntimeConfig } from "@/lib/haha-chains";
-import { getChainId, switchOrAddChain, truncateAddress } from "@/lib/wallets";
+import {
+  getChainId,
+  getSharedWalletState,
+  resolveActiveProvider,
+  subscribeWalletState,
+  switchOrAddChain,
+  truncateAddress,
+} from "@/lib/wallets";
 
 interface RewardInfo {
   cumulativeMicroUsdg: string;
@@ -16,17 +23,66 @@ interface RewardInfo {
   epochs?: number;
 }
 
+interface TipJarSummary {
+  escrow?: {
+    tipJarMicroUsdg?: string;
+    feeSplitterMicroUsdg?: string;
+    micDropMicroUsdg?: string;
+    totalPaidOutMicroUsdg?: string;
+  };
+  latestEpoch?: number;
+  micDropEvents?: {
+    id: string;
+    asset_in: string;
+    amount_in_base_units: string;
+    haha_bought_wei: string;
+    haha_burned_wei: string;
+    tx_hash: string;
+    executed_at: string;
+  }[];
+}
+
+function fmtUsdg(microStr?: string): string {
+  if (!microStr) return "$0.00";
+  try {
+    const val = Number(BigInt(microStr)) / 1_000_000;
+    return `$${val.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  } catch {
+    return "$0.00";
+  }
+}
+
 export default function TipJarPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [account, setAccount] = useState<string | null>(null);
-  const [provider, setProvider] = useState<import("@/lib/wallets").Eip1193Provider | null>(null);
+  const [provider, setProvider] =
+    useState<import("@/lib/wallets").Eip1193Provider | null>(null);
   const [runtime, setRuntime] = useState<HahaRuntimeConfig | null>(null);
-  const [contracts, setContracts] = useState<Record<string, string> | null>(null);
+  const [contracts, setContracts] = useState<Record<string, string> | null>(
+    null,
+  );
+  const [summary, setSummary] = useState<TipJarSummary | null>(null);
   const [reward, setReward] = useState<RewardInfo | null>(null);
+  const [recipientOverride, setRecipientOverride] = useState("");
   const [loading, setLoading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const st = getSharedWalletState();
+    if (st.account) setAccount(st.account);
+    if (st.provider) setProvider(st.provider);
+    else void resolveActiveProvider().then((p) => p && setProvider(p));
+
+    return subscribeWalletState((next) => {
+      setAccount(next.account);
+      if (next.provider) setProvider(next.provider);
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -35,20 +91,30 @@ export default function TipJarPage() {
       .then((cfg) => {
         if (!cancelled && cfg) {
           setRuntime(cfg as HahaRuntimeConfig);
-          setContracts((cfg as { contracts?: Record<string, string> }).contracts ?? null);
+          setContracts(
+            (cfg as { contracts?: Record<string, string> }).contracts ?? null,
+          );
         }
       })
       .catch(() => {});
+
+    fetch("/api/tipjar/summary")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s: TipJarSummary | null) => {
+        if (!cancelled && s) setSummary(s);
+      })
+      .catch(() => {});
+
     return () => {
       cancelled = true;
     };
   }, []);
 
-  // Re-resolve the active EIP-1193 provider after connect (modal owns it).
   const handleConnected = useCallback((accs: string[]) => {
     setAccount(accs[0] ?? null);
-    const w = window as unknown as { ethereum?: import("@/lib/wallets").Eip1193Provider };
-    if (w.ethereum) setProvider(w.ethereum);
+    void resolveActiveProvider().then((p) => {
+      if (p) setProvider(p);
+    });
   }, []);
 
   const loadReward = useCallback(async () => {
@@ -60,7 +126,6 @@ export default function TipJarPage() {
         `/api/rewards/me?account=${encodeURIComponent(account)}`,
       );
       if (!r.ok) {
-        // Backend not live yet: show empty reward state instead of failing.
         setReward(null);
         return;
       }
@@ -78,7 +143,8 @@ export default function TipJarPage() {
   }, [account, loadReward]);
 
   const claim = useCallback(async () => {
-    if (!provider || !account || !reward) return;
+    const activeProv = provider ?? (await resolveActiveProvider());
+    if (!activeProv || !account || !reward) return;
     setClaiming(true);
     setError(null);
     setTxHash(null);
@@ -86,29 +152,25 @@ export default function TipJarPage() {
       const env: ChainEnv = runtime?.chainEnv ?? "testnet";
       void env;
       const targetChain = reward.chainId || runtime?.chainId || 46_630;
-      await switchOrAddChain(provider, targetChain);
+      await switchOrAddChain(activeProv, targetChain);
 
       const tipJar = (contracts?.tipJar ?? reward.tipJar) as Address;
-      const recipient = account as Address;
+      const cleanOverride = recipientOverride.trim();
+      if (cleanOverride && !/^0x[0-9a-fA-F]{40}$/.test(cleanOverride)) {
+        throw new Error("Invalid alternate recipient address.");
+      }
+      const recipient = (cleanOverride || account) as Address;
       const cumulative = BigInt(reward.cumulativeMicroUsdg);
       if (cumulative <= 0n) throw new Error("Nothing to claim yet.");
       const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800);
-      // Fresh on-chain nonce (TipJar.nonces) — never cached, anti-replay.
-      const nonceHex = (await provider.request({
+
+      const nonceHex = (await activeProv.request({
         method: "eth_call",
         params: [
           {
             to: tipJar,
             data: encodeFunctionData({
-              abi: [
-                {
-                  type: "function",
-                  name: "nonces",
-                  stateMutability: "view",
-                  inputs: [{ name: "account", type: "address" }],
-                  outputs: [{ name: "", type: "uint256" }],
-                },
-              ] as const,
+              abi: tipJarAbi,
               functionName: "nonces",
               args: [account as Address],
             }),
@@ -117,8 +179,8 @@ export default function TipJarPage() {
         ],
       })) as string;
       const nonce = BigInt(nonceHex);
-      // EIP-712 authorization signed by the earner (matches TipJar.CLAIM_TYPEHASH).
-      const signature = (await provider.request({
+
+      const signature = (await activeProv.request({
         method: "eth_signTypedData_v4",
         params: [
           account,
@@ -155,10 +217,11 @@ export default function TipJarPage() {
           }),
         ],
       })) as string;
-      const r = `0x${signature.slice(2, 66)}` as Address;
-      const s = `0x${signature.slice(66, 130)}` as Address;
+      const r = `0x${signature.slice(2, 66)}` as `0x${string}`;
+      const s = `0x${signature.slice(66, 130)}` as `0x${string}`;
       let v = parseInt(signature.slice(130, 132), 16);
       if (v < 27) v += 27;
+
       const data = encodeFunctionData({
         abi: tipJarAbi,
         functionName: "claim",
@@ -168,15 +231,17 @@ export default function TipJarPage() {
           cumulative,
           deadline,
           nonce,
-          { v, r, s },
+          v,
+          r,
+          s,
           (reward.proof ?? []) as readonly `0x${string}`[],
         ],
       });
-      const walletChain = await getChainId(provider).catch(() => null);
+      const walletChain = await getChainId(activeProv).catch(() => null);
       if (walletChain !== targetChain) {
         throw new Error("Wallet is on the wrong network.");
       }
-      const hash = (await provider.request({
+      const hash = (await activeProv.request({
         method: "eth_sendTransaction",
         params: [{ from: account, to: tipJar, data }],
       })) as string;
@@ -186,79 +251,171 @@ export default function TipJarPage() {
     } finally {
       setClaiming(false);
     }
-  }, [account, contracts, provider, reward, runtime]);
+  }, [account, contracts, provider, recipientOverride, reward, runtime]);
 
   const explorer = runtime?.explorerUrl ?? "";
   const cumulativeUsdg =
     reward != null ? Number(BigInt(reward.cumulativeMicroUsdg)) / 1_000_000 : 0;
+  const inEscrowUsdg = fmtUsdg(summary?.escrow?.tipJarMicroUsdg);
+  const paidOutUsdg = fmtUsdg(summary?.escrow?.totalPaidOutMicroUsdg);
+  const micDropUsdg = fmtUsdg(summary?.escrow?.micDropMicroUsdg);
+  const drops = summary?.micDropEvents ?? [];
 
   return (
-    <div className="space-y-10">
-      <PageHero
-        kicker="The Tip Jar"
-        title="Trading fees pay the humans who beat AI."
-        lede="70% of $HAHA creator fees flow here and are split daily among winners — 80% to comedians, 20% to the crowd jurors who agreed with the outcome. Claim whenever you like; one transaction covers all epochs."
-      />
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-16">
+      {/* Editorial Header */}
+      <div className="grid gap-10 border-b border-[#efe8dc]/12 pb-12 lg:grid-cols-[1.3fr_1fr] lg:items-end">
+        <div>
+          <span className="eyebrow">The Tip Jar · Daily Merkle Escrow</span>
+          <h1 className="display-serif mt-4 text-5xl text-[#fff6ed] md:text-7xl">
+            Trading fees pay the humans who <em>beat AI.</em>
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#a49b8e]">
+            70% of creator fees and producer revenues flow into{" "}
+            <code className="font-mono text-xs text-[#efe8dc]">TipJar.sol</code>{" "}
+            and are settled daily via cumulative Merkle trees — 80% to winning
+            comedians, 20% to consensus Crowd jurors. Claim any time in a single
+            transaction.
+          </p>
+        </div>
 
+        <dl className="case-meta-grid">
+          <div>
+            <dt>In Escrow</dt>
+            <dd className="display-serif text-3xl text-[#ffb13b] tabular-nums">
+              {inEscrowUsdg}
+            </dd>
+          </div>
+          <div>
+            <dt>Paid to Humans</dt>
+            <dd className="display-serif text-3xl text-[#8fb596] tabular-nums">
+              {paidOutUsdg}
+            </dd>
+          </div>
+          <div>
+            <dt>Mic Drop Reserve</dt>
+            <dd className="font-mono text-lg text-[#fff6ed] tabular-nums">
+              {micDropUsdg}
+            </dd>
+          </div>
+          <div>
+            <dt>Latest Epoch</dt>
+            <dd className="font-mono text-lg text-[#fff6ed]">
+              #{summary?.latestEpoch ?? 0}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      {/* Claim Rewards Panel */}
       <section aria-label="Claim your rewards">
-        <SectionTitle hint="cumulative Merkle claim · you pay gas">
-          Your rewards
+        <SectionTitle
+          eyebrow="EIP-712 + Merkle Claim"
+          hint="Cumulative claim · one tx covers all epochs"
+        >
+          Your Tip Jar <em>Payouts.</em>
         </SectionTitle>
-        <Card>
+        <Card hot={Boolean(reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n)}>
           {!account ? (
-            <div>
-              <p className="text-sm text-zinc-300">
-                Connect a wallet to see your cumulative rewards and claim
-                proof.
+            <div className="py-4">
+              <p className="text-base text-[#efe8dc]">
+                Connect your wallet to inspect your cumulative USDG earnings and
+                Merkle proof.
               </p>
               <button
                 type="button"
                 onClick={() => setModalOpen(true)}
-                className="mt-3 rounded-full bg-amber-300 px-6 py-2.5 text-sm font-semibold text-black hover:bg-amber-200"
+                className="pill-btn hot mt-5"
               >
-                Connect wallet
+                <span>Connect Wallet →</span>
               </button>
             </div>
           ) : (
-            <div>
-              <p className="font-mono text-sm text-emerald-200">
-                {truncateAddress(account)}
-              </p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Stamp tone="green">Wallet · {truncateAddress(account)}</Stamp>
+                <button
+                  type="button"
+                  onClick={() => void loadReward()}
+                  className="font-mono text-xs uppercase tracking-widest text-[#a49b8e] underline hover:text-[#ffb13b]"
+                >
+                  ↻ Refresh Proof
+                </button>
+              </div>
               {loading ? (
-                <p className="mt-2 text-sm text-zinc-400">
-                  Loading rewards…
+                <p className="font-mono text-xs uppercase tracking-widest text-[#a49b8e]">
+                  Querying cumulative Merkle tree…
                 </p>
-              ) : reward ? (
-                <div className="mt-3">
-                  <p className="text-3xl font-bold text-amber-50">
-                    +{cumulativeUsdg.toFixed(2)}{" "}
-                    <span className="text-base font-medium text-zinc-400">
-                      USDG lifetime
+              ) : reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n ? (
+                <div className="space-y-5 pt-2">
+                  <div>
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
+                      Lifetime Cumulative Allocation
                     </span>
-                  </p>
+                    <p className="display-serif mt-1 text-5xl text-[#fff6ed] tabular-nums">
+                      +${cumulativeUsdg.toFixed(2)}{" "}
+                      <span className="font-mono text-sm uppercase tracking-widest text-[#a49b8e]">
+                        USDG ({reward.epochs ?? 1} epoch
+                        {(reward.epochs ?? 1) === 1 ? "" : "s"})
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="max-w-lg">
+                    <label
+                      htmlFor="recipientOverride"
+                      className="block font-mono text-[11px] uppercase tracking-widest text-[#a49b8e]"
+                    >
+                      Destination Wallet (optional — defaults to connected
+                      wallet)
+                    </label>
+                    <input
+                      id="recipientOverride"
+                      type="text"
+                      value={recipientOverride}
+                      onChange={(e) => setRecipientOverride(e.target.value)}
+                      placeholder={account}
+                      className="mt-2 w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] px-4 py-3 font-mono text-xs text-[#fff6ed] placeholder:text-[#6c6459] focus:border-[#ffb13b] focus:outline-none"
+                    />
+                  </div>
+
                   <button
                     type="button"
                     onClick={() => void claim()}
                     disabled={claiming}
-                    className="mt-3 rounded-full bg-amber-300 px-6 py-2.5 text-sm font-semibold text-black hover:bg-amber-200 disabled:opacity-50"
+                    className="pill-btn hot disabled:opacity-50"
+                    style={{ padding: "14px 28px", fontSize: "12px" }}
                   >
-                    {claiming ? "Waiting for wallet…" : "Claim to this wallet"}
+                    <span>
+                      {claiming
+                        ? "Signing EIP-712 & claiming…"
+                        : recipientOverride.trim()
+                          ? "Claim to Destination Wallet →"
+                          : "Claim USDG to This Wallet →"}
+                    </span>
                   </button>
+
                   {txHash ? (
-                    <p className="mt-2 font-mono text-xs text-emerald-200" role="status">
-                      Claimed: {txHash}
+                    <p
+                      className="font-mono text-xs text-[#8fb596]"
+                      role="status"
+                    >
+                      ✓ Claim transaction broadcast: {txHash}
                     </p>
                   ) : null}
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-zinc-400">
-                  No rewards yet — or the settlement backend isn&apos;t live.
-                  Killed-it bits in a settled epoch will show up here with a
-                  Merkle proof.
+                <p className="text-sm leading-relaxed text-[#a49b8e]">
+                  No claimable rewards yet. Verified stumpers and consensus
+                  Crowd votes in a settled epoch automatically appear here with
+                  their Merkle proof.
                 </p>
               )}
               {error ? (
-                <p className="mt-2 text-sm text-red-200" role="alert">
+                <p
+                  className="rounded-xl border border-[#c93b2b]/40 bg-[#c93b2b]/15 p-3 font-mono text-xs text-[#ffb13b]"
+                  role="alert"
+                >
                   {error}
                 </p>
               ) : null}
@@ -267,53 +424,99 @@ export default function TipJarPage() {
         </Card>
       </section>
 
+      {/* Money Flow */}
       <section aria-label="How the Tip Jar works">
-        <SectionTitle>Money in, money out</SectionTitle>
-        <div className="grid gap-4 md:grid-cols-3">
+        <SectionTitle eyebrow="FeeSplitter.sol" hint="70% Tip Jar · 30% Mic Drop">
+          Money In, <em>Money Out.</em>
+        </SectionTitle>
+        <div className="grid gap-6 md:grid-cols-3">
           <Card>
-            <h3 className="font-semibold text-amber-50">In: creator fees</h3>
-            <p className="mt-1 font-mono text-2xl text-zinc-200">—</p>
-            <p className="mt-1 text-xs text-zinc-500">
-              Claimed from the Pons fee escrow and split 70 / 30.
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
+              01 · Tip Jar Escrow
+            </span>
+            <p className="display-serif mt-3 text-4xl text-[#fff6ed] tabular-nums">
+              {inEscrowUsdg}
+            </p>
+            <p className="mt-2 text-sm text-[#a49b8e]">
+              70% of all creator fees and producer revenue routed to{" "}
+              <code className="font-mono text-xs">TipJar.sol</code>.
             </p>
           </Card>
+
           <Card>
-            <h3 className="font-semibold text-amber-50">Out: paid to humans</h3>
-            <p className="mt-1 font-mono text-2xl text-zinc-200">—</p>
-            <p className="mt-1 text-xs text-zinc-500">
-              Total USDG claimed by comedians and jurors.
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#8fb596]">
+              02 · Paid to Humans
+            </span>
+            <p className="display-serif mt-3 text-4xl text-[#8fb596] tabular-nums">
+              {paidOutUsdg}
+            </p>
+            <p className="mt-2 text-sm text-[#a49b8e]">
+              Cumulative USDG claimed on-chain by comedians and consensus Crowd
+              jurors.
             </p>
           </Card>
+
           <Card>
-            <h3 className="font-semibold text-amber-50">Mic Drop burns</h3>
-            <p className="mt-1 font-mono text-2xl text-zinc-200">—</p>
-            <p className="mt-1 text-xs text-zinc-500">
-              The other 30% buys $HAHA and burns it. History below.
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#a49b8e]">
+              03 · Mic Drop Buyback &amp; Burn
+            </span>
+            <p className="display-serif mt-3 text-4xl text-[#fff6ed] tabular-nums">
+              {micDropUsdg}
+            </p>
+            <p className="mt-2 text-sm text-[#a49b8e]">
+              The remaining 30% routes to{" "}
+              <code className="font-mono text-xs">MicDrop.sol</code> to buy{" "}
+              <code className="font-mono text-xs">$HAHA</code> and burn it to{" "}
+              <code className="font-mono text-xs">0x...dEaD</code>.
             </p>
           </Card>
         </div>
       </section>
 
+      {/* Mic Drop History */}
       <section aria-label="Mic Drop history">
-        <SectionTitle>Mic Drop history</SectionTitle>
+        <SectionTitle eyebrow="MicDrop.sol" hint="Buyback & Burn Ledger">
+          Mic Drop <em>History.</em>
+        </SectionTitle>
         <Card>
-          <p className="text-sm text-zinc-400">
-            No burns yet. Each buyback-and-burn will list amount in, $HAHA
-            burned, and the explorer transaction.
-            {explorer ? (
-              <>
-                {" "}
+          {drops.length > 0 ? (
+            <div className="space-y-3">
+              {drops.map((d) => (
+                <div
+                  key={d.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#efe8dc]/10 bg-[#0c0a08] px-4 py-3 font-mono text-xs"
+                >
+                  <span className="text-[#fff6ed]">
+                    In: {fmtUsdg(d.amount_in_base_units)} {d.asset_in}
+                  </span>
+                  <span className="text-[#ffb13b]">
+                    Burned:{" "}
+                    {(Number(BigInt(d.haha_burned_wei || "0")) / 1e18).toFixed(
+                      2,
+                    )}{" "}
+                    $HAHA
+                  </span>
+                  <span className="text-[#6c6459]">
+                    {truncateAddress(d.tx_hash, 8)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="font-mono text-xs uppercase tracking-widest text-[#6c6459]">
+              No executed Mic Drop burns yet ·{" "}
+              {explorer ? (
                 <a
                   href={explorer}
                   target="_blank"
                   rel="noreferrer"
-                  className="underline hover:text-zinc-200"
+                  className="text-[#ffb13b] underline"
                 >
-                  Open the explorer →
+                  Open Block Explorer →
                 </a>
-              </>
-            ) : null}
-          </p>
+              ) : null}
+            </p>
+          )}
         </Card>
       </section>
 

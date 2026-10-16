@@ -42,6 +42,17 @@ function wrapDek(dek) {
   return `kmsv1:${out.toString("base64")}`;
 }
 
+function unwrapDek(wrapped) {
+  if (typeof wrapped !== "string" || !wrapped.startsWith("kmsv1:")) {
+    throw new Error("unsupported wrapped DEK format");
+  }
+  const raw = Buffer.from(wrapped.slice(6), "base64");
+  const kms = Buffer.from(process.env.VAULT_DEK_KMS_KEY ?? "dev-only-insecure", "utf8");
+  const out = Buffer.alloc(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw[i] ^ kms[i % kms.length];
+  return out;
+}
+
 async function run(job) {
   const rows = await prisma.$queryRaw`
     SELECT b.id, b.category, b.stage, b.question, r.answer, r.explanation, o.result, o.win_strength, o.fair_ratio
@@ -61,7 +72,7 @@ async function run(job) {
   const dek = randomBytes(32);
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", dek, iv);
-  const enc = Buffer.concat([cipher.update(lines.join("\n"), "utf8"), cipher.final(), cipher.authTag()]);
+  const enc = Buffer.concat([cipher.update(lines.join("\n"), "utf8"), cipher.final(), cipher.getAuthTag()]);
   const payload = Buffer.concat([Buffer.from("HAHAV1"), iv, enc]); // version + iv + ct + tag
   const key = `private/vault/snapshot-${Date.now()}.jsonl.enc`;
   const r2uri = await putR2(key, payload, "application/octet-stream");
@@ -79,10 +90,10 @@ async function run(job) {
   });
   // publishSnapshot(entryCount, replacementMicroUsd, merkleRoot, r2ManifestUri)
   // is submitted on-chain by the hot keeper; tx recorded when mined.
-  if (job.data.publishedTxHash) {
+  if (job?.data?.publishedTxHash) {
     await prisma.vaultSnapshot.update({ where: { id: snap.id }, data: { tx_hash: job.data.publishedTxHash } });
   }
   return { entries: rows.length, replacementMicroUsd: total.toString(), root, r2uri };
 }
 
-module.exports = { run, putR2, presignedR2 };
+module.exports = { run, putR2, presignedR2, wrapDek, unwrapDek };

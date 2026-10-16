@@ -215,3 +215,256 @@ export function truncateAddress(addr: string, chars = 4): string {
   if (!addr.startsWith("0x") || addr.length < 10) return addr;
   return `${addr.slice(0, 2 + chars)}…${addr.slice(-chars)}`;
 }
+
+// --- Shared Wallet + SIWE Session Store --------------------------------------
+
+export interface SharedWalletState {
+  account: string | null;
+  provider: Eip1193Provider | null;
+  label: string | null;
+  sessionToken: string | null;
+}
+
+const STORAGE_ACCOUNT_KEY = "haha_wallet_account";
+const STORAGE_LABEL_KEY = "haha_wallet_label";
+const STORAGE_SESSION_KEY = "haha_session_token";
+const WALLET_EVENT = "haha:wallet-changed";
+
+const sharedState: SharedWalletState = {
+  account: null,
+  provider: null,
+  label: null,
+  sessionToken: null,
+};
+
+let hydrated = false;
+
+function hydrateFromStorage() {
+  if (hydrated || typeof window === "undefined") return;
+  hydrated = true;
+  try {
+    const acc = window.localStorage.getItem(STORAGE_ACCOUNT_KEY);
+    const lbl = window.localStorage.getItem(STORAGE_LABEL_KEY);
+    const tok = window.localStorage.getItem(STORAGE_SESSION_KEY);
+    if (acc && /^0x[0-9a-fA-F]{40}$/.test(acc)) {
+      sharedState.account = acc.toLowerCase();
+    }
+    if (lbl) sharedState.label = lbl;
+    if (tok) sharedState.sessionToken = tok;
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function getSharedWalletState(): SharedWalletState {
+  hydrateFromStorage();
+  return { ...sharedState };
+}
+
+export function setSharedWalletState(
+  partial: Partial<SharedWalletState>,
+): SharedWalletState {
+  hydrateFromStorage();
+  if ("account" in partial) {
+    sharedState.account = partial.account
+      ? partial.account.toLowerCase()
+      : null;
+  }
+  if ("provider" in partial) {
+    sharedState.provider = partial.provider ?? null;
+  }
+  if ("label" in partial) {
+    sharedState.label = partial.label ?? null;
+  }
+  if ("sessionToken" in partial) {
+    sharedState.sessionToken = partial.sessionToken ?? null;
+  }
+  if (typeof window !== "undefined") {
+    try {
+      if (sharedState.account) {
+        window.localStorage.setItem(STORAGE_ACCOUNT_KEY, sharedState.account);
+      } else {
+        window.localStorage.removeItem(STORAGE_ACCOUNT_KEY);
+      }
+      if (sharedState.label) {
+        window.localStorage.setItem(STORAGE_LABEL_KEY, sharedState.label);
+      } else {
+        window.localStorage.removeItem(STORAGE_LABEL_KEY);
+      }
+      if (sharedState.sessionToken) {
+        window.localStorage.setItem(
+          STORAGE_SESSION_KEY,
+          sharedState.sessionToken,
+        );
+      } else {
+        window.localStorage.removeItem(STORAGE_SESSION_KEY);
+      }
+    } catch {
+      // ignore storage errors
+    }
+    window.dispatchEvent(
+      new CustomEvent(WALLET_EVENT, { detail: { ...sharedState } }),
+    );
+  }
+  return { ...sharedState };
+}
+
+export function subscribeWalletState(
+  listener: (state: SharedWalletState) => void,
+): () => void {
+  if (typeof window === "undefined") return () => {};
+  hydrateFromStorage();
+  const handler = () => listener(getSharedWalletState());
+  window.addEventListener(WALLET_EVENT, handler);
+  return () => window.removeEventListener(WALLET_EVENT, handler);
+}
+
+function isTokenValidForAccount(
+  token: string | null,
+  account: string,
+): boolean {
+  if (!token) return false;
+  const parts = token.split(".");
+  if (parts.length !== 4) return false;
+  const [w, , expStr] = parts;
+  const exp = Number(expStr);
+  if (!w || !Number.isFinite(exp) || exp <= Date.now() + 30_000) return false;
+  return w.toLowerCase() === account.toLowerCase();
+}
+
+export async function resolveActiveProvider(): Promise<Eip1193Provider | null> {
+  hydrateFromStorage();
+  if (sharedState.provider) return sharedState.provider;
+  const discovered = await discoverProviders(250);
+  if (discovered.length > 0) {
+    const match = sharedState.label
+      ? discovered.find((d) => d.info.name === sharedState.label)
+      : discovered[0];
+    const chosen = (match ?? discovered[0])!.provider;
+    sharedState.provider = chosen;
+    return chosen;
+  }
+  const legacy = getLegacyProvider();
+  if (legacy) {
+    sharedState.provider = legacy;
+    return legacy;
+  }
+  return null;
+}
+
+function randomAlphaNum(len = 16): string {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const arr = new Uint8Array(len);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    crypto.getRandomValues(arr);
+  } else {
+    for (let i = 0; i < len; i++) arr[i] = Math.floor(Math.random() * 256);
+  }
+  let out = "";
+  for (let i = 0; i < len; i++) out += chars[arr[i]! % chars.length];
+  return out;
+}
+
+export async function ensureSiweSession(
+  providerArg?: Eip1193Provider | null,
+  accountArg?: string | null,
+): Promise<{
+  ok: boolean;
+  wallet?: string;
+  sessionToken?: string;
+  error?: string;
+}> {
+  hydrateFromStorage();
+  const provider = providerArg ?? (await resolveActiveProvider());
+  if (!provider) {
+    return { ok: false, error: "No wallet provider connected." };
+  }
+  let account = accountArg ?? sharedState.account;
+  if (!account) {
+    const accs = await connectProvider(provider).catch(() => []);
+    account = accs[0] ?? null;
+  }
+  if (!account) {
+    return { ok: false, error: "Connect your wallet first." };
+  }
+
+  if (isTokenValidForAccount(sharedState.sessionToken, account)) {
+    return {
+      ok: true,
+      wallet: account.toLowerCase(),
+      sessionToken: sharedState.sessionToken!,
+    };
+  }
+
+  try {
+    const chainId = (await getChainId(provider).catch(() => null)) ?? 46630;
+    const domain =
+      typeof window !== "undefined" && window.location.host
+        ? window.location.host
+        : "haha.comedy";
+    const origin =
+      typeof window !== "undefined" && window.location.origin
+        ? window.location.origin
+        : "https://haha.comedy";
+    const nonce = randomAlphaNum(16);
+    const issuedAt = new Date().toISOString();
+    const message = [
+      `${domain} wants you to sign in with your Ethereum account:`,
+      account,
+      "",
+      "Sign in to HAHA Comedy Club (no gas, no transaction).",
+      "",
+      `URI: ${origin}`,
+      "Version: 1",
+      `Chain ID: ${chainId}`,
+      `Nonce: ${nonce}`,
+      `Issued At: ${issuedAt}`,
+    ].join("\n");
+
+    const signature = (await provider.request({
+      method: "personal_sign",
+      params: [message, account],
+    })) as string;
+
+    const res = await fetch("/api/auth/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ message, signature }),
+    });
+    const data = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      wallet?: string;
+      sessionToken?: string;
+      error?: string;
+    };
+    if (!res.ok || !data.ok) {
+      return {
+        ok: false,
+        error: data.error ?? `SIWE verification failed (${res.status})`,
+      };
+    }
+    setSharedWalletState({
+      account: data.wallet ?? account.toLowerCase(),
+      provider,
+      sessionToken: data.sessionToken ?? null,
+    });
+    return {
+      ok: true,
+      wallet: (data.wallet ?? account).toLowerCase(),
+      sessionToken: data.sessionToken,
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "SIWE signature rejected.",
+    };
+  }
+}
+
+export function authHeaders(
+  token?: string | null,
+): Record<string, string> {
+  const t = token ?? getSharedWalletState().sessionToken;
+  return t ? { "x-haha-session": t } : {};
+}
+

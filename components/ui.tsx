@@ -4,43 +4,52 @@ export function PageHero({
   kicker,
   title,
   lede,
+  rightMeta,
 }: {
   kicker: string;
-  title: string;
+  title: ReactNode;
   lede?: string;
+  rightMeta?: ReactNode;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-amber-200/15 bg-gradient-to-b from-[#1c1426] to-[#100c18] p-8 md:p-12">
+    <section className="relative overflow-hidden rounded-2xl border border-[#efe8dc]/12 bg-gradient-to-b from-[#1b150f] to-[#0e0b09] p-8 md:p-12">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-amber-300/15 blur-3xl"
+        className="pointer-events-none absolute -top-24 left-1/3 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-[#ffb13b]/12 blur-3xl"
       />
-      <p className="relative text-xs font-semibold uppercase tracking-[0.2em] text-amber-300/80">
-        {kicker}
-      </p>
-      <h1 className="relative mt-2 max-w-2xl text-3xl font-bold leading-tight text-amber-50 md:text-5xl">
-        {title}
-      </h1>
-      {lede ? (
-        <p className="relative mt-4 max-w-2xl text-base leading-relaxed text-zinc-300 md:text-lg">
-          {lede}
-        </p>
-      ) : null}
-    </div>
+      <div className="relative grid gap-8 md:grid-cols-[1.35fr_1fr] md:items-end">
+        <div>
+          <span className="eyebrow">{kicker}</span>
+          <h1 className="display-serif mt-4 text-4xl text-[#fff6ed] md:text-6xl">
+            {title}
+          </h1>
+          {lede ? (
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#a49b8e] md:text-lg">
+              {lede}
+            </p>
+          ) : null}
+        </div>
+        {rightMeta ? (
+          <div className="border-t border-[#efe8dc]/12 pt-5 md:border-t-0 md:border-l md:pl-7 md:pt-0">
+            {rightMeta}
+          </div>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
 export function Card({
   children,
   className = "",
+  hot = false,
 }: {
   children: ReactNode;
   className?: string;
+  hot?: boolean;
 }) {
   return (
-    <div
-      className={`rounded-2xl border border-white/10 bg-white/[0.03] p-5 ${className}`}
-    >
+    <div className={`editorial-card ${hot ? "hot" : ""} ${className}`}>
       {children}
     </div>
   );
@@ -49,23 +58,50 @@ export function Card({
 export function SectionTitle({
   children,
   hint,
+  eyebrow,
 }: {
   children: ReactNode;
   hint?: string;
+  eyebrow?: string;
 }) {
   return (
-    <div className="mb-3 flex items-baseline justify-between gap-4">
-      <h2 className="text-xl font-semibold text-amber-50">{children}</h2>
-      {hint ? <p className="text-xs text-zinc-500">{hint}</p> : null}
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-[#efe8dc]/10 pb-3">
+      <div>
+        {eyebrow ? <span className="eyebrow mb-1.5">{eyebrow}</span> : null}
+        <h2 className="display-serif text-2xl text-[#fff6ed] md:text-3xl">
+          {children}
+        </h2>
+      </div>
+      {hint ? (
+        <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#a49b8e]">
+          {hint}
+        </p>
+      ) : null}
     </div>
   );
 }
 
+export function Stamp({
+  children,
+  tone = "amber",
+}: {
+  children: ReactNode;
+  tone?: "amber" | "green" | "red";
+}) {
+  const cls =
+    tone === "green"
+      ? "stamp green"
+      : tone === "red"
+        ? "stamp red"
+        : "stamp";
+  return <span className={cls}>{children}</span>;
+}
+
 export function Disclaimer() {
   return (
-    <p className="mt-8 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-xs leading-relaxed text-zinc-500">
-      Rewards vary and depend on the Tip Jar — nothing here is a promise of
-      any amount. Nothing on this page is financial advice.
+    <p className="mt-10 rounded-xl border border-[#efe8dc]/10 bg-[#14100d]/80 p-4 font-mono text-[11px] uppercase tracking-[0.13em] leading-relaxed text-[#6c6459]">
+      Rewards vary and depend on the Tip Jar — nothing here is a promise of any
+      amount. Nothing on this page is financial advice.
     </p>
   );
 }

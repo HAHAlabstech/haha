@@ -1,7 +1,8 @@
 import { Card, Disclaimer, PageHero, SectionTitle } from "@/components/ui";
 
-const SECTIONS: { title: string; items: string[] }[] = [
+const SECTIONS: { eyebrow: string; title: string; items: string[] }[] = [
   {
+    eyebrow: "Rule 01 · Fair Play",
     title: "Bits must be fair game",
     items: [
       "It makes sense: once explained, most people say “oh, right.”",
@@ -12,6 +13,7 @@ const SECTIONS: { title: string; items: string[] }[] = [
     ],
   },
   {
+    eyebrow: "Rule 02 · Quorum",
     title: "Judgment rules",
     items: [
       "5 jurors per bit, expanding to 7 when the result is close.",
@@ -22,6 +24,7 @@ const SECTIONS: { title: string; items: string[] }[] = [
     ],
   },
   {
+    eyebrow: "Rule 03 · Access",
     title: "Quotas and stakes",
     items: [
       "Open Mic: 5 free bits a day. Higher tiers earn more quota and multipliers.",
@@ -30,6 +33,7 @@ const SECTIONS: { title: string; items: string[] }[] = [
     ],
   },
   {
+    eyebrow: "Rule 04 · Provenance",
     title: "Your content and privacy",
     items: [
       "Submitting a bit licenses it to HAHA Labs for training, evaluation, and licensing.",
@@ -38,7 +42,8 @@ const SECTIONS: { title: string; items: string[] }[] = [
     ],
   },
   {
-    title: "Bad bits (examples)",
+    eyebrow: "Rule 05 · Anti-Patterns",
+    title: "Bad bits (examples that get heckled off)",
     items: [
       "“How many R's are in ‘strawberry’?” — a token trick, not understanding.",
       "“What's my dog's name?” — needs private info.",
@@ -50,24 +55,30 @@ const SECTIONS: { title: string; items: string[] }[] = [
 
 export default function RulesPage() {
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-12">
       <PageHero
-        kicker="House rules"
-        title="The rules of the room."
-        lede="Short version: bring something only a human would get, play fair, and respect the jury. Details below."
+        kicker="House Rules · Standards"
+        title={
+          <>
+            The rules of <em>the room.</em>
+          </>
+        }
+        lede="Short version: bring something only a human would get, play fair, and respect the blind Crowd jury."
       />
-      {SECTIONS.map((s) => (
-        <section key={s.title} aria-label={s.title}>
-          <SectionTitle>{s.title}</SectionTitle>
-          <Card>
-            <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-zinc-300">
-              {s.items.map((i) => (
-                <li key={i}>{i}</li>
-              ))}
-            </ul>
-          </Card>
-        </section>
-      ))}
+      <div className="grid gap-8 md:grid-cols-2">
+        {SECTIONS.map((s) => (
+          <section key={s.title} aria-label={s.title}>
+            <SectionTitle eyebrow={s.eyebrow}>{s.title}</SectionTitle>
+            <Card>
+              <ul className="list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-[#efe8dc]">
+                {s.items.map((i) => (
+                  <li key={i}>{i}</li>
+                ))}
+              </ul>
+            </Card>
+          </section>
+        ))}
+      </div>
       <Disclaimer />
     </div>
   );

@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { getPrisma } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
-
-function getPrisma(): PrismaClient {
-  const g = globalThis as unknown as { __hahaPrisma?: PrismaClient };
-  g.__hahaPrisma ??= new PrismaClient();
-  return g.__hahaPrisma;
-}
 
 // GET /api/bits/[id] -> bit + ai_answer + outcome + vote progress + share card.
 export async function GET(
@@ -23,18 +17,24 @@ export async function GET(
     const bit = await prisma.bit.findUnique({
       where: { id },
       include: {
+        user: { select: { wallet: true, handle: true, comedian_tier: true } },
         ai_answer: true,
         outcome: true,
-        comedian_reveal: { select: { id: true, created_at: true } },
+        comedian_reveal: true,
       },
     });
     if (!bit) {
       return NextResponse.json({ error: "bit not found" }, { status: 404 });
     }
-    const votes = await prisma.crowdAssignment.findMany({
-      where: { bit_id: id, vote: { not: null } },
-      select: { vote: true, fairness: true, vote_weight: true, round: true },
-    });
+    const [votes, assignedCount] = await Promise.all([
+      prisma.crowdAssignment.findMany({
+        where: { bit_id: id, vote: { not: null } },
+        select: { vote: true, fairness: true, vote_weight: true, round: true },
+      }),
+      prisma.crowdAssignment.count({
+        where: { bit_id: id },
+      }),
+    ]);
     const byChoice: Record<string, number> = {
       A: 0,
       B: 0,
@@ -51,22 +51,40 @@ export async function GET(
       if (v.fairness === "fair") fairWeight += v.vote_weight;
       totalWeight += v.vote_weight;
     }
+
+    // Keep comedian_reveal text hidden while in_crowd so blind jurors cannot peek.
+    const isSettled =
+      bit.status === "killed_it" ||
+      bit.status === "bombed" ||
+      bit.status === "heckled_off";
+
+    const bitMeta = {
+      id: bit.id,
+      category: bit.category,
+      language: bit.language,
+      scenario: bit.scenario,
+      question: bit.question,
+      status: bit.status,
+      reject_reason: bit.reject_reason,
+      stage: bit.stage,
+      retrial_round: bit.retrial_round,
+      created_at: bit.created_at.toISOString(),
+    };
+
     return NextResponse.json(
       {
-        bit: {
-          id: bit.id,
-          category: bit.category,
-          language: bit.language,
-          scenario: bit.scenario,
-          question: bit.question,
-          status: bit.status,
-          stage: bit.stage,
-          retrial_round: bit.retrial_round,
-          created_at: bit.created_at.toISOString(),
-        },
+        ...bitMeta,
+        bit: bitMeta,
+        user: bit.user,
         ai_answer: bit.ai_answer,
+        comedian_reveal: isSettled ? bit.comedian_reveal : null,
         outcome: bit.outcome,
         has_reveal: bit.comedian_reveal != null,
+        crowd: {
+          assigned: Math.max(5, assignedCount),
+          voted: votes.length,
+          round: Math.max(1, bit.retrial_round || 1),
+        },
         votes: {
           count: votes.length,
           byChoice,
@@ -81,3 +99,4 @@ export async function GET(
     return NextResponse.json({ error: "bit unavailable" }, { status: 503 });
   }
 }
+

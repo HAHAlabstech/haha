@@ -11,3 +11,4 @@ out/
 contracts/cache/
 contracts/out/
 pgdata/
+*.tsbuildinfo

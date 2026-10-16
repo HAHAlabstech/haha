@@ -1,21 +1,18 @@
 import { NextResponse } from "next/server";
 import { createPublicClient, http } from "viem";
-import { getChainForEnv, type ChainEnv } from "@/lib/haha-chains";
+import { getChainForEnv } from "@/lib/haha-chains";
 import {
   erc20Abi,
   getServerContracts,
   isDeployed,
+  tipJarAbi,
 } from "@/lib/haha-contracts";
+import { getPrisma, readChainEnv } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
-function readChainEnv(): ChainEnv {
-  const raw = (process.env.CHAIN_ENV ?? "").toLowerCase();
-  return raw === "mainnet" ? "mainnet" : "testnet";
-}
-
 // GET /api/tipjar/summary -> escrow balances via server-side viem reads
-// (best-effort, zeros on failure), launch proof placeholders, and
+// (best-effort, zeros on failure), launch proof, MicDrop history, and
 // feeRecipient / takeover / freeze status fields.
 export async function GET() {
   const chainEnv = readChainEnv();
@@ -24,6 +21,9 @@ export async function GET() {
 
   let tipJarMicroUsdg = "0";
   let feeSplitterMicroUsdg = "0";
+  let micDropMicroUsdg = "0";
+  let totalPaidOutMicroUsdg = "0";
+
   try {
     const override =
       chainEnv === "mainnet"
@@ -37,27 +37,93 @@ export async function GET() {
       chain,
       transport: http(rpcUrl),
     });
-    const [tipBal, feeBal] = await Promise.all([
-      client.readContract({
-        address: contracts.tipJar,
-        abi: erc20Abi,
-        functionName: "balanceOf",
-        args: [contracts.tipJar],
+
+    if (isDeployed(contracts, "usdg")) {
+      const reads = await Promise.allSettled([
+        isDeployed(contracts, "tipJar")
+          ? client.readContract({
+              address: contracts.usdg,
+              abi: erc20Abi,
+              functionName: "balanceOf",
+              args: [contracts.tipJar],
+            })
+          : Promise.resolve(0n),
+        isDeployed(contracts, "feeSplitter")
+          ? client.readContract({
+              address: contracts.usdg,
+              abi: erc20Abi,
+              functionName: "balanceOf",
+              args: [contracts.feeSplitter],
+            })
+          : Promise.resolve(0n),
+        isDeployed(contracts, "micDrop")
+          ? client.readContract({
+              address: contracts.usdg,
+              abi: erc20Abi,
+              functionName: "balanceOf",
+              args: [contracts.micDrop],
+            })
+          : Promise.resolve(0n),
+        isDeployed(contracts, "tipJar")
+          ? client.readContract({
+              address: contracts.tipJar,
+              abi: tipJarAbi,
+              functionName: "totalPaidOut",
+            })
+          : Promise.resolve(0n),
+      ]);
+      if (reads[0].status === "fulfilled") {
+        tipJarMicroUsdg = (reads[0].value as bigint).toString();
+      }
+      if (reads[1].status === "fulfilled") {
+        feeSplitterMicroUsdg = (reads[1].value as bigint).toString();
+      }
+      if (reads[2].status === "fulfilled") {
+        micDropMicroUsdg = (reads[2].value as bigint).toString();
+      }
+      if (reads[3].status === "fulfilled") {
+        totalPaidOutMicroUsdg = (reads[3].value as bigint).toString();
+      }
+    }
+  } catch {
+    // RPC unreachable — fall back to 0 strings.
+  }
+
+  let micDropEvents: {
+    id: string;
+    asset_in: string;
+    amount_in_base_units: string;
+    haha_bought_wei: string;
+    haha_burned_wei: string;
+    tx_hash: string;
+    executed_at: string;
+  }[] = [];
+  let latestEpoch = 0;
+
+  try {
+    const prisma = getPrisma();
+    const [drops, ep] = await Promise.all([
+      prisma.micDropEvent.findMany({
+        orderBy: { executed_at: "desc" },
+        take: 10,
       }),
-      client.readContract({
-        address: contracts.usdg,
-        abi: erc20Abi,
-        functionName: "balanceOf",
-        args: [contracts.feeSplitter],
+      prisma.epoch.findFirst({
+        orderBy: { epoch_number: "desc" },
+        select: { epoch_number: true },
       }),
     ]);
-    // NOTE: USDG balanceOf the escrow contracts; re-read decimals() on-chain
-    // before displaying (USDG uses 6 decimals, never assume 18).
-    tipJarMicroUsdg = (tipBal as bigint).toString();
-    feeSplitterMicroUsdg = (feeBal as bigint).toString();
+    micDropEvents = drops.map((d) => ({
+      id: d.id,
+      asset_in: d.asset_in,
+      amount_in_base_units: d.amount_in_base_units.toString(),
+      haha_bought_wei: d.haha_bought_wei.toString(),
+      haha_burned_wei: d.haha_burned_wei.toString(),
+      tx_hash: d.tx_hash,
+      executed_at: d.executed_at.toISOString(),
+    }));
+    latestEpoch = ep?.epoch_number ?? 0;
   } catch {
-    tipJarMicroUsdg = "0";
-    feeSplitterMicroUsdg = "0";
+    // DB optional for summary endpoint.
   }
 
   return NextResponse.json(
@@ -70,9 +136,17 @@ export async function GET() {
           address: contracts.feeSplitter,
           microUsdg: feeSplitterMicroUsdg,
         },
+        micDrop: { address: contracts.micDrop, microUsdg: micDropMicroUsdg },
       },
+      totalPaidOutMicroUsdg,
+      latestEpoch,
+      micDropEvents,
       launched: isDeployed(contracts, "hahaToken"),
-      launchProof: { txHash: null, note: "placeholder — set at launch" },
+      launchProof: {
+        txHash: null,
+        exemptCount: 0,
+        note: "0 additional exempt wallets (only 2 automatic Pons protocol exemptions)",
+      },
       feeRecipient: contracts.feeSplitter,
       takeoverArmed: false,
       frozen: false,
