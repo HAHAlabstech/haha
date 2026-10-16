@@ -55,6 +55,10 @@ services:
 
   db:
     image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: haha
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      POSTGRES_DB: haha
     volumes:
       - pgdata:/var/lib/postgresql/data
     command: "-c shared_buffers=128MB -c effective_cache_size=512MB -c max_connections=20 -c work_mem=4MB -c maintenance_work_mem=64MB"
