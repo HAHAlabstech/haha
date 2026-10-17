@@ -105,9 +105,15 @@ export async function POST(
       data: { bit_id: id, answer, explanation },
     });
 
-    // 5 blind jurors: onboarded, not the author or colluding accounts.
+    // 5 blind jurors: onboarded real wallets, not the author or colluding
+    // accounts. Seed/probe wallets (0x000…xxxx) are excluded — they are
+    // fixtures, not people, and would hold assignments forever.
     const rawCandidates = await prisma.user.findMany({
-      where: { onboarding_passed: true, id: { not: bit.user_id } },
+      where: {
+        onboarding_passed: true,
+        id: { not: bit.user_id },
+        NOT: { wallet: { startsWith: "0x000000000000000000000000" } },
+      },
       select: {
         id: true,
         crowd_tier: true,
@@ -120,7 +126,7 @@ export async function POST(
     const candidates = rawCandidates.filter((c) => !isColluding(bit.user, c));
     shuffleInPlace(candidates);
     const picked = candidates.slice(0, 5);
-    const expires_at = new Date(Date.now() + 48 * 3600 * 1000);
+    const expires_at = new Date(Date.now() + 30 * 60 * 1000); // SLA 30 min (plan §7)
     await prisma.$transaction(
       picked.map((j) =>
         prisma.crowdAssignment.create({

@@ -69,7 +69,11 @@ async function topUpJurors(bitId, n, round, isRetrial) {
   const exclude = new Set(bit.assignments.map((a) => a.juror_id));
   if (isRetrial && bit.user_id) exclude.add(bit.user_id);
   const jurors = await prisma.user.findMany({
-    where: { id: { notIn: [...exclude] }, onboarding_passed: true },
+    where: {
+      id: { notIn: [...exclude] },
+      onboarding_passed: true,
+      NOT: { wallet: { startsWith: "0x000000000000000000000000" } },
+    },
     orderBy: { created_at: "asc" }, take: Math.max(n * 3, n),
   });
   const expires = new Date(Date.now() + SLA_MIN * 60_000);
