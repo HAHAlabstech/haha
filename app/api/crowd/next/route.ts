@@ -63,28 +63,14 @@ export async function GET(req: Request) {
     const pick = candidates.find((c) => {
       if (c.bit.user_id === juror.id) return false;
       const author = c.bit.user;
-      if (
-        juror.device_hash &&
-        author.device_hash &&
-        juror.device_hash === author.device_hash
-      ) {
-        return false;
-      }
-      if (
-        juror.ip_subnet &&
-        author.ip_subnet &&
-        juror.ip_subnet === author.ip_subnet
-      ) {
-        return false;
-      }
-      if (
-        juror.funding_source &&
-        author.funding_source &&
-        juror.funding_source === author.funding_source
-      ) {
-        return false;
-      }
-      return true;
+      // Related-account heuristic: exclude only when >=2 independent signals
+      // match. IP-only is NOT enough — CGNAT/office NAT would otherwise
+      // filter every juror on the same network out of the entire crowd.
+      let signals = 0;
+      if (juror.device_hash && author.device_hash && juror.device_hash === author.device_hash) signals++;
+      if (juror.ip_subnet && author.ip_subnet && juror.ip_subnet === author.ip_subnet) signals++;
+      if (juror.funding_source && author.funding_source && juror.funding_source === author.funding_source) signals++;
+      return signals < 2;
     });
     if (!pick) {
       return NextResponse.json(

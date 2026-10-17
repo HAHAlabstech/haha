@@ -57,13 +57,14 @@ async function main() {
   const auth = await siwe(author);
   console.log("1. SIWE author ok:", auth.wallet);
 
+  const uniq = Math.random().toString(36).slice(2, 8);
   const scenario =
-    "My neighbor's dog learned to open the fridge, so now the whole building blames me for the missing cheese.";
+    `My neighbor's dog (tag ${uniq}) learned to open the fridge, so now the whole building blames me for the missing cheese.`;
   const question = "Why is this funny?";
   const answer =
-    "It flips responsibility: the dog has the skill, but the humans blame the nearest person — absurd scapegoating under social pressure.";
+    `It flips responsibility: the dog has the skill, but the humans blame the nearest person — absurd scapegoating under social pressure (${uniq}).`;
   const explanation =
-    "The joke lands on the gap between who actually did it and who the group chooses to blame.";
+    `The joke lands on the gap between who actually did it and who the group chooses to blame (${uniq}).`;
 
   const bitRes = await post("/api/bits", {
     wallet: auth.wallet,
