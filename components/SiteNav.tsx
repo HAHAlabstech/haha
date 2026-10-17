@@ -137,6 +137,12 @@ export default function SiteNav() {
                 <span>The Science</span>
               </a>
               <a
+                href="#scrub"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-[#ffb13b] hover:text-white hover:bg-[#ffb13b]/10 border border-[#ffb13b]/20 transition-all duration-200"
+              >
+                <span>Pinned Scrub</span>
+              </a>
+              <a
                 href="#vault"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
               >

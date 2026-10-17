@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import ClubStage3D from "@/components/ClubStage3D";
 import HumorSpectrogram from "@/components/landing/HumorSpectrogram";
+import PinnedScrollMoment from "@/components/landing/PinnedScrollMoment";
 import ProcessPipeline from "@/components/landing/ProcessPipeline";
 import VaultTerminal from "@/components/landing/VaultTerminal";
 import SpotlightFeed from "@/components/landing/SpotlightFeed";
@@ -142,6 +143,11 @@ export default function HomePage() {
           THE SCIENCE: INTERACTIVE HUMOR SPECTROGRAM CURVE
           ========================================================================= */}
       <HumorSpectrogram />
+
+      {/* =========================================================================
+          PINNED SCROLL & SCRUB: SIGNATURE MOMENTS (320vh Track with Sticky Viewport)
+          ========================================================================= */}
+      <PinnedScrollMoment />
 
       {/* =========================================================================
           THE PROTOCOL: 3-STEP PROCESS PIPELINE

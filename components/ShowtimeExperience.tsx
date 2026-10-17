@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, Mic, ArrowUpRight } from "lucide-react";
+import { Mic, ArrowUpRight, Users, Database } from "lucide-react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
@@ -49,182 +49,225 @@ function SplitChars({
 }
 
 export default function ShowtimeExperience() {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const canvasWrapRef = useRef<HTMLDivElement>(null);
-  const pokeGlyphRef = useRef<HTMLDivElement>(null);
-  const bitCardRef = useRef<HTMLDivElement>(null);
-
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [activeSlide, setActiveSlide] = useState<number>(0);
-  const [dashScales, setDashScales] = useState<[number, number, number, number]>([
-    0.05, 0, 0, 0,
-  ]);
-  const [slideTransforms, setSlideTransforms] = useState<number[]>([
-    0, 120, 120, 120,
-  ]);
+  const [pokes, setPokes] = useState<{ id: number; x: number; y: number; text: string }[]>([]);
 
   useEffect(() => {
-    const wrap = canvasWrapRef.current;
-    const scrollEl = scrollContainerRef.current;
-    if (!wrap || !scrollEl) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
+        canvas,
         antialias: true,
+        alpha: false,
         powerPreference: "high-performance",
       });
     } catch {
       return;
     }
 
+    const sizes = { width: window.innerWidth, height: window.innerHeight };
+    renderer.setSize(sizes.width, sizes.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.28;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.domElement.style.width = "100%";
-    renderer.domElement.style.height = "100%";
-    renderer.domElement.style.display = "block";
-    renderer.domElement.setAttribute("data-cursor-hot", "true");
-    renderer.domElement.setAttribute("data-cursor-label", "POKE");
-    wrap.innerHTML = "";
-    wrap.appendChild(renderer.domElement);
+    renderer.toneMappingExposure = 2.2;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    scene.background = new THREE.Color("#000000");
+    scene.fog = new THREE.FogExp2("#000000", 0.01);
+
+    const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 100);
+    camera.position.set(0, 0.2, 3.0);
     scene.add(camera);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
-    // 1. Liquid Stage-Light GLSL Shader attached to Camera
-    const bgUniforms = {
+    // 1. LIQUID STAGE-LIGHT SHADER (Camera child)
+    const shaderUniforms = {
       uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
+      uMouse: { value: new THREE.Vector2() },
       uScroll: { value: 0 },
-      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-      uResolution: { value: new THREE.Vector2(1920, 1080) },
-      uBoost: { value: 0 },
     };
 
-    const bgMat = new THREE.ShaderMaterial({
-      uniforms: bgUniforms,
-      depthTest: false,
-      depthWrite: false,
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform float uTime;
-        uniform float uScroll;
-        uniform vec2 uMouse;
-        uniform vec2 uResolution;
-        uniform float uBoost;
-        varying vec2 vUv;
+    const vs = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`;
+    const fs = `
+      varying vec2 vUv; uniform float uTime; uniform vec2 uResolution; uniform vec2 uMouse; uniform float uScroll;
+      void main(){
+        vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution.xy) / uResolution.y;
+        float aspect = uResolution.x / uResolution.y;
+        float time = uTime * 0.08; float scroll = uScroll;
+        float angle1 = 0.6, angle2 = -0.7, angle3 = 1.2;
+        float freq1 = 2.4, freq2 = 3.2, freq3 = 4.0;
+        vec2 w = uv; float sd = scroll * 5.0;
+        w.x += sin(uv.y * 2.5 + time * 0.2 + sd) * 0.35;
+        w.y += cos(uv.x * 2.5 - time * 0.15 - sd * 0.8) * 0.35;
+        w.x += sin(uv.y * 1.2 - time * 0.1 - sd * 1.5) * 0.25;
+        w.y += cos(uv.x * 1.2 + time * 0.18 + sd * 1.2) * 0.25;
+        w += vec2(scroll * 0.04, -scroll * 0.02) + vec2(uMouse.x * aspect * 0.05, uMouse.y * 0.05);
+        float w1 = sin(dot(w, vec2(cos(angle1), sin(angle1))) * freq1 + time);
+        float w2 = cos(dot(w, vec2(cos(angle2), sin(angle2))) * freq2 - time * 1.4 + w1 * 0.4);
+        float w3 = sin(dot(w, vec2(cos(angle3), sin(angle3))) * freq3 + time * 1.8 + w2 * 0.5);
+        float field = w1 * 0.50 + w2 * 0.35 + w3 * 0.15;
+        float wide = pow(max(0.0, 1.0 - abs(field - 0.1)), 2.5);
+        float crisp = pow(max(0.0, 1.0 - abs(field - 0.15)), 8.0);
+        float crest = wide * 0.5 + crisp * 0.9;
+        vec3 c0s = vec3(0.0012,0.0007,0.0003), c0a = vec3(0.095,0.052,0.012), c0b = vec3(0.052,0.027,0.006), c0c = vec3(0.52,0.33,0.10);
+        vec3 c1s = vec3(0.0012,0.0003,0.0002), c1a = vec3(0.080,0.018,0.012), c1b = vec3(0.044,0.010,0.007), c1c = vec3(0.48,0.15,0.09);
+        float t = smoothstep(0.0, 1.0, scroll);
+        vec3 col = mix(c0s, c1s, t);
+        col = mix(col, mix(c0b, c1b, t), smoothstep(-0.6, 0.2, field));
+        col = mix(col, mix(c0a, c1a, t), smoothstep(0.0, 0.8, field));
+        col += mix(c0c, c1c, t) * crest * 0.85;
+        col *= 1.0 - dot(uv, uv) * 0.12;
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `;
 
-        void main() {
-          vec2 uv = vUv;
-          float aspect = uResolution.x / max(1.0, uResolution.y);
+    const bg = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 30),
+      new THREE.ShaderMaterial({
+        vertexShader: vs,
+        fragmentShader: fs,
+        uniforms: shaderUniforms,
+        depthWrite: false,
+        depthTest: false,
+      }),
+    );
+    bg.position.set(0, 0, -8);
+    bg.renderOrder = -10;
+    camera.add(bg);
 
-          vec2 p = uv * 2.0 - 1.0;
-          p.x *= aspect;
+    // 2. CHIAROSCURO LIGHTING RIG
+    scene.add(new THREE.AmbientLight("#ffffff", 0.1));
 
-          vec2 m = (uMouse * 2.0 - 1.0) * 0.35;
-          p -= m;
+    const keyLight = new THREE.SpotLight("#ffffff", 18);
+    keyLight.position.set(4, 6, 3);
+    keyLight.angle = Math.PI / 4;
+    keyLight.penumbra = 0.9;
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.camera.near = 1;
+    keyLight.shadow.camera.far = 15;
+    keyLight.shadow.bias = -0.001;
+    scene.add(keyLight);
 
-          for (float i = 1.0; i < 4.0; i++) {
-            p.x += 0.38 / i * sin(i * 2.4 * p.y + uTime * 0.25 + uScroll * 4.5);
-            p.y += 0.38 / i * cos(i * 2.4 * p.x + uTime * 0.3 + uScroll * 4.5);
-          }
+    const rimLight = new THREE.DirectionalLight("#ffb13b", 10);
+    rimLight.position.set(-5, 3, -4);
+    scene.add(rimLight);
 
-          float wave = sin(p.x * 2.0 + p.y * 2.0) * 0.5 + 0.5;
-          float highlight = pow(wave, 3.8);
+    const fillLight = new THREE.DirectionalLight("#fff3e6", 0.8);
+    fillLight.position.set(-2, -4, 2);
+    scene.add(fillLight);
 
-          vec3 colBase = vec3(0.02, 0.015, 0.012);
-          vec3 colStage = mix(
-            vec3(0.28, 0.16, 0.05),
-            vec3(0.26, 0.05, 0.04),
-            sin(uScroll * 3.14159) * 0.65
-          );
-          vec3 colHot = vec3(1.0, 0.69, 0.23);
-
-          vec3 color = mix(colBase, colStage, wave * 0.65);
-          color += colHot * highlight * (0.28 + uBoost * 0.35);
-
-          float dist = length(vUv - 0.5);
-          color *= smoothstep(0.95, 0.12, dist);
-
-          float noise = fract(sin(dot(vUv, vec2(12.9898, 78.233) + uTime * 0.1)) * 43758.5453);
-          color += (noise - 0.5) * 0.016;
-
-          gl_FragColor = vec4(color, 1.0);
-        }
-      `,
-    });
-
-    const bgPlane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), bgMat);
-    bgPlane.position.z = -25;
-    camera.add(bgPlane);
-
-    // 2. 480 Additive Forge / Applause Sparks
-    const sparkCount = 480;
-    const sparkGeo = new THREE.BufferGeometry();
-    const sparkPos = new Float32Array(sparkCount * 3);
-    const sparkSpeed = new Float32Array(sparkCount);
-    const sparkSeed = new Float32Array(sparkCount);
-    for (let i = 0; i < sparkCount; i++) {
-      sparkPos[i * 3] = (Math.random() - 0.5) * 22;
-      sparkPos[i * 3 + 1] = (Math.random() - 0.5) * 22;
-      sparkPos[i * 3 + 2] = (Math.random() - 0.5) * 18;
-      sparkSpeed[i] = 0.004 + Math.random() * 0.012;
-      sparkSeed[i] = Math.random() * 100;
+    // 3. APPLAUSE SPARKS (450 particles)
+    const sparkCount = 450;
+    const sparkData: { sx: number; sy: number; sz: number; sw: number; sr: number; ph: number }[] = [];
+    function makeSparkTex() {
+      const c = document.createElement("canvas");
+      c.width = c.height = 16;
+      const g = c.getContext("2d");
+      if (!g) return new THREE.Texture();
+      const gr = g.createRadialGradient(8, 8, 0, 8, 8, 8);
+      gr.addColorStop(0, "rgba(255,255,255,1)");
+      gr.addColorStop(0.25, "rgba(255,255,255,.85)");
+      gr.addColorStop(0.6, "rgba(255,255,255,.3)");
+      gr.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = gr;
+      g.fillRect(0, 0, 16, 16);
+      return new THREE.CanvasTexture(c);
     }
-    sparkGeo.setAttribute("position", new THREE.BufferAttribute(sparkPos, 3));
-    const sparkMat = new THREE.PointsMaterial({
-      color: 0xffcf7d,
-      size: 0.05,
-      transparent: true,
-      opacity: 0.55,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-    const sparks = new THREE.Points(sparkGeo, sparkMat);
+    const sGeo = new THREE.BufferGeometry();
+    const sPos = new Float32Array(sparkCount * 3);
+    const sCol = new Float32Array(sparkCount * 3);
+    for (let i = 0; i < sparkCount; i++) {
+      sPos[i * 3] = (Math.random() - 0.5) * 6.5;
+      sPos[i * 3 + 1] = (Math.random() - 0.5) * 5 - 0.5;
+      sPos[i * 3 + 2] = (Math.random() - 0.5) * 6.5;
+      if (Math.random() < 0.6) {
+        sCol[i * 3] = 1;
+        sCol[i * 3 + 1] = 0.5 + Math.random() * 0.2;
+        sCol[i * 3 + 2] = 0.08 + Math.random() * 0.1;
+      } else {
+        sCol[i * 3] = 1;
+        sCol[i * 3 + 1] = 0.93 + Math.random() * 0.05;
+        sCol[i * 3 + 2] = 0.82 + Math.random() * 0.1;
+      }
+      sparkData.push({
+        sx: (Math.random() - 0.5) * 0.4,
+        sy: 0.15 + Math.random() * 0.3,
+        sz: (Math.random() - 0.5) * 0.4,
+        sw: 0.5 + Math.random() * 1.5,
+        sr: 0.05 + Math.random() * 0.15,
+        ph: Math.random() * Math.PI * 2,
+      });
+    }
+    sGeo.setAttribute("position", new THREE.BufferAttribute(sPos, 3));
+    sGeo.setAttribute("color", new THREE.BufferAttribute(sCol, 3));
+    const sparks = new THREE.Points(
+      sGeo,
+      new THREE.PointsMaterial({
+        size: 0.025,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        map: makeSparkTex(),
+      }),
+    );
     scene.add(sparks);
 
-    // 3. Aged Bronze Straight Man Statue (Laocoon finish)
-    const bronzeMat = new THREE.MeshStandardMaterial({
-      color: 0xd4a472,
+    // 4. THE STRAIGHT MAN STATUE IN FULL CAST BRONZE
+    const bronze = new THREE.MeshStandardMaterial({
+      color: 0xc08a52,
+      roughness: 0.42,
       metalness: 0.92,
-      roughness: 0.4,
-      envMapIntensity: 1.5,
+      envMap: envTex,
+      envMapIntensity: 0.55,
     });
-    const darkBronze = new THREE.MeshStandardMaterial({
-      color: 0x3a2819,
-      metalness: 0.85,
-      roughness: 0.52,
-      envMapIntensity: 1.0,
+    const darkMetal = new THREE.MeshStandardMaterial({
+      color: 0x3a2a1c,
+      roughness: 0.38,
+      metalness: 0.95,
+      envMap: envTex,
+      envMapIntensity: 0.4,
     });
-    const goldMat = new THREE.MeshStandardMaterial({
-      color: 0xffb84d,
-      metalness: 0.96,
-      roughness: 0.22,
-      envMapIntensity: 1.8,
+    const glass = new THREE.MeshStandardMaterial({
+      color: 0x020202,
+      roughness: 0.06,
+      metalness: 0.2,
+      envMap: envTex,
+      envMapIntensity: 1,
     });
-    const eyeGlow = new THREE.MeshStandardMaterial({
-      color: 0xffe09e,
-      emissive: 0xffa726,
-      emissiveIntensity: 2.4,
-      roughness: 0.2,
-    });
-    const pupilMat = new THREE.MeshBasicMaterial({ color: 0x120d08 });
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: 0xffb13b,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.22,
-    });
+    const lamp = new THREE.MeshBasicMaterial({ color: 0xfff2dc, toneMapped: false });
+    const amber = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
+    const UP = new THREE.Vector3(0, 1, 0);
+
+    function mesh(geo: THREE.BufferGeometry, mat: THREE.Material, parent: THREE.Object3D, x = 0, y = 0, z = 0) {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      parent.add(m);
+      return m;
+    }
+
+    function limb(a: number[], b: number[], r: number, mat: THREE.Material, parent: THREE.Object3D) {
+      const A = new THREE.Vector3(a[0], a[1], a[2]);
+      const B = new THREE.Vector3(b[0], b[1], b[2]);
+      const d = B.clone().sub(A);
+      const m = mesh(new THREE.CylinderGeometry(r, r, d.length(), 24), mat, parent);
+      m.position.copy(A).add(B).multiplyScalar(0.5);
+      m.quaternion.setFromUnitVectors(UP, d.normalize());
+      return m;
+    }
 
     function rounded(w: number, h: number, r: number) {
       const s = new THREE.Shape();
@@ -242,814 +285,482 @@ export default function ShowtimeExperience() {
       return s;
     }
 
-    const stageGroup = new THREE.Group();
-    stageGroup.scale.setScalar(1.38);
-    stageGroup.position.y = 0.15;
-    scene.add(stageGroup);
+    const statue = new THREE.Group();
 
-    const plinth = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.15, 1.28, 0.14, 48),
-      darkBronze,
-    );
-    plinth.position.y = -1.62;
-    stageGroup.add(plinth);
+    // Stage Plinth
+    mesh(new THREE.CylinderGeometry(1.35, 1.42, 0.16, 96), darkMetal, statue, 0, 0.08, 0);
+    const lip = new THREE.Mesh(new THREE.TorusGeometry(1.36, 0.01, 6, 160), amber);
+    lip.rotation.x = Math.PI / 2;
+    lip.position.y = 0.16;
+    statue.add(lip);
 
-    const plinthRim = new THREE.Mesh(
-      new THREE.TorusGeometry(1.16, 0.015, 16, 64),
-      goldMat,
-    );
-    plinthRim.rotation.x = Math.PI / 2;
-    plinthRim.position.y = -1.55;
-    stageGroup.add(plinthRim);
+    const rig = new THREE.Group();
+    rig.position.y = 0.16;
+    statue.add(rig);
 
     // Stool
-    const stool = new THREE.Group();
-    stool.position.y = -0.95;
-    stageGroup.add(stool);
-    stool.add(
-      new THREE.Mesh(
-        new THREE.CylinderGeometry(0.46, 0.44, 0.09, 40),
-        darkBronze,
-      ),
-    );
-    const seatRim = new THREE.Mesh(
-      new THREE.TorusGeometry(0.45, 0.015, 16, 48),
-      goldMat,
-    );
-    seatRim.rotation.x = Math.PI / 2;
-    seatRim.position.y = 0.01;
-    stool.add(seatRim);
-
+    mesh(new THREE.CylinderGeometry(0.52, 0.5, 0.09, 48), darkMetal, rig, 0, 1.0, 0);
     for (let i = 0; i < 3; i++) {
-      const a = (i / 3) * Math.PI * 2 + 0.3;
-      const leg = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.028, 0.022, 0.66, 16),
-        darkBronze,
-      );
-      leg.position.set(Math.cos(a) * 0.3, -0.32, Math.sin(a) * 0.3);
-      leg.rotation.z = -Math.cos(a) * 0.14;
-      leg.rotation.x = Math.sin(a) * 0.14;
-      stool.add(leg);
+      const a = i * 2.094 + 0.5;
+      limb([Math.cos(a) * 0.36, 0.97, Math.sin(a) * 0.36], [Math.cos(a) * 0.5, 0, Math.sin(a) * 0.5], 0.025, darkMetal, rig);
     }
-    const footRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.32, 0.016, 16, 48),
-      goldMat,
-    );
-    footRing.rotation.x = Math.PI / 2;
-    footRing.position.y = -0.4;
-    stool.add(footRing);
+    const ring = mesh(new THREE.TorusGeometry(0.43, 0.018, 8, 64), darkMetal, rig, 0, 0.38, 0);
+    ring.rotation.x = Math.PI / 2;
 
-    // Robot
-    const robot = new THREE.Group();
-    robot.position.y = -0.9;
-    stageGroup.add(robot);
+    // Bot Lower Body & Legs
+    const bot = new THREE.Group();
+    rig.add(bot);
+    mesh(new THREE.CylinderGeometry(0.4, 0.44, 0.18, 40), darkMetal, bot, 0, 1.15, 0);
+    for (const s of [-1, 1]) {
+      limb([s * 0.22, 1.12, 0.02], [s * 0.28, 1.1, 0.66], 0.12, bronze, bot);
+      mesh(new THREE.SphereGeometry(0.135, 24, 16), darkMetal, bot, s * 0.28, 1.1, 0.68);
+      limb([s * 0.29, 1.08, 0.7], [s * 0.31, 0.16, 0.8], 0.095, bronze, bot);
+      mesh(new THREE.BoxGeometry(0.24, 0.11, 0.4), darkMetal, bot, s * 0.31, 0.07, 0.9);
+    }
 
-    const pelvis = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.34, 0.3, 0.18, 32),
-      darkBronze,
-    );
-    pelvis.position.y = 0.12;
-    robot.add(pelvis);
-
+    // Torso
     const torso = new THREE.Group();
-    torso.position.y = 0.58;
-    robot.add(torso);
-
-    const chest = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.46, 0.36, 0.76, 48),
-      bronzeMat,
-    );
-    chest.position.y = 0.02;
-    torso.add(chest);
-
-    const collar = new THREE.Mesh(
-      new THREE.TorusGeometry(0.28, 0.045, 12, 48),
-      goldMat,
-    );
+    torso.position.y = 1.2;
+    bot.add(torso);
+    mesh(new THREE.CylinderGeometry(0.6, 0.45, 1.0, 64), bronze, torso, 0, 0.5, 0);
+    const collar = mesh(new THREE.TorusGeometry(0.33, 0.055, 12, 48), darkMetal, torso, 0, 1.0, 0);
     collar.rotation.x = Math.PI / 2;
-    collar.position.y = 0.4;
-    torso.add(collar);
 
-    const shoulderBar = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.06, 0.06, 0.94, 24),
-      goldMat,
-    );
-    shoulderBar.rotation.z = Math.PI / 2;
-    shoulderBar.position.set(0, 0.39, 0);
-    torso.add(shoulderBar);
-
-    const tie = new THREE.Mesh(
-      new THREE.BoxGeometry(0.09, 0.48, 0.022),
-      goldMat,
-    );
-    tie.position.set(0, 0.02, 0.265);
-    torso.add(tie);
-
-    const badge = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.055, 0.055, 0.02, 24),
-      goldMat,
-    );
-    badge.rotation.x = Math.PI / 2;
-    badge.position.set(0.24, 0.18, 0.265);
-    torso.add(badge);
-
-    for (let i = -2; i <= 2; i++) {
-      const rib = new THREE.Mesh(
-        new THREE.BoxGeometry(0.34, 0.016, 0.02),
-        darkBronze,
-      );
-      rib.position.set(-0.2, -0.14 + i * 0.036, 0.265);
-      torso.add(rib);
-    }
-
-    const makeLimb = (len: number, r1 = 0.055, r2 = 0.048) => {
-      const g = new THREE.CylinderGeometry(r1, r2, len, 20);
-      g.translate(0, -len / 2, 0);
-      return new THREE.Mesh(g, bronzeMat);
-    };
-
-    const armL = new THREE.Group();
-    armL.position.set(-0.48, 0.32, 0);
-    torso.add(armL);
-    armL.add(new THREE.Mesh(new THREE.SphereGeometry(0.08, 20, 20), goldMat));
-    const upperL = makeLimb(0.42);
-    upperL.rotation.z = 0.18;
-    upperL.rotation.x = 0.28;
-    armL.add(upperL);
-    const foreL = makeLimb(0.38, 0.048, 0.042);
-    foreL.position.set(-0.07, -0.39, 0.11);
-    foreL.rotation.x = -0.85;
-    foreL.rotation.z = -0.25;
-    armL.add(foreL);
-
-    const armR = new THREE.Group();
-    armR.position.set(0.48, 0.32, 0);
-    torso.add(armR);
-    armR.add(new THREE.Mesh(new THREE.SphereGeometry(0.08, 20, 20), goldMat));
-    const upperR = makeLimb(0.42);
-    upperR.rotation.z = -0.15;
-    upperR.rotation.x = 0.55;
-    armR.add(upperR);
-    const foreR = makeLimb(0.4, 0.048, 0.042);
-    foreR.position.set(0.05, -0.35, 0.22);
-    foreR.rotation.x = -1.18;
-    foreR.rotation.z = 0.32;
-    armR.add(foreR);
+    const chest = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
+    const cl = mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.03, 24), chest, torso, 0, 0.62, 0.565);
+    cl.rotation.x = Math.PI / 2 - 0.13;
 
     for (const s of [-1, 1]) {
-      const thigh = makeLimb(0.46, 0.075, 0.065);
-      thigh.position.set(s * 0.2, 0.08, 0.04);
-      thigh.rotation.x = -1.25;
-      thigh.rotation.z = s * -0.08;
-      robot.add(thigh);
-
-      const knee = new THREE.Mesh(
-        new THREE.SphereGeometry(0.068, 18, 18),
-        goldMat,
-      );
-      knee.position.set(s * 0.22, -0.06, 0.46);
-      robot.add(knee);
-
-      const shin = makeLimb(0.48, 0.062, 0.05);
-      shin.position.set(s * 0.22, -0.06, 0.46);
-      shin.rotation.x = 0.18;
-      robot.add(shin);
-
-      const boot = new THREE.Mesh(
-        new THREE.BoxGeometry(0.14, 0.09, 0.26),
-        darkBronze,
-      );
-      boot.position.set(s * 0.22, -0.52, 0.6);
-      robot.add(boot);
+      mesh(new THREE.SphereGeometry(0.17, 24, 16), bronze, torso, s * 0.64, 0.88, 0);
+      limb([s * 0.7, 0.85, 0], [s * 0.74, 0.32, 0.28], 0.085, darkMetal, torso);
+      mesh(new THREE.SphereGeometry(0.1, 16, 12), bronze, torso, s * 0.74, 0.32, 0.28);
+      limb([s * 0.74, 0.32, 0.28], [s * 0.38, -0.02, 0.62], 0.075, darkMetal, torso);
+      mesh(new THREE.SphereGeometry(0.115, 20, 14), bronze, torso, s * 0.36, -0.04, 0.64);
     }
+    mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.26, 20), darkMetal, torso, 0, 1.12, 0);
 
-    const neck = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.09, 0.11, 0.18, 24),
-      goldMat,
-    );
-    neck.position.y = 0.46;
-    torso.add(neck);
+    // Head
+    const headPivot = new THREE.Group();
+    headPivot.position.y = 1.22;
+    torso.add(headPivot);
 
     const head = new THREE.Group();
-    head.position.set(0, 0.88, 0);
-    torso.add(head);
+    head.position.y = 0.6;
+    headPivot.add(head);
 
-    const hg = new THREE.ExtrudeGeometry(rounded(1.2, 0.85, 0.24), {
-      depth: 0.64,
+    const hg = new THREE.ExtrudeGeometry(rounded(1.5, 1.06, 0.32), {
+      depth: 0.8,
       bevelEnabled: true,
-      bevelThickness: 0.07,
-      bevelSize: 0.07,
-      bevelSegments: 5,
-      curveSegments: 16,
+      bevelThickness: 0.09,
+      bevelSize: 0.09,
+      bevelSegments: 6,
+      curveSegments: 18,
     });
     hg.center();
-    const skull = new THREE.Mesh(hg, bronzeMat);
-    head.add(skull);
+    mesh(hg, bronze, head);
 
-    const faceZ = 0.32 + 0.07 + 0.004;
-    const faceplate = new THREE.Mesh(
-      new THREE.ShapeGeometry(rounded(0.96, 0.62, 0.18), 16),
-      darkBronze,
-    );
-    faceplate.position.z = faceZ;
-    head.add(faceplate);
+    const faceZ = 0.4 + 0.09 + 0.004;
+    mesh(new THREE.ShapeGeometry(rounded(1.2, 0.78, 0.24), 18), glass, head, 0, 0, faceZ);
 
-    const brow = new THREE.Mesh(
-      new THREE.BoxGeometry(0.76, 0.055, 0.09),
-      goldMat,
-    );
-    brow.position.set(0, 0.15, 0.335);
-    head.add(brow);
+    const eyes = new THREE.Group();
+    eyes.position.set(0, 0.07, faceZ + 0.01);
+    head.add(eyes);
+
+    const eg = new THREE.SphereGeometry(0.085, 24, 16);
+    const eyeL = mesh(eg, lamp, eyes, -0.26, 0, 0);
+    const eyeR = mesh(eg, lamp, eyes, 0.26, 0, 0);
+    [eyeL, eyeR].forEach((e) => {
+      e.scale.set(1, 1.3, 0.3);
+      e.castShadow = false;
+    });
+
+    const mouth = new THREE.Group();
+    mouth.position.set(0, -0.18, faceZ + 0.01);
+    head.add(mouth);
+    const mg = new THREE.BoxGeometry(0.21, 0.034, 0.02);
+    mesh(mg, lamp, mouth, -0.105, 0, 0);
+    const mouthR = new THREE.Group();
+    mouth.add(mouthR);
+    mesh(mg, lamp, mouthR, 0.105, 0, 0);
 
     for (const s of [-1, 1]) {
-      const ear = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.11, 0.11, 0.07, 24),
-        goldMat,
-      );
+      const ear = mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.14, 32), darkMetal, head, s * 0.86, 0, 0);
       ear.rotation.z = Math.PI / 2;
-      ear.position.set(s * 0.49, 0.02, 0);
-      head.add(ear);
+      const er = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.016, 8, 40), amber);
+      er.position.set(s * 0.935, 0, 0);
+      er.rotation.y = Math.PI / 2;
+      head.add(er);
     }
 
-    const antStem = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.014, 0.02, 0.26, 12),
-      goldMat,
+    mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.4, 10), darkMetal, head, 0, 0.82, 0);
+    const bulbMat = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
+    mesh(new THREE.SphereGeometry(0.075, 20, 14), bulbMat, head, 0, 1.05, 0).castShadow = false;
+    const bulbLight = new THREE.PointLight(0xffb13b, 1.2, 3, 2);
+    bulbLight.position.set(0, 1.05, 0);
+    head.add(bulbLight);
+
+    // Mic Stand
+    const mic = new THREE.Group();
+    mic.position.set(1.0, 0, 0.75);
+    rig.add(mic);
+    mesh(new THREE.CylinderGeometry(0.2, 0.24, 0.04, 40), darkMetal, mic, 0, 0.02, 0);
+    limb([0, 0, 0], [0, 2.0, 0], 0.022, darkMetal, mic);
+    limb([0, 1.95, 0], [-0.42, 2.32, 0.05], 0.016, darkMetal, mic);
+    limb([-0.42, 2.32, 0.05], [-0.52, 2.4, 0.1], 0.045, darkMetal, mic);
+    mesh(new THREE.SphereGeometry(0.085, 18, 12), bronze, mic, -0.56, 2.44, 0.12);
+    const gw = new THREE.Mesh(
+      new THREE.SphereGeometry(0.088, 12, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffb13b, wireframe: true, transparent: true, opacity: 0.5, toneMapped: false }),
     );
-    antStem.position.set(0, 0.47, 0);
-    head.add(antStem);
+    gw.position.set(-0.56, 2.44, 0.12);
+    mic.add(gw);
 
-    const antTipMat = eyeGlow.clone();
-    const antTip = new THREE.Mesh(
-      new THREE.SphereGeometry(0.055, 20, 20),
-      antTipMat,
-    );
-    antTip.position.set(0, 0.62, 0);
-    head.add(antTip);
-
-    const eyes: { pupil: THREE.Mesh; lid: THREE.Mesh }[] = [];
-    for (const s of [-1, 1]) {
-      const socket = new THREE.Group();
-      socket.position.set(s * 0.21, 0.03, 0.33);
-      head.add(socket);
-
-      socket.add(
-        new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.016, 16, 36), goldMat),
-      );
-      const iris = new THREE.Mesh(
-        new THREE.CircleGeometry(0.102, 32),
-        eyeGlow,
-      );
-      iris.position.z = 0.004;
-      socket.add(iris);
-
-      const pupil = new THREE.Mesh(
-        new THREE.CircleGeometry(0.038, 24),
-        pupilMat,
-      );
-      pupil.position.z = 0.008;
-      socket.add(pupil);
-
-      const lid = new THREE.Mesh(
-        new THREE.BoxGeometry(0.24, 0.24, 0.03),
-        darkBronze,
-      );
-      lid.position.set(0, 0.24, 0.012);
-      socket.add(lid);
-
-      eyes.push({ pupil, lid });
+    // Centering Contract
+    const modelPivot = new THREE.Group();
+    scene.add(modelPivot);
+    modelPivot.add(statue);
+    {
+      const b0 = new THREE.Box3().setFromObject(statue);
+      const s0 = b0.getSize(new THREE.Vector3());
+      statue.scale.setScalar(2.5 / Math.max(s0.x, s0.y, s0.z, 0.0001));
+      statue.updateMatrixWorld(true);
+      const c = new THREE.Box3().setFromObject(statue).getCenter(new THREE.Vector3());
+      statue.position.sub(c);
+      modelPivot.position.y = -0.3;
     }
 
-    const mouthGroup = new THREE.Group();
-    mouthGroup.position.set(0, -0.17, 0.338);
-    head.add(mouthGroup);
-    mouthGroup.add(
-      new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.024, 0.02), goldMat),
-    );
-    const mouthR = new THREE.Mesh(
-      new THREE.BoxGeometry(0.08, 0.024, 0.022),
-      goldMat,
-    );
-    mouthR.position.set(0.17, 0, 0.001);
-    mouthGroup.add(mouthR);
-
-    // Mic Stand with Wireframe Accent
-    const micGroup = new THREE.Group();
-    micGroup.position.set(0.18, -1.55, 0.64);
-    stageGroup.add(micGroup);
-
-    const micBase = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.24, 0.28, 0.06, 32),
-      darkBronze,
-    );
-    micBase.position.y = 0.03;
-    micGroup.add(micBase);
-
-    const micPole = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.018, 0.022, 1.48, 16),
-      goldMat,
-    );
-    micPole.position.y = 0.77;
-    micGroup.add(micPole);
-
-    const micHead = new THREE.Group();
-    micHead.position.y = 1.54;
-    micHead.rotation.x = -0.22;
-    micGroup.add(micHead);
-
-    const cradle = new THREE.Mesh(
-      new THREE.TorusGeometry(0.088, 0.01, 12, 28, Math.PI),
-      goldMat,
-    );
-    cradle.rotation.z = Math.PI;
-    micHead.add(cradle);
-
-    const capsuleGeo = new THREE.SphereGeometry(0.072, 20, 16);
-    const capsule = new THREE.Mesh(capsuleGeo, bronzeMat);
-    capsule.scale.set(1, 1.32, 1);
-    capsule.position.y = 0.02;
-    micHead.add(capsule);
-
-    const capsuleWire = new THREE.Mesh(capsuleGeo, wireMat);
-    capsuleWire.scale.set(1.06, 1.38, 1.06);
-    capsuleWire.position.y = 0.02;
-    micHead.add(capsuleWire);
-
-    const raycaster = new THREE.Raycaster();
-    const mouseNDC = new THREE.Vector2();
-
+    // 5. ANIMATION & SCROLL ORBIT INTERACTION
     const st = {
       scroll: 0,
       targetScroll: 0,
-      scrollVel: 0,
-      mx: 0,
-      my: 0,
-      tx: 0,
-      ty: 0,
-      blink: 0,
-      nextBlink: 2.0,
+      mouseX: 0,
+      mouseY: 0,
       sq: 0,
       sqV: 0,
-      nod: 0,
-      nodV: 0,
-      smile: 0,
       taps: 0,
+      smile: 0,
+      blink: 0,
+      nextBlink: 2,
+      hYaw: 0,
+      hPitch: 0,
       boost: 0,
     };
 
-    const updateBgScale = () => {
-      const dist = Math.abs(bgPlane.position.z);
-      const vFov = (camera.fov * Math.PI) / 180;
-      const h = 2 * Math.tan(vFov / 2) * dist;
-      const w = h * camera.aspect;
-      bgPlane.scale.set(w * 1.6, h * 1.6, 1);
-    };
-
-    const resize = () => {
-      const w = wrap.clientWidth || window.innerWidth;
-      const h = wrap.clientHeight || window.innerHeight;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / Math.max(1, h);
-      camera.updateProjectionMatrix();
-      bgUniforms.uResolution.value.set(w, h);
-      updateBgScale();
-    };
-    resize();
-    window.addEventListener("resize", resize);
+    const targetPos = new THREE.Vector3();
+    const lookAt = new THREE.Vector3();
+    const camLocal = new THREE.Vector3();
+    const clock = new THREE.Clock();
 
     const onScroll = () => {
-      const rect = scrollEl.getBoundingClientRect();
-      const total = Math.max(1, scrollEl.offsetHeight - window.innerHeight);
-      const scrolled = Math.max(0, Math.min(total, -rect.top));
-      st.targetScroll = scrolled / total;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      st.targetScroll = max > 0 ? window.scrollY / max : 0;
+      const s = st.targetScroll;
+      if (s < 0.25) setActiveSlide(0);
+      else if (s < 0.5) setActiveSlide(1);
+      else if (s < 0.75) setActiveSlide(2);
+      else setActiveSlide(3);
     };
-    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
 
-    const onPointerMove = (e: PointerEvent) => {
-      st.tx = (e.clientX / Math.max(1, window.innerWidth)) * 2 - 1;
-      st.ty = -(e.clientY / Math.max(1, window.innerHeight)) * 2 + 1;
-      bgUniforms.uMouse.value.set(
-        e.clientX / Math.max(1, window.innerWidth),
-        1.0 - e.clientY / Math.max(1, window.innerHeight),
-      );
-      mouseNDC.set(st.tx, st.ty);
+    const onPointerMove = (e: MouseEvent) => {
+      st.mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      st.mouseY = (e.clientY / window.innerHeight) * 2 - 1;
     };
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
 
-    const onClick = (e: MouseEvent) => {
-      if ((e.target as HTMLElement | null)?.closest("a, button")) return;
-      raycaster.setFromCamera(mouseNDC, camera);
-      const hits = raycaster.intersectObjects(stageGroup.children, true);
-      if (hits.length > 0) {
+    // Poke detection via raycasting
+    const ray = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    const onPointerDown = (e: MouseEvent) => {
+      ndc.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      if (ray.intersectObject(statue, true).length > 0) {
+        st.sqV -= 9;
+        st.boost = 1;
         st.taps++;
-        st.sqV = -0.14;
-        st.nodV = 0.34;
-        st.blink = 1;
-        st.boost = 1.0;
-        if (st.taps % 7 === 0) st.smile = 1.0;
-        if (pokeGlyphRef.current) {
-          pokeGlyphRef.current.textContent =
-            st.taps % 3 === 0 ? "…" : st.taps % 7 === 0 ? "!" : "?";
-          pokeGlyphRef.current.style.left = `${e.clientX}px`;
-          pokeGlyphRef.current.style.top = `${e.clientY - 24}px`;
-          pokeGlyphRef.current.style.opacity = "1";
-          setTimeout(() => {
-            if (pokeGlyphRef.current) {
-              pokeGlyphRef.current.style.opacity = "0";
-            }
-          }, 850);
-        }
+        const isSmile = st.taps % 7 === 0;
+        if (isSmile) st.smile = 1;
+        const newPoke = {
+          id: Date.now() + Math.random(),
+          x: e.clientX,
+          y: e.clientY,
+          text: isSmile ? "…Straight Man Smiled" : "?",
+        };
+        setPokes((prev) => [...prev, newPoke]);
+        setTimeout(() => {
+          setPokes((prev) => prev.filter((p) => p.id !== newPoke.id));
+        }, 1300);
       }
     };
+    window.addEventListener("pointerdown", onPointerDown);
 
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("click", onClick);
-
-    const smoothstep = (min: number, max: number, v: number) => {
-      const x = Math.max(0, Math.min(1, (v - min) / (max - min)));
-      return x * x * (3 - 2 * x);
+    const onResize = () => {
+      sizes.width = window.innerWidth;
+      sizes.height = window.innerHeight;
+      camera.aspect = sizes.width / sizes.height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(sizes.width, sizes.height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      shaderUniforms.uResolution.value.set(
+        sizes.width * renderer.getPixelRatio(),
+        sizes.height * renderer.getPixelRatio(),
+      );
     };
+    window.addEventListener("resize", onResize);
 
-    let rafId = 0;
-    let last = performance.now();
-    let prevActiveIdx = 0;
+    let raf = 0;
+    const animate = () => {
+      raf = requestAnimationFrame(animate);
+      const dt = Math.min(0.05, clock.getDelta());
+      const time = clock.getElapsedTime();
 
-    const tick = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      const t = now * 0.001;
+      // Smooth scroll interpolation
+      st.scroll += (st.targetScroll - st.scroll) * 0.05;
+      const scroll = st.scroll;
+      const portrait = sizes.width / sizes.height < 0.9;
 
-      const prevScroll = st.scroll;
-      st.scroll += (st.targetScroll - st.scroll) * 0.075;
-      st.scrollVel = Math.abs(st.targetScroll - prevScroll);
-
-      st.mx += (st.tx - st.mx) * 0.08;
-      st.my += (st.ty - st.my) * 0.08;
-      st.boost = Math.max(0, st.boost - dt * 1.5);
-
-      bgUniforms.uTime.value = t;
-      bgUniforms.uScroll.value = st.scroll;
-      bgUniforms.uBoost.value = st.boost;
+      // Gentle mouse tilt
+      modelPivot.rotation.y = st.mouseX * 0.25;
+      modelPivot.rotation.x = st.mouseY * 0.15;
 
       // Sparks
-      const posAttr = sparkGeo.attributes.position as THREE.BufferAttribute;
-      const arr = posAttr.array as Float32Array;
+      const vel = Math.abs(st.targetScroll - scroll);
+      const mult = 1 + vel * 9 + st.boost * 3;
+      const turb = vel * 0.8 + st.boost * 0.4;
       for (let i = 0; i < sparkCount; i++) {
-        const idxY = i * 3 + 1;
-        const idxX = i * 3;
-        const nextY =
-          (arr[idxY] ?? 0) +
-          (sparkSpeed[i] ?? 0.006) +
-          st.scrollVel * 0.4 +
-          st.boost * 0.03;
-        arr[idxY] = nextY > 11 ? -11 : nextY;
-        arr[idxX] =
-          (arr[idxX] ?? 0) + Math.sin(t * 0.8 + (sparkSeed[i] ?? 0)) * 0.002;
-      }
-      posAttr.needsUpdate = true;
-      sparks.rotation.y = t * 0.025 + st.scroll * 0.6;
+        const k = i * 3;
+        const d = sparkData[i];
+        if (!d) continue;
+        const px = sPos[k] ?? 0;
+        const py = sPos[k + 1] ?? 0;
+        const pz = sPos[k + 2] ?? 0;
 
-      // 360° Laocoon Camera Orbit + Dynamic View Offset
-      const radius = 5.4;
-      const phi = st.scroll * Math.PI * 2;
-      const camY = Math.sin(st.scroll * Math.PI * 2) * 0.75 + 0.15;
+        let nx = px + d.sx * dt * mult;
+        let ny = py + d.sy * dt * mult;
+        let nz = pz + d.sz * dt * mult;
 
-      camera.position.x = Math.sin(phi) * radius + st.mx * 0.24;
-      camera.position.z = Math.cos(phi) * radius;
-      camera.position.y = camY + st.my * 0.18;
-      camera.lookAt(0, -0.05, 0);
+        const sw = d.sr * (1 + turb * 4);
+        nx += Math.sin(time * d.sw + d.ph) * sw * dt;
+        nz += Math.cos(time * d.sw + d.ph) * sw * dt;
 
-      const isMobile = window.innerWidth <= 960;
-      const w = wrap.clientWidth || window.innerWidth;
-      const h = wrap.clientHeight || window.innerHeight;
-      if (!isMobile) {
-        const offsetFactor = -0.22 * Math.cos(st.scroll * Math.PI * 3);
-        camera.setViewOffset(w, h, w * offsetFactor, 0, w, h);
-      } else {
-        camera.clearViewOffset();
-      }
-
-      // Straight Man spring physics & head tracking
-      st.sqV += (0 - st.sq) * 28 * dt;
-      st.sqV *= Math.pow(0.82, dt * 60);
-      st.sq += st.sqV;
-      robot.scale.set(1 - st.sq * 0.45, 1 + st.sq, 1 - st.sq * 0.45);
-
-      torso.position.y = 0.58 + Math.sin(t * 1.7) * 0.014;
-      torso.rotation.z = Math.sin(t * 0.9) * 0.015;
-
-      st.nodV += (0 - st.nod) * 22 * dt;
-      st.nodV *= Math.pow(0.84, dt * 60);
-      st.nod += st.nodV;
-
-      head.rotation.y = st.mx * 0.38 + Math.sin(t * 0.6) * 0.06;
-      head.rotation.x = -st.my * 0.22 + st.nod;
-
-      for (const e of eyes) {
-        e.pupil.position.x = st.mx * 0.036;
-        e.pupil.position.y = st.my * 0.028;
-      }
-
-      st.nextBlink -= dt;
-      if (st.nextBlink <= 0) {
-        st.blink = 1;
-        st.nextBlink = 2.4 + Math.random() * 3.0;
-      }
-      if (st.blink > 0) st.blink = Math.max(0, st.blink - dt * 7.5);
-      const lidClose = Math.sin(st.blink * Math.PI);
-      for (const e of eyes) {
-        e.lid.position.y = 0.24 - lidClose * 0.22;
-      }
-
-      st.smile = Math.max(0, st.smile - dt * 0.55);
-      mouthR.rotation.z = st.smile * 0.38;
-      mouthR.position.y = st.smile * 0.014;
-      antTipMat.emissiveIntensity =
-        1.8 + Math.sin(t * 3.2) * 0.6 + st.boost * 2.5;
-
-      // Chapter transitions (4 slides at 0.0, 0.333, 0.666, 1.0)
-      const slideCenters = [0.0, 0.333, 0.666, 1.0];
-      const nextIdx = slideCenters.reduce(
-        (best, c, idx) =>
-          Math.abs(st.scroll - c) <
-          Math.abs(st.scroll - (slideCenters[best] ?? 0))
-            ? idx
-            : best,
-        0,
-      );
-      if (nextIdx !== prevActiveIdx) {
-        prevActiveIdx = nextIdx;
-        setActiveSlide(nextIdx);
-      }
-
-      const d0 = smoothstep(0.0, 0.25, st.scroll);
-      const d1 = smoothstep(0.25, 0.5, st.scroll);
-      const d2 = smoothstep(0.5, 0.75, st.scroll);
-      const d3 = smoothstep(0.75, 1.0, st.scroll);
-      setDashScales([Math.max(0.06, d0), d1, d2, d3]);
-
-      setSlideTransforms(
-        slideCenters.map((c) => (st.scroll - c) * -140),
-      );
-
-      // Bit #0417 clip-path reveal on Chapter 2
-      if (bitCardRef.current) {
-        const dist2 = st.scroll - 0.333;
-        if (Math.abs(dist2) < 0.22) {
-          let prog = 0;
-          if (dist2 < -0.05) {
-            prog = smoothstep(-0.2, -0.05, dist2);
-            bitCardRef.current.style.clipPath = `inset(${(1 - prog) * 100}% 0% 0% 0% round 14px)`;
-          } else if (dist2 > 0.05) {
-            prog = 1 - smoothstep(0.05, 0.2, dist2);
-            bitCardRef.current.style.clipPath = `inset(0% 0% ${(1 - prog) * 100}% 0% round 14px)`;
-          } else {
-            bitCardRef.current.style.clipPath = `inset(0% 0% 0% 0% round 14px)`;
-          }
-          bitCardRef.current.style.transform = `translate3d(0, calc(-50% + ${dist2 * -180}px), 0)`;
-        } else {
-          bitCardRef.current.style.clipPath = `inset(100% 0% 0% 0% round 14px)`;
+        if (ny > 3 || Math.abs(nx) > 3.5 || Math.abs(nz) > 3.5) {
+          ny = -2.5;
+          nx = (Math.random() - 0.5) * 3;
+          nz = (Math.random() - 0.5) * 3;
         }
+
+        sPos[k] = nx;
+        sPos[k + 1] = ny;
+        sPos[k + 2] = nz;
       }
+      const posAttr = sGeo.attributes.position;
+      if (posAttr) posAttr.needsUpdate = true;
+      st.boost = Math.max(0, st.boost - dt * 1.2);
 
+      // Camera 360 degree orbit around the bronze statue
+      const phi = scroll * Math.PI * 2;
+      const y = 0.35 + Math.sin(scroll * Math.PI) * 0.8;
+      const radius = (4.2 - Math.sin(scroll * Math.PI) * 0.6) * (portrait ? 1.7 : 1);
+      targetPos.set(radius * Math.sin(phi), y, radius * Math.cos(phi));
+      const tp = Math.min(1, scroll / 0.28);
+      const ease = (Math.cos(tp * Math.PI) + 1) * 0.5;
+
+      const g = (c: number, w = 0.1) => Math.exp(-Math.pow((scroll - c) / w, 2));
+      const shift = portrait
+        ? 0
+        : Math.max(-0.28, Math.min(0.28, 0.17 * ease + 0.27 * g(0.34) - 0.2 * g(0.62) + 0.2 * g(0.95, 0.12)));
+      camera.setViewOffset(sizes.width, sizes.height, -shift * sizes.width, 0, sizes.width, sizes.height);
+      lookAt.set(0, portrait ? -1.75 : -0.15, 0);
+      camera.position.lerp(targetPos, 0.05);
+      camera.lookAt(lookAt);
+
+      // Head keeps an eye on camera
+      camLocal.copy(camera.position);
+      bot.worldToLocal(camLocal);
+      const ang = Math.atan2(camLocal.x, camLocal.z);
+      const yawT = Math.abs(ang) < 1.9 ? Math.max(-0.8, Math.min(0.8, ang * 0.85)) : 0;
+      st.hYaw += (yawT - st.hYaw) * (1 - Math.exp(-3 * dt));
+      st.hPitch += (-st.mouseY * 0.12 - 0.04 - st.hPitch) * (1 - Math.exp(-3 * dt));
+      headPivot.rotation.set(st.hPitch, st.hYaw, Math.sin(time * 0.5) * 0.05);
+      torso.scale.y = 1 + Math.sin(time * 1.7) * 0.008;
+
+      // Squash spring on poke
+      st.sqV += (-170 * st.sq - 11 * st.sqV) * dt;
+      st.sq += st.sqV * dt;
+      const q = Math.max(-0.6, Math.min(0.6, st.sq * 0.16));
+      head.scale.set(1 - q * 0.55, 1 + q, 1 - q * 0.55);
+
+      // Blinking & slight smile
+      st.nextBlink -= dt;
+      if (st.nextBlink < 0) {
+        st.blink = 1;
+        st.nextBlink = 2.2 + Math.random() * 3.5;
+      }
+      st.blink = Math.max(0, st.blink - dt * 7);
+      eyeL.scale.y = eyeR.scale.y = 1.3 * (1 - Math.min(1, st.blink * 1.2)) + 0.06;
+      eyes.position.x = st.hYaw * 0.05;
+      st.smile = Math.max(0, st.smile - dt * 0.45);
+      mouthR.rotation.z = Math.sin(Math.min(1, st.smile) * Math.PI) * 0.22;
+      const pulse = 0.8 + 0.2 * (Math.sin(time * 2.2) * 0.5 + 0.5);
+      chest.color.setRGB(1 * pulse, 0.69 * pulse, 0.23 * pulse);
+      bulbLight.intensity = 1 + st.boost * 4;
+
+      shaderUniforms.uTime.value = time;
+      shaderUniforms.uMouse.value.set(st.mouseX, -st.mouseY);
+      shaderUniforms.uScroll.value = scroll;
       renderer.render(scene, camera);
-      rafId = requestAnimationFrame(tick);
     };
-
-    rafId = requestAnimationFrame(tick);
+    animate();
 
     return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("click", onClick);
-      pmrem.dispose();
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("resize", onResize);
       renderer.dispose();
+      pmrem.dispose();
     };
   }, []);
 
   return (
-    <div ref={scrollContainerRef} className="showtime-scroll-container">
-      <div ref={ stationaryViewport => {} } className="showtime-sticky-viewport">
-        {/* 3D WebGL Canvas */}
-        <div ref={canvasWrapRef} className="absolute inset-0 z-1" />
+    <div className="relative min-h-[500vh] bg-black text-white font-sans selection:bg-[#ffb13b]/30 selection:text-[#ffb13b]">
+      {/* Fixed Fullscreen 3D WebGL Canvas */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 w-full h-full z-0 block cursor-crosshair outline-none"
+        aria-label="The Straight Man 3D bronze statue on stage. Scroll to orbit him 360 degrees, click to poke."
+      />
 
-        {/* Story Progress Dashes on the 5th Laocoon Grid Column */}
+      {/* Dynamic Pokes Overlays */}
+      {pokes.map((p) => (
         <div
-          className="pointer-events-none fixed top-[70px] right-[5%] z-20 flex h-[calc(100vh-70px)] w-[3px] flex-col"
-          aria-hidden="true"
+          key={p.id}
+          className="fixed z-50 pointer-events-none font-serif text-3xl font-bold text-[#ffb13b] animate-ping"
+          style={{ left: p.x, top: p.y, transform: "translate(-50%, -50%)" }}
         >
-          {dashScales.map((s, idx) => (
-            <div
-              key={idx}
-              className="story-dash"
-              style={{ transform: `scaleY(${s})` }}
-            />
-          ))}
+          {p.text}
         </div>
+      ))}
 
-        {/* Floating Poke Glyph */}
-        <div
-          ref={pokeGlyphRef}
-          className="pointer-events-none fixed z-50 font-serif text-4xl italic text-[#ffb13b] opacity-0 transition-opacity duration-300"
-        >
-          ?
+      {/* Floating Header */}
+      <header className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-[clamp(20px,4vw,56px)] py-6 pointer-events-auto">
+        <Link href="/" className="flex items-center gap-2 group">
+          <span className="h-2 w-2 rounded-full bg-[#ffb13b] shadow-[0_0_10px_#ffb13b]" />
+          <span className="font-mono text-sm tracking-[0.22em] font-semibold text-white group-hover:text-[#ffb13b] transition-colors">
+            HAHA SHOWTIME
+          </span>
+        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/stage"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#ffb13b] font-mono text-xs uppercase tracking-widest text-black font-semibold hover:bg-white transition-all shadow-[0_0_16px_rgba(255,177,59,0.3)]"
+          >
+            <Mic className="w-3.5 h-3.5" />
+            <span>Take the Stage</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
+      </header>
 
-        {/* Chapter 2 Editorial Clip-Path Bit Card */}
-        <div
-          ref={bitCardRef}
-          className="showtime-bit-card"
-          style={{ clipPath: "inset(100% 0% 0% 0% round 14px)" }}
-        >
-          <div className="flex justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
-            <span>Bit #0417 · Punchline</span>
-            <span className="text-[#ffb13b]">Stumped</span>
-          </div>
-          <div>
-            <div className="mb-3 font-serif text-xl leading-snug text-[#fff6ed]">
-              “My wife told me to stop impersonating a flamingo. I had to put my
-              foot down.”
-            </div>
-            <div className="border-l-2 border-[#ffb13b] pl-3 font-mono text-[11px] leading-relaxed text-[#a49b8e]">
-              STRAIGHT MAN (97% CONF):
-              <br />
-              Setting a firm boundary in a marriage is healthy. Good for you.
-            </div>
-          </div>
-          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
-            <span>Crowd 9 · 94% Laugh</span>
-            <span className="flex items-center gap-1 border border-[#ffb13b] px-2 py-0.5 text-[#ffb13b]">
-              <CheckCircle2 className="w-3 h-3" />
-              <span>Entered Vault</span>
+      {/* Vertical Story Dashes Tracker */}
+      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3 pointer-events-none">
+        {[0, 1, 2, 3].map((idx) => (
+          <div
+            key={idx}
+            className={`w-1 h-8 rounded-full transition-all duration-300 ${
+              activeSlide === idx
+                ? "bg-[#ffb13b] shadow-[0_0_10px_#ffb13b] h-12"
+                : "bg-white/20"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Pinned Editorial Slides Overlay */}
+      <div className="fixed inset-0 z-10 pointer-events-none flex flex-col justify-end p-[clamp(20px,4vw,56px)] pb-20">
+        {/* Slide 01: Tell a Joke */}
+        {activeSlide === 0 && (
+          <div className="max-w-2xl pointer-events-auto animate-fadeIn">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
+              Chapter 01 · The Human Challenge
             </span>
-          </div>
-        </div>
-
-        {/* CHAPTER 01 — TELL A JOKE */}
-        <div
-          className="showtime-slide left"
-          style={{
-            transform: `translate3d(0, calc(-50% + ${slideTransforms[0]}px), 0)`,
-          }}
-        >
-          <div
-            className={`showtime-slide-body mb-4 ${activeSlide === 0 ? "in" : ""}`}
-          >
-            <span className="hud-badge text-[10px]">01 · Showtime · Open Mic &amp; Pro Stage</span>
-          </div>
-          <h1 className="showtime-slide-title">
-            <SplitChars
-              active={activeSlide === 0}
-              parts={[
-                { text: "Tell a", brAfter: true },
-                { text: "Joke", em: true },
-              ]}
-            />
-          </h1>
-          <div className={`showtime-slide-body ${activeSlide === 0 ? "in" : ""}`}>
-            <p>
-              Step up to the mic. Drop a one-liner, a passive-aggressive text,
-              an awkward real-life moment, or a double meaning across four club
-              categories: <b>Punchline</b>, <b>Subtext</b>, <b>IRL</b>, and{" "}
-              <b>Double Meaning</b>.
+            <h1 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
+              Tell a <em className="italic text-[#ffb13b]">Joke.</em>
+            </h1>
+            <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-xl">
+              AI has ingested almost everything humanity ever wrote. But the most human nuances were never written down: the pause before "I'm fine", deadpan irony, and why a bit kills in one room and bombs in another.
             </p>
-            <Link href="/stage" className="showtime-slide-cta flex items-center gap-2">
-              <Mic className="w-3.5 h-3.5" />
-              <span>Take the stage</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
-        </div>
+        )}
 
-        {/* CHAPTER 02 — FOOL THE AI */}
-        <div
-          className="showtime-slide right"
-          style={{
-            transform: `translate3d(0, calc(-50% + ${slideTransforms[1]}px), 0)`,
-          }}
-        >
-          <div
-            className={`showtime-slide-body mb-4 ${activeSlide === 1 ? "in" : ""}`}
-          >
-            <span className="eyebrow">02 · The Straight Man · SM-01</span>
-          </div>
-          <h2 className="showtime-slide-title">
-            <SplitChars
-              active={activeSlide === 1}
-              parts={[
-                { text: "Fool", brAfter: true },
-                { text: "the ", em: false },
-                { text: "AI", em: true },
-              ]}
-            />
-          </h2>
-          <div className={`showtime-slide-body ${activeSlide === 1 ? "in" : ""}`}>
-            <p>
-              Meet the <b>Straight Man</b> — an AI with encyclopedic grammar and
-              zero sense of humor. It answers every premise with 97% literal
-              confidence. When it misses the flip and the <b>Human Crowd</b>{" "}
-              gets it, you win the round.
+        {/* Slide 02: Fool the AI */}
+        {activeSlide === 1 && (
+          <div className="max-w-2xl pointer-events-auto animate-fadeIn">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
+              Chapter 02 · The Straight Man
+            </span>
+            <h2 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
+              Fool the <em className="italic text-[#ffb13b]">AI.</em>
+            </h2>
+            <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-xl">
+              Tell the Straight Man something only a human would understand: subtext, innuendo, or double meanings. If it misses with deadpan confidence and the blind crowd agrees, you killed it.
             </p>
-            <Link href="/crowd" className="showtime-slide-cta">
-              <span>Judge in the Crowd</span>
-              <span>→</span>
-            </Link>
           </div>
-        </div>
+        )}
 
-        {/* CHAPTER 03 — GET PAID */}
-        <div
-          className="showtime-slide left"
-          style={{
-            transform: `translate3d(0, calc(-50% + ${slideTransforms[2]}px), 0)`,
-          }}
-        >
-          <div
-            className={`showtime-slide-body mb-4 ${activeSlide === 2 ? "in" : ""}`}
-          >
-            <span className="eyebrow">03 · The Tip Jar · Daily Settlement</span>
-          </div>
-          <h2 className="showtime-slide-title">
-            <SplitChars
-              active={activeSlide === 2}
-              parts={[
-                { text: "Get", brAfter: true },
-                { text: "Paid", em: true },
-              ]}
-            />
-          </h2>
-          <div className={`showtime-slide-body ${activeSlide === 2 ? "in" : ""}`}>
-            <p>
-              A panel of 7–9 staked human judges scores the laugh. Verified
-              stumpers earn daily Merkle-settled shares of the{" "}
-              <b>Tip Jar (60% Comics · 30% Crowd · 10% House)</b>, claimable
-              directly on-chain.
+        {/* Slide 03: Get Paid */}
+        {activeSlide === 2 && (
+          <div className="max-w-2xl pointer-events-auto animate-fadeIn">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
+              Chapter 03 · Blind Consensus
+            </span>
+            <h2 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
+              Get <em className="italic text-[#ffb13b]">Paid.</em>
+            </h2>
+            <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-xl">
+              Verified human jurors judge blind with zero author or AI labels. When 60%+ side with you, rewards settle on-chain in USDG directly from the Tip Jar at midnight UTC.
             </p>
-            <Link href="/tipjar" className="showtime-slide-cta">
-              <span>Inspect the Tip Jar</span>
-              <span>→</span>
-            </Link>
           </div>
-        </div>
+        )}
 
-        {/* CHAPTER 04 — GET THE JOKE */}
-        <div
-          className="showtime-slide right"
-          style={{
-            transform: `translate3d(0, calc(-50% + ${slideTransforms[3]}px), 0)`,
-          }}
-        >
-          <div
-            className={`showtime-slide-body mb-4 ${activeSlide === 3 ? "in" : ""}`}
-          >
-            <span className="eyebrow">04 · The Joke Vault · Season 01</span>
-          </div>
-          <h2 className="showtime-slide-title">
-            <SplitChars
-              active={activeSlide === 3}
-              parts={[
-                { text: "Get the", brAfter: true },
-                { text: "Joke", em: true },
-              ]}
-            />
-          </h2>
-          <div className={`showtime-slide-body ${activeSlide === 3 ? "in" : ""}`}>
-            <p>
-              Every bit that fools the Straight Man enters{" "}
-              <b>The Joke Vault</b> — a provenance-signed dataset of human
-              nuance. Each season, the AI studies the Vault, gets harder to
-              fool, and raises the bar for human wit.
+        {/* Slide 04: The Joke Vault */}
+        {activeSlide === 3 && (
+          <div className="max-w-2xl pointer-events-auto animate-fadeIn">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
+              Chapter 04 · The Joke Vault
+            </span>
+            <h2 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
+              Get the <em className="italic text-[#ffb13b]">Joke.</em>
+            </h2>
+            <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-xl mb-6">
+              Every verified bit becomes an immutable data asset. AI labs license the Vault to align frontier reasoning models, and 10% lifetime royalties flow back to the comedians who created them.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/vault" className="showtime-slide-cta">
-                <span>Explore the Vault</span>
-                <span>→</span>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/stage"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#ffb13b] font-mono text-xs uppercase tracking-widest text-black font-semibold hover:bg-white transition-all shadow-[0_0_20px_rgba(255,177,59,0.3)]"
+              >
+                <Mic className="w-4 h-4" />
+                <span>Launch App</span>
+                <ArrowUpRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/"
-                className="showtime-slide-cta"
-                style={{
-                  background: "transparent",
-                  color: "var(--bone)",
-                  borderColor: "var(--line-strong)",
-                }}
+                href="/vault"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 bg-white/5 font-mono text-xs uppercase tracking-widest text-white hover:bg-white/10 transition-all"
               >
-                <span>Back to Club</span>
+                <Database className="w-4 h-4" />
+                <span>Explore Vault</span>
               </Link>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Bottom HUD Bar */}
-        <div className="pointer-events-none absolute bottom-6 left-[5%] right-[5%] z-20 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
-          <span>
-            Laocoon 360° Orbit · Chapter 0{activeSlide + 1} / 04
-          </span>
-          <span className="hidden sm:inline">
-            Scroll to orbit · Click bronze Straight Man to poke
-          </span>
-          <span>SM-01 · Literal Confidence 97%</span>
+        <div className="pointer-events-none mt-8 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-t border-white/10 pt-4">
+          <span>Scroll to orbit 360° · Click statue to poke</span>
+          <span>Chapter 0{activeSlide + 1} / 04</span>
         </div>
       </div>
     </div>
