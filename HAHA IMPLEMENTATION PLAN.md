@@ -713,7 +713,7 @@ Sebelum melakukan deploy ke Mainnet (`4663`), kedelapan skenario pengujian ini *
    - Uji Plants: gunakan flag time-travel testnet (`plant_candidate_at = now()-8d`) → 5 validasi → promosi hanya jika 5/5. Tanpa flag, test skip (butuh umur 7 hari).
    - Pastikan kartu share `1200x675` otomatis ter-upload ke bucket publik **Cloudflare R2** dan bisa dibuka lewat URL R2(haha.md).
 5. **Test 5 — Aliran Uang (split dua sub-tes, tidak campur)(haha.md):**
-   - **5a USDG-only:** `simulateTradingFees(splitter, 1000_000000)` tanpa ETH → settlement stages → assert 700.000000 TipJar + 300.000000 MicDrop (micro exact). ✅ PASS live 16 Okt 2026 (tx `0xa532…f198`). NOTE: splitter masih ke placeholder MicDrop; rotasi ke real di-propose 16 Okt (`micDropEta` +48h) — confirm setelah lewat.
+   - **5a USDG-only:** `simulateTradingFees(splitter, 1000_000000)` tanpa ETH → settlement stages → assert 700.000000 TipJar + 300.000000 MicDrop (micro exact). ✅ PASS 17 Okt 2026 di set deploy FINAL (TipJar `0x03f2…a675`, MicDrop real `0xdfB0…0466`, FeeSplitter `0xC79D…9C7d`) — 700/300 exact, sweep refs + rotasi MicDrop terkonfirmasi.
    - **5b ETH-only:** 0.02 ETH tanpa USDG → assert total = swap(ETH) ±2%, lalu 70/30 dari total itu. Pre-graduasi MicDrop HOLD, post-graduasi burn.
    - Trigger `/api/cron/daily-settlement`.
    - Verifikasi explorer: 5a exact micro; 5b rangebound slippage.
