@@ -31,7 +31,10 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
     uint256 public constant TIP_BPS = 7000;
     uint256 public constant BPS_DENOM = 10000;
     uint256 public constant STALE_AFTER = 24 hours;
-    uint256 public constant TIMELOCK = 48 hours;
+    /// @notice Timelock for keeper/router/tipJar/micDrop/launch-refs changes.
+    ///         Constructor-set so testnet rehearsal can use a short window
+    ///         while mainnet keeps the plan's 48h (no code divergence).
+    uint256 public immutable TIMELOCK;
     uint256 public constant MAX_STALE_AMOUNT_MICRO = 5_000_000_000; // 5,000 USDG (6 dec)
     uint256 public constant MAX_MIN_OUT_BPS = 200; // 2% max slippage on stale harvest
 
@@ -90,7 +93,8 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
         address tipJar_,
         address micDrop_,
         address admin_,
-        address keeper_
+        address keeper_,
+        uint256 timelock_
     ) {
         if (
             usdg_ == address(0) || feeEscrow_ == address(0) || tipJar_ == address(0) || micDrop_ == address(0)
@@ -100,6 +104,7 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
         feeEscrow = IPonsFeeEscrow(feeEscrow_);
         tipJar = tipJar_;
         micDrop = micDrop_;
+        TIMELOCK = timelock_;
         lastHarvest = block.timestamp;
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
         _grantRole(KEEPER_ROLE, keeper_);

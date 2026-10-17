@@ -71,7 +71,7 @@ contract HahaSetup is Test {
         // Testnet root delay: 10 minutes (mainnet: 24h).
         tipJar = new TipJar(address(usdg), admin, keeper, admin, 10 minutes);
         splitter = new FeeSplitter(
-            address(usdg), address(escrow), address(tipJar), placeholderDrop, admin, keeper
+            address(usdg), address(escrow), address(tipJar), placeholderDrop, admin, keeper, 48 hours
         );
         sweepCurve = new MockPonsCurve(address(escrow), address(splitter));
         sweepHook = new MockPonsHookSweep(address(escrow), address(splitter));

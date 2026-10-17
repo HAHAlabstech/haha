@@ -52,7 +52,7 @@ contract FeeSplitterTest is HahaSetup {
     function test_HarvestStale_Gated24h() public {
         // Fresh splitter (no time elapsed since lastHarvest): gate holds.
         FeeSplitter fresh = new FeeSplitter(
-            address(usdg), address(escrow), address(tipJar), placeholderDrop, admin, keeper
+            address(usdg), address(escrow), address(tipJar), placeholderDrop, admin, keeper, 48 hours
         );
         vm.expectRevert(FeeSplitter.NotStaleYet.selector);
         fresh.harvestStale(5_000_000_000, 200);

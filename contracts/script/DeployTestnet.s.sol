@@ -5,6 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {MockUSDG} from "../src/mocks/MockUSDG.sol";
 import {MockHAHA} from "../src/mocks/MockHAHA.sol";
 import {MockPonsFeeEscrow} from "../src/mocks/MockPonsFeeEscrow.sol";
+import {MockPonsCurve, MockPonsHookSweep} from "../src/mocks/MockPonsSweep.sol";
 import {MockPonsFactory} from "../src/mocks/MockPonsFactory.sol";
 import {MockUniversalRouter} from "../src/mocks/MockUniversalRouter.sol";
 import {MockPoolManager, MockPonsHook} from "../src/mocks/MockPoolManager.sol";
@@ -35,10 +36,20 @@ contract DeployTestnet is Script {
         TipJar tipJar = new TipJar(address(usdg), cold, deployer, cold, 10 minutes);
         MicDrop placeholder = new MicDrop(address(usdg), address(tipJar), address(0), cold, deployer);
         FeeSplitter splitter = new FeeSplitter(
-            address(usdg), address(_escrow()), address(tipJar), address(placeholder), cold, deployer
+            address(usdg), address(_escrow()), address(tipJar), address(placeholder), cold, deployer, 10 minutes
         );
+        // Bind sweep refs to testnet mock curve/hook (prod: real Pons curve+poolId).
+        MockPonsCurve mockCurve = new MockPonsCurve(address(_escrow()), address(splitter));
+        MockPonsHookSweep mockSweepHook = new MockPonsHookSweep(address(_escrow()), address(splitter));
         _deployRest(address(usdg), address(haha), address(splitter), address(tipJar), cold, deployer);
         vm.stopBroadcast();
+        console.log("MockPonsCurve:", address(mockCurve));
+        console.log("MockPonsHookSweep:", address(mockSweepHook));
+        // Testnet rehearsal: propose launch refs now (10m timelock; confirm later).
+        vm.startBroadcast(vm.envUint("OPERATOR_PRIVATE_KEY"));
+        splitter.proposeSetLaunchRefs(address(mockCurve), address(mockSweepHook), bytes32(uint256(1)));
+        vm.stopBroadcast();
+        console.log("NOTE: confirmSetLaunchRefs after 10m; MicDrop rotation also 10m (testnet TIMELOCK).");
         console.log("FeeSplitter:", address(splitter));
         console.log("TipJar:", address(tipJar));
         console.log("NOTE: splitter.micDrop is a placeholder; proposeSetMicDrop -> confirm after 48h");
