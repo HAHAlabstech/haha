@@ -4,6 +4,7 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
+import { CheckCircle2, XCircle, Mic, ArrowUpRight, Users, Bot } from "lucide-react";
 import {
   authHeaders,
   ensureSiweSession,
@@ -395,9 +396,18 @@ export default function BitPage({
                 <Stamp
                   tone={bit.outcome.result === "killed_it" ? "green" : "red"}
                 >
-                  ★ {bit.outcome.result.toUpperCase()} · Win{" "}
-                  {(bit.outcome.win_strength * 100).toFixed(0)}% · Fair{" "}
-                  {(bit.outcome.fair_ratio * 100).toFixed(0)}%
+                  <span className="flex items-center gap-1.5">
+                    {bit.outcome.result === "killed_it" ? (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    ) : (
+                      <XCircle className="w-3.5 h-3.5" />
+                    )}
+                    <span>
+                      {bit.outcome.result.toUpperCase()} · Win{" "}
+                      {(bit.outcome.win_strength * 100).toFixed(0)}% · Fair{" "}
+                      {(bit.outcome.fair_ratio * 100).toFixed(0)}%
+                    </span>
+                  </span>
                 </Stamp>
               ) : null}
             </div>
@@ -419,17 +429,19 @@ export default function BitPage({
               type="button"
               disabled={!canVerdict || submittingVerdict}
               onClick={() => void submitVerdict("got_it")}
-              className="pill-btn disabled:cursor-not-allowed disabled:opacity-40"
+              className="pill-btn disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-1.5"
             >
-              <span>Got it 😐 (AI Understood)</span>
+              <Bot className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Got it (AI Understood)</span>
             </button>
             <button
               type="button"
               disabled={!canVerdict || submittingVerdict}
               onClick={() => setMissedMode((v) => !v)}
-              className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40"
+              className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-1.5"
             >
-              <span>Missed it 😂 (Send to Crowd)</span>
+              <Users className="w-3.5 h-3.5" />
+              <span>Missed it (Send to Crowd)</span>
             </button>
           </div>
 
@@ -581,11 +593,15 @@ export default function BitPage({
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <Link href="/stage" className="pill-btn hot">
-          <span>🎤 Take the stage again →</span>
+        <Link href="/stage" className="pill-btn hot flex items-center gap-2">
+          <Mic className="w-3.5 h-3.5" />
+          <span>Take the stage again</span>
+          <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
-        <Link href="/crowd" className="pill-btn">
-          <span>Judge in the Crowd →</span>
+        <Link href="/crowd" className="pill-btn flex items-center gap-2">
+          <Users className="w-3.5 h-3.5 text-zinc-400" />
+          <span>Judge in the Crowd</span>
+          <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { X } from "lucide-react";
 import type {
   Eip1193Provider,
   Eip6963ProviderDetail,
@@ -219,7 +220,7 @@ export default function WalletModal({
             className="pill-btn"
             style={{ padding: "6px 12px" }}
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
         <p className="mb-5 text-sm leading-relaxed text-[#a49b8e]">

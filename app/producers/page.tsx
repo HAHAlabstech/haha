@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, Disclaimer, PageHero, SectionTitle, Stamp } from "@/components/ui";
+import { CheckCircle2 } from "lucide-react";
 
 const PLANS = [
   {
@@ -167,7 +168,16 @@ export default function ProducersPage() {
                     active ? "hot" : ""
                   }`}
                 >
-                  <span>{active ? "✓ Selected Plan" : "Select Plan"}</span>
+                  <span className="flex items-center justify-center gap-1.5">
+                    {active ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Selected Plan</span>
+                      </>
+                    ) : (
+                      <span>Select Plan</span>
+                    )}
+                  </span>
                 </button>
               </Card>
             );
@@ -265,7 +275,10 @@ export default function ProducersPage() {
 
           {activationResult ? (
             <div className="space-y-2 rounded-xl border border-[#8fb596]/40 bg-[#8fb596]/10 p-4 font-mono text-xs text-[#fff6ed]">
-              <p className="text-[#8fb596]">✓ License Activated</p>
+              <p className="text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>License Activated</span>
+              </p>
               {activationResult.apiKey ? (
                 <p className="break-all">API Key: {activationResult.apiKey}</p>
               ) : null}

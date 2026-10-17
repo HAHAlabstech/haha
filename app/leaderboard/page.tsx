@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, Disclaimer, PageHero, SectionTitle, Stamp } from "@/components/ui";
 import { truncateAddress } from "@/lib/wallets";
+import { Trophy, Flame, CheckCircle2 } from "lucide-react";
 
 interface ComedianRow {
   wallet: string;
@@ -114,7 +115,10 @@ export default function LeaderboardPage() {
                         </td>
                         <td className="py-3.5 text-right">
                           <Stamp>
-                            ★ {c.killed_it_count} · {c.comedian_rep} rep
+                            <span className="flex items-center gap-1">
+                              <Flame className="w-3 h-3 text-[#ffb13b]" />
+                              <span>{c.killed_it_count} · {c.comedian_rep} rep</span>
+                            </span>
                           </Stamp>
                         </td>
                       </tr>

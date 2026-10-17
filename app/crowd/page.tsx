@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
+import { CheckCircle2, XCircle, ArrowUpRight, Users, ShieldCheck } from "lucide-react";
 import {
   authHeaders,
   ensureSiweSession,
@@ -188,7 +189,10 @@ export default function CrowdPage() {
             <dt>Calibration</dt>
             <dd>
               {stakeInfo?.onboarding_passed ? (
-                <span className="text-[#8fb596]">✓ Passed (8+/10)</span>
+                <span className="text-emerald-400 flex items-center gap-1 font-mono text-xs">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Passed (8+/10)</span>
+                </span>
               ) : (
                 <Link
                   href="/crowd/join"
@@ -310,10 +314,18 @@ export default function CrowdPage() {
                       aria-pressed={selectedFair === f}
                       className={`pill-btn ${selectedFair === f ? "hot" : ""}`}
                     >
-                      <span>
-                        {f === "fair"
-                          ? "✓ Fair Bit"
-                          : "✕ Unfair / Cheap Trick"}
+                      <span className="flex items-center gap-1.5">
+                        {f === "fair" ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Fair Bit</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>Unfair / Cheap Trick</span>
+                          </>
+                        )}
                       </span>
                     </button>
                   ))}

@@ -2,6 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  Sparkles,
+  Layers,
+  Orbit,
+  Scale,
+  Mic,
+  ArrowUpRight,
+  Database,
+  Lock,
+  Coins,
+  ShieldCheck,
+  TrendingUp,
+} from "lucide-react";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import { truncateAddress } from "@/lib/wallets";
 
@@ -27,28 +40,28 @@ const CATEGORY_META = [
     num: "SET 01",
     name: "Punchline",
     sub: "Expectation Flip",
-    glyph: "⚡",
+    icon: Sparkles,
   },
   {
     key: "subtext",
     num: "SET 02",
     name: "Subtext",
     sub: "Polite vs. Real",
-    glyph: "🗡",
+    icon: Layers,
   },
   {
     key: "irl",
     num: "SET 03",
     name: "IRL",
     sub: "Physical World",
-    glyph: "🌊",
+    icon: Orbit,
   },
   {
     key: "double_meaning",
     num: "SET 04",
     name: "Double Meaning",
     sub: "Two Readings",
-    glyph: "⚖",
+    icon: Scale,
   },
 ];
 
@@ -353,12 +366,15 @@ export default function VaultPage() {
             const count = summary?.byCategory?.[c.key] ?? 0;
             const sharePct =
               totalVerified > 0 ? Math.round((count / totalVerified) * 100) : 0;
+            const Icon = c.icon;
             return (
               <div key={c.key} className="laocoon-card p-6 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+                  <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
                     <span>{c.num}</span>
-                    <span className="text-lg">{c.glyph}</span>
+                    <span className="p-1.5 rounded-md bg-white/5 border border-white/10 text-[#ffb13b]">
+                      <Icon className="w-3.5 h-3.5" />
+                    </span>
                   </div>
                   <h3 className="display-serif mt-2 text-3xl text-[#fff6ed]">
                     {c.name}
@@ -629,11 +645,14 @@ export default function VaultPage() {
       </section>
 
       <div className="flex flex-wrap gap-4">
-        <Link href="/stage" className="laocoon-pill py-3 px-6 text-xs text-[#060606] bg-[#ffb13b] font-bold">
-          <span>🎤 Add your bit to the Vault →</span>
+        <Link href="/stage" className="laocoon-pill py-3 px-6 text-xs text-[#060606] bg-[#ffb13b] font-bold flex items-center gap-2 hover:bg-[#ffd27d] transition-colors">
+          <Mic className="w-3.5 h-3.5" />
+          <span>Add your bit to the Vault</span>
+          <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
-        <Link href="/vault/method" className="laocoon-pill py-3 px-6 text-xs">
-          <span>Inspect Replacement Cost Formula →</span>
+        <Link href="/vault/method" className="laocoon-pill py-3 px-6 text-xs flex items-center gap-2">
+          <span>Inspect Replacement Cost Formula</span>
+          <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
       </div>
 

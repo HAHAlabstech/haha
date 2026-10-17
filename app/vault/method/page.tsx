@@ -36,7 +36,7 @@ export default function VaultMethodPage() {
           What counts as <em>an entry.</em>
         </SectionTitle>
         <Card>
-          <p className="text-base leading-relaxed text-[#efe8dc]">
+          <p className="text-base leading-relaxed text-zinc-300">
             Only verified bits are counted: bits the Crowd quorum has judged,
             plus confirmed AI-wins. Bits still in screening, in front of the
             jury, under appeal, or sealed inside the private holdout set are
@@ -59,7 +59,7 @@ export default function VaultMethodPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-[#efe8dc]/15 font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+                <tr className="border-b border-white/10 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
                   <th className="py-3 pr-4">Outcome</th>
                   <th className="py-3 pr-4">Reference Rate</th>
                   <th className="py-3">Rationale</th>
@@ -69,21 +69,21 @@ export default function VaultMethodPage() {
                 {PRICE_TABLE.map((r) => (
                   <tr
                     key={r.outcome}
-                    className="border-b border-[#efe8dc]/10 text-[#efe8dc]"
+                    className="border-b border-white/10 text-zinc-300"
                   >
-                    <td className="py-3.5 pr-4 font-serif text-lg text-[#fff6ed]">
+                    <td className="py-3.5 pr-4 font-serif text-lg text-[#f4f4f5]">
                       {r.outcome}
                     </td>
                     <td className="py-3.5 pr-4 font-mono text-sm text-[#ffb13b]">
                       {r.ref}
                     </td>
-                    <td className="py-3.5 text-sm text-[#a49b8e]">{r.note}</td>
+                    <td className="py-3.5 text-sm text-zinc-400">{r.note}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className="mt-6 rounded-xl border border-[#efe8dc]/12 bg-[#0c0a08] p-4 font-mono text-xs text-[#ffb13b]">
+          <div className="mt-6 rounded-xl border border-white/10 bg-[#09090c] p-4 font-mono text-xs text-[#ffb13b]">
             replacement_cost = Σ entries[category][outcome] ×
             ref_price[category][outcome]
           </div>
@@ -95,7 +95,7 @@ export default function VaultMethodPage() {
           Updates &amp; <em>History.</em>
         </SectionTitle>
         <Card>
-          <ul className="list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-[#a49b8e]">
+          <ul className="list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-zinc-400">
             <li>
               Counts refresh on a short schedule; the Vault page revalidates
               frequently so the meter stays fresh.
@@ -106,7 +106,7 @@ export default function VaultMethodPage() {
             </li>
             <li>
               Weekly snapshots anchor the entry count and Merkle root to{" "}
-              <code className="font-mono text-xs text-[#efe8dc]">
+              <code className="font-mono text-xs text-zinc-200">
                 VaultRegistry.sol
               </code>
               .

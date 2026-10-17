@@ -4,16 +4,16 @@
   --black: #000000;
   --void: #060606;
   --void-deep: #030303;
-  --surface-1: #0c0c0f;
-  --surface-2: #14141a;
-  --surface-3: #1a1a24;
+  --surface-1: #09090b;
+  --surface-2: #111115;
+  --surface-3: #181820;
   --ink: #060606;
-  --ink-2: #0e0c0a;
-  --ink-3: #161310;
-  --bone: #efe8dc;
-  --bone-bright: #fff6ed;
-  --bone-dim: #a49b8e;
-  --bone-faint: #6c6459;
+  --ink-2: #09090b;
+  --ink-3: #111115;
+  --bone: #f4f4f5;
+  --bone-bright: #ffffff;
+  --bone-dim: #a1a1aa;
+  --bone-faint: #71717a;
   --amber: #ffb13b;
   --amber-hot: #ffd27d;
   --amber-deep: #5a3810;
@@ -27,14 +27,14 @@
   --sapphire-glow: rgba(59, 130, 246, 0.35);
   --sapphire-sheen: rgba(59, 130, 246, 0.12);
   --forge-spark: #ffedd5;
-  --crimson: #c93b2b;
-  --sage: #8fb596;
-  --line: rgba(239, 232, 220, 0.09);
-  --line-strong: rgba(239, 232, 220, 0.22);
-  --line-bronze: rgba(212, 139, 56, 0.25);
-  --line-sapphire: rgba(59, 130, 246, 0.25);
-  --glass: rgba(12, 10, 8, 0.78);
-  --serif: "Fraunces", "Playfair Display", Georgia, serif;
+  --crimson: #ef4444;
+  --sage: #10b981;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --line-bronze: rgba(212, 139, 56, 0.3);
+  --line-sapphire: rgba(59, 130, 246, 0.3);
+  --glass: rgba(9, 9, 11, 0.82);
+  --serif: "Fraunces", Georgia, serif;
   --display: "Italiana", "Fraunces", Georgia, serif;
   --sans: "Geist", "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;
   --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -211,126 +211,101 @@ body::before {
   }
 }
 
-/* ================= TOPBAR & CONDENSED PILL ================= */
+/* ================= TOPBAR (UNIFIED FLOATING HEADER) ================= */
 .topbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 60;
-  height: 70px;
-  padding: 0 clamp(20px, 4vw, 56px);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  height: 68px;
+  padding: 0 clamp(16px, 3.5vw, 48px);
+  display: flex;
   align-items: center;
-  transition:
-    opacity 0.35s var(--ease-out),
-    transform 0.35s var(--ease-out),
-    background-color 0.35s var(--ease-out);
-  background: linear-gradient(
-    to bottom,
-    rgba(13, 11, 9, 0.86) 0%,
-    rgba(13, 11, 9, 0.35) 75%,
-    transparent 100%
-  );
-  backdrop-filter: blur(8px);
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(6, 6, 6, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s var(--ease-out);
 }
 
-.topbar.condensed {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-10px);
+.topbar.scrolled {
+  background: rgba(6, 6, 6, 0.94);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.85);
 }
 
 .topbar .left,
 .topbar .right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
-.topbar .right {
-  justify-content: flex-end;
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
 }
 
 .pill-btn {
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 16px;
-  border: 1px solid var(--line-strong);
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(13, 11, 9, 0.65);
-  backdrop-filter: blur(12px);
+  background: rgba(18, 18, 22, 0.65);
+  backdrop-filter: blur(14px);
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--bone);
-  transition:
-    border-color 0.25s var(--ease-out),
-    background 0.25s var(--ease-out),
-    transform 0.25s var(--ease-out),
-    box-shadow 0.25s var(--ease-out);
+  transition: all 0.25s var(--ease-out);
   cursor: pointer;
   text-decoration: none;
 }
 
 .pill-btn:hover {
-  border-color: var(--amber);
-  background: rgba(255, 177, 59, 0.12);
-  box-shadow: 0 0 24px rgba(255, 177, 59, 0.18);
+  border-color: rgba(255, 177, 59, 0.45);
+  background: rgba(255, 177, 59, 0.1);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(255, 177, 59, 0.18);
 }
 
 .pill-btn.hot {
-  border-color: rgba(255, 177, 59, 0.55);
-  color: var(--ink);
-  background: var(--amber);
+  border-color: rgba(255, 177, 59, 0.65);
+  color: #060606;
+  background: linear-gradient(135deg, #ffb13b 0%, #d48b38 100%);
   font-weight: 600;
+  box-shadow: 0 0 20px rgba(255, 177, 59, 0.35);
 }
 
 .pill-btn.hot:hover {
-  background: var(--amber-hot);
-  box-shadow: 0 0 28px rgba(255, 177, 59, 0.45);
-}
-
-.pill-btn .bars {
-  width: 14px;
-  height: 8px;
-  position: relative;
-  display: inline-block;
-}
-
-.pill-btn .bars::before,
-.pill-btn .bars::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1.5px;
-  background: currentColor;
-  transition: transform 0.3s var(--ease-out);
-}
-
-.pill-btn .bars::before {
-  top: 1px;
-}
-
-.pill-btn .bars::after {
-  bottom: 1px;
+  background: linear-gradient(135deg, #ffd27d 0%, #ffb13b 100%);
+  box-shadow: 0 0 28px rgba(255, 177, 59, 0.55);
+  transform: translateY(-1px);
 }
 
 .brand-mark {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 23px;
-  letter-spacing: 0.22em;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--bone);
+  color: #ffffff;
   text-decoration: none;
 }
 
@@ -364,46 +339,17 @@ body::before {
   color: var(--bone-dim);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .clock b {
-  color: var(--bone);
-  font-weight: 400;
+  color: var(--amber);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-}
-
-/* Condensed floating pill on scroll */
-.condensed-pill {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-20px);
-  z-index: 65;
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  padding: 8px 10px 8px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  background: rgba(15, 12, 10, 0.85);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.4s var(--ease-out),
-    transform 0.4s var(--ease-out);
-}
-
-.condensed-pill.visible {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
 }
 
 /* ================= FULLSCREEN OVERLAY MENU ================= */

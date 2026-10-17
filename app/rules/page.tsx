@@ -70,7 +70,7 @@ export default function RulesPage() {
           <section key={s.title} aria-label={s.title}>
             <SectionTitle eyebrow={s.eyebrow}>{s.title}</SectionTitle>
             <Card>
-              <ul className="list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-[#efe8dc]">
+              <ul className="list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-zinc-300">
                 {s.items.map((i) => (
                   <li key={i}>{i}</li>
                 ))}

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { encodeFunctionData, type Address } from "viem";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
+import { CheckCircle2, ArrowUpRight, Coins } from "lucide-react";
 import { tipJarAbi } from "@/lib/haha-contracts";
 import type { ChainEnv, HahaRuntimeConfig } from "@/lib/haha-chains";
 import {
@@ -397,10 +398,11 @@ export default function TipJarPage() {
 
                   {txHash ? (
                     <p
-                      className="font-mono text-xs text-[#8fb596]"
+                      className="font-mono text-xs text-emerald-400 flex items-center gap-1.5"
                       role="status"
                     >
-                      ✓ Claim transaction broadcast: {txHash}
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Claim transaction broadcast: {txHash}</span>
                     </p>
                   ) : null}
                 </div>

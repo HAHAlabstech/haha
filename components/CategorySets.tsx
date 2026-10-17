@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, CheckCircle2, Sparkles, Orbit, Radio, Layers, Activity } from "lucide-react";
 
 export default function CategorySets() {
   const [hoveredCat, setHoveredCat] = useState<string | null>(null);
@@ -86,7 +87,7 @@ export default function CategorySets() {
         <div className="lineup-rows">
           <a
             href="#punchline"
-            className="lineup-row"
+            className="lineup-row group"
             onMouseEnter={() => setHoveredCat("punchline")}
             onMouseLeave={() => setHoveredCat(null)}
           >
@@ -96,12 +97,12 @@ export default function CategorySets() {
               Set up a confident assumption, then flip it on the last word.
             </span>
             <span className="cat">Expectation Flip</span>
-            <span className="arr">↗</span>
+            <span className="arr"><ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-[#ffb13b] transition-colors" /></span>
           </a>
 
           <a
             href="#subtext"
-            className="lineup-row"
+            className="lineup-row group"
             onMouseEnter={() => setHoveredCat("subtext")}
             onMouseLeave={() => setHoveredCat(null)}
           >
@@ -112,12 +113,12 @@ export default function CategorySets() {
               dagger.
             </span>
             <span className="cat">Polite vs. Real</span>
-            <span className="arr">↗</span>
+            <span className="arr"><ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-[#ffb13b] transition-colors" /></span>
           </a>
 
           <a
             href="#irl"
-            className="lineup-row"
+            className="lineup-row group"
             onMouseEnter={() => setHoveredCat("irl")}
             onMouseLeave={() => setHoveredCat(null)}
           >
@@ -128,12 +129,12 @@ export default function CategorySets() {
               can&apos;t picture.
             </span>
             <span className="cat">Physical World</span>
-            <span className="arr">↗</span>
+            <span className="arr"><ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-[#ffb13b] transition-colors" /></span>
           </a>
 
           <a
             href="#double-meaning"
-            className="lineup-row"
+            className="lineup-row group"
             onMouseEnter={() => setHoveredCat("double-meaning")}
             onMouseLeave={() => setHoveredCat(null)}
           >
@@ -143,14 +144,14 @@ export default function CategorySets() {
               One sentence holding two complete worlds at the exact same time.
             </span>
             <span className="cat">Two Readings</span>
-            <span className="arr">↗</span>
+            <span className="arr"><ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-[#ffb13b] transition-colors" /></span>
           </a>
         </div>
 
         {/* Cursor-following floating preview card with Laocoon styling */}
         <div
           ref={thumbRef}
-          className={`pointer-events-none fixed z-50 hidden h-[200px] w-[290px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-[#ffb13b]/40 bg-[#0c0a08]/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.85)] backdrop-blur-xl transition-opacity duration-200 md:flex md:flex-col md:justify-between ${
+          className={`pointer-events-none fixed z-50 hidden h-[200px] w-[290px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-white/10 bg-[#09090c]/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.85)] backdrop-blur-xl transition-opacity duration-200 md:flex md:flex-col md:justify-between ${
             hoveredCat ? "opacity-100" : "opacity-0"
           }`}
           aria-hidden="true"
@@ -160,9 +161,9 @@ export default function CategorySets() {
               <span className="h-1.5 w-1.5 rounded-full bg-[#ffb13b] shadow-[0_0_8px_#ffb13b]" />
               {hoveredCat?.toUpperCase() ?? "SET"}
             </span>
-            <span className="text-[#a49b8e]">SM-01 Telemetry</span>
+            <span className="text-zinc-500">SM-01 Telemetry</span>
           </div>
-          <div className="font-serif text-lg leading-snug text-[#fff6ed]">
+          <div className="font-serif text-lg leading-snug text-white">
             {hoveredCat === "punchline" &&
               "Last-word frame switches shatter greedy token probability."}
             {hoveredCat === "subtext" &&
@@ -172,9 +173,9 @@ export default function CategorySets() {
             {hoveredCat === "double-meaning" &&
               "Quantum superposition of two valid syntactic parses."}
           </div>
-          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-[#a49b8e]">
+          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             <span>Click to inspect set</span>
-            <span className="text-[#ffb13b]">→</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#ffb13b]" />
           </div>
         </div>
       </section>
@@ -446,7 +447,7 @@ export default function CategorySets() {
               <span>Bit #0417 · Verified Stumper</span>
               <span>
                 {p0 >= 0.5
-                  ? "★ Verdict: STUMPED (Entered Joke Vault)"
+                  ? "VERDICT: STUMPED (Entered Joke Vault)"
                   : "Reading setup trajectory…"}
               </span>
             </div>
@@ -504,7 +505,7 @@ export default function CategorySets() {
                 8 of 9 staked judges voted <b>AI Missed It + Funny</b>. Added to
                 the Joke Vault and queued for tonight&apos;s Tip Jar payout.
               </p>
-              <span className="stamp">★ Stumped · +145 pts</span>
+              <span className="stamp flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Stumped · +145 pts</span>
             </div>
           </div>
         </div>
@@ -814,7 +815,7 @@ export default function CategorySets() {
                     <p className="text-[#ffb13b]">
                       <b>NEWTON&apos;S FIRST LAW (THE PUNCHLINE):</b> The car
                       stopped at 0 mph. The water continued at 35 mph directly into
-                      the windshield and passenger seat. ★ STUMPED.
+                      the windshield and passenger seat. STUMPED.
                     </p>
                   )}
                 </div>

@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import { truncateAddress } from "@/lib/wallets";
 
@@ -90,13 +91,13 @@ export default function ProfilePage({
 
   return (
     <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-12">
-      <div className="flex flex-wrap items-end justify-between gap-6 border-b border-[#efe8dc]/12 pb-10">
+      <div className="flex flex-wrap items-end justify-between gap-6 border-b border-white/10 pb-10">
         <div>
           <span className="eyebrow">Performer &amp; Juror Dossier</span>
-          <h1 className="display-serif mt-3 text-5xl text-[#fff6ed] md:text-6xl">
+          <h1 className="display-serif mt-3 text-5xl text-[#f4f4f5] md:text-6xl tracking-tight">
             @{data?.profile.handle ?? display}
           </h1>
-          <p className="mt-3 font-mono text-xs uppercase tracking-[0.16em] text-[#a49b8e]">
+          <p className="mt-3 font-mono text-xs uppercase tracking-[0.16em] text-zinc-400">
             {comedianLabel} Comedian · {crowdLabel} Juror
             {data?.profile.wallet
               ? ` · ${truncateAddress(data.profile.wallet)}`
@@ -124,10 +125,10 @@ export default function ProfilePage({
             { label: "04 · Earned (USDG)", value: earnedDisplay },
           ].map((s) => (
             <Card key={s.label}>
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
                 {s.label}
               </span>
-              <p className="display-serif mt-3 text-4xl text-[#fff6ed] tabular-nums">
+              <p className="display-serif mt-3 text-4xl text-[#f4f4f5] tabular-nums">
                 {s.value}
               </p>
             </Card>
@@ -164,9 +165,9 @@ export default function ProfilePage({
                     </Stamp>
                     <Link
                       href={`/bit/${encodeURIComponent(b.id)}`}
-                      className="font-mono text-xs uppercase tracking-widest text-[#ffb13b] underline"
+                      className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-widest text-[#ffb13b] hover:text-white transition-colors"
                     >
-                      Inspect Bit →
+                      Inspect Bit <ArrowUpRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 </div>
@@ -175,7 +176,7 @@ export default function ProfilePage({
           </div>
         ) : (
           <Card>
-            <p className="text-sm text-[#a49b8e]">
+            <p className="text-sm text-zinc-400">
               Public bits from @{display} will appear here. Holdout bits stay
               sealed to protect their benchmark evaluation integrity.
             </p>

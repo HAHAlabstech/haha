@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, Disclaimer, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
+import { Mic, ArrowUpRight, Sparkles, Layers, Orbit, Scale, CheckCircle2 } from "lucide-react";
 import {
   authHeaders,
   ensureSiweSession,
@@ -63,7 +64,7 @@ const IDEAS: Record<CategoryId, string[]> = {
     "A man asks a librarian for a book on paranoia. She whispers, “It's right behind you.” Why does it land?",
   ],
   subtext: [
-    "“No worries at all!! Totally get it 😊 Maybe next year haha.” How do they actually feel?",
+    "“No worries at all!! Totally get it. Maybe next year haha.” How do they actually feel?",
     "“It's fine. I'll just do the dishes myself. Like always.” Is it fine?",
     "“Great meeting. Love how we always go with the safest option.” What is your coworker feeling?",
   ],
@@ -81,7 +82,7 @@ const IDEAS: Record<CategoryId, string[]> = {
 
 const TEMPLATES = [
   "My ___ told me to ___. I did. Now ___. → Why is this funny?",
-  "Someone replies “___” with a 😊 after you ___. How do they actually feel?",
+  "Someone replies “___” politely after you ___. How do they actually feel?",
   "You ___ while ___. What realistically happens next?",
   "A sign / ad / message says: “___”. What does it really mean?",
 ];
@@ -385,23 +386,26 @@ export default function StagePage() {
                 type="button"
                 disabled={!valid || submitting}
                 onClick={() => void handleSubmit()}
-                className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40"
+                className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40 flex items-center justify-center gap-2"
                 style={{ padding: "14px 28px", fontSize: "12px" }}
               >
+                <Mic className="w-4 h-4" />
                 <span>
                   {submitting
                     ? "Performing for the Straight Man…"
                     : account
-                      ? "🎤 Perform Bit on Stage →"
-                      : "🎤 Connect Wallet & Take the Stage →"}
+                      ? "Perform Bit on Stage"
+                      : "Connect Wallet & Take the Stage"}
                 </span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </button>
 
               <Link
                 href="/producers"
-                className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#a49b8e] underline hover:text-[#ffb13b]"
+                className="font-mono text-[11px] uppercase tracking-[0.15em] text-zinc-400 underline hover:text-[#ffb13b] flex items-center gap-1"
               >
-                Need Pro Stage credits? →
+                <span>Need Pro Stage credits?</span>
+                <ArrowUpRight className="w-3 h-3" />
               </Link>
             </div>
 

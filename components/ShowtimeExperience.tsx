@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { CheckCircle2, Mic, ArrowUpRight } from "lucide-react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
@@ -878,8 +879,9 @@ export default function ShowtimeExperience() {
           </div>
           <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
             <span>Crowd 9 · 94% Laugh</span>
-            <span className="border border-[#ffb13b] px-2 py-0.5 text-[#ffb13b]">
-              ★ Entered Vault
+            <span className="flex items-center gap-1 border border-[#ffb13b] px-2 py-0.5 text-[#ffb13b]">
+              <CheckCircle2 className="w-3 h-3" />
+              <span>Entered Vault</span>
             </span>
           </div>
         </div>
@@ -894,7 +896,7 @@ export default function ShowtimeExperience() {
           <div
             className={`showtime-slide-body mb-4 ${activeSlide === 0 ? "in" : ""}`}
           >
-            <span className="eyebrow">01 · Showtime · Open Mic &amp; Pro Stage</span>
+            <span className="hud-badge text-[10px]">01 · Showtime · Open Mic &amp; Pro Stage</span>
           </div>
           <h1 className="showtime-slide-title">
             <SplitChars
@@ -912,9 +914,10 @@ export default function ShowtimeExperience() {
               categories: <b>Punchline</b>, <b>Subtext</b>, <b>IRL</b>, and{" "}
               <b>Double Meaning</b>.
             </p>
-            <Link href="/stage" className="showtime-slide-cta">
-              <span>🎤 Take the stage</span>
-              <span>→</span>
+            <Link href="/stage" className="showtime-slide-cta flex items-center gap-2">
+              <Mic className="w-3.5 h-3.5" />
+              <span>Take the stage</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>

@@ -1362,14 +1362,14 @@ export default function ClubStage3D() {
       {/* Floating Theme Selector & Hint */}
       <div className="stage-hint">
         <div className="flex items-center gap-2">
-          <span className="text-[9px] text-[#a49b8e]">SURFACE:</span>
+          <span className="text-[9px] text-zinc-400 font-mono tracking-wider">SURFACE:</span>
           <button
             type="button"
             onClick={() => setFinishMode("bronze")}
             className={`cursor-pointer rounded-full px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider transition-all ${
               finishMode === "bronze"
-                ? "bg-[#ffb13b] text-[#060606] font-semibold"
-                : "text-[#a49b8e] hover:text-[#fff6ed]"
+                ? "bg-[#ffb13b] text-[#060606] font-semibold shadow-[0_0_12px_rgba(255,177,59,0.35)]"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             Molten Bronze
@@ -1379,8 +1379,8 @@ export default function ClubStage3D() {
             onClick={() => setFinishMode("sapphire")}
             className={`cursor-pointer rounded-full px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider transition-all ${
               finishMode === "sapphire"
-                ? "bg-[#3b82f6] text-[#060606] font-semibold"
-                : "text-[#a49b8e] hover:text-[#fff6ed]"
+                ? "bg-[#3b82f6] text-[#060606] font-semibold shadow-[0_0_12px_rgba(59,130,246,0.35)]"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             Sapphire Drift
@@ -1390,23 +1390,23 @@ export default function ClubStage3D() {
             onClick={() => setFinishMode("obsidian")}
             className={`cursor-pointer rounded-full px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider transition-all ${
               finishMode === "obsidian"
-                ? "bg-[#efe8dc] text-[#060606] font-semibold"
-                : "text-[#a49b8e] hover:text-[#fff6ed]"
+                ? "bg-white text-[#060606] font-semibold shadow-[0_0_12px_rgba(255,255,255,0.35)]"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             Obsidian
           </button>
         </div>
-        <span className="text-[#6c6459]">|</span>
-        <span className="text-[10px] text-[#efe8dc]">
+        <span className="text-zinc-600">|</span>
+        <span className="text-[10px] text-zinc-300 font-mono">
           TAP TO POKE ({pokeCount})
         </span>
       </div>
 
       {/* Live Straight Man Monologue Ticker */}
-      <div className="pointer-events-none absolute top-[94px] left-[clamp(20px,4vw,56px)] z-6 hidden max-w-lg rounded-full border border-[#efe8dc]/12 bg-[#060606]/80 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-[#a49b8e] backdrop-blur-md lg:flex lg:items-center lg:gap-2.5">
+      <div className="pointer-events-none absolute top-[94px] left-[clamp(20px,4vw,56px)] z-6 hidden max-w-lg rounded-full border border-white/10 bg-[#060606]/85 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 backdrop-blur-md lg:flex lg:items-center lg:gap-2.5 shadow-xl">
         <span className="h-2 w-2 rounded-full bg-[#ffb13b] shadow-[0_0_12px_#ffb13b]" />
-        <span className="truncate text-[#fff6ed]">{lastReaction}</span>
+        <span className="truncate text-[#f4f4f5]">{lastReaction}</span>
       </div>
     </>
   );

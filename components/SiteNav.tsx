@@ -3,6 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  Mic,
+  Orbit,
+  Users,
+  Database,
+  Coins,
+  Trophy,
+  Menu,
+  X,
+  Clock,
+  Sparkles,
+  ArrowUpRight,
+  Shield,
+  HelpCircle,
+  FileCode,
+  Layers,
+} from "lucide-react";
 import WalletModal from "./WalletModal";
 import {
   getSharedWalletState,
@@ -10,100 +27,35 @@ import {
   truncateAddress,
 } from "@/lib/wallets";
 
-const QUICK_LINKS: { href: string; label: string }[] = [
-  { href: "/showtime", label: "Showtime" },
-  { href: "/stage", label: "Stage" },
-  { href: "/crowd", label: "Crowd" },
-  { href: "/vault", label: "Vault" },
-  { href: "/tipjar", label: "Tip Jar" },
-  { href: "/leaderboard", label: "Leaderboard" },
+const PRIMARY_NAV = [
+  { href: "/stage", label: "Stage", icon: Mic },
+  { href: "/showtime", label: "Showtime", icon: Orbit },
+  { href: "/crowd", label: "Crowd", icon: Users },
+  { href: "/vault", label: "Vault", icon: Database },
+  { href: "/tipjar", label: "Tip Jar", icon: Coins },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
-const MENU_ITEMS: {
-  num: string;
-  title: string;
-  tag: string;
-  href: string;
-}[] = [
-  {
-    num: "01",
-    title: "Punchline",
-    tag: "Set · Expectation Flip",
-    href: "/#punchline",
-  },
-  {
-    num: "02",
-    title: "Subtext",
-    tag: "Set · Polite vs Real",
-    href: "/#subtext",
-  },
-  {
-    num: "03",
-    title: "IRL",
-    tag: "Set · Physical World",
-    href: "/#irl",
-  },
-  {
-    num: "04",
-    title: "Double Meaning",
-    tag: "Set · Two Readings",
-    href: "/#double-meaning",
-  },
-  {
-    num: "05",
-    title: "Showtime Orbit",
-    tag: "3D Laocoon Experience",
-    href: "/showtime",
-  },
-  {
-    num: "06",
-    title: "Take the Stage",
-    tag: "Submit a Bit",
-    href: "/stage",
-  },
-  {
-    num: "07",
-    title: "The Crowd",
-    tag: "Human Quorum Judging",
-    href: "/crowd",
-  },
-  {
-    num: "08",
-    title: "The Joke Vault",
-    tag: "Verified Dataset & Revenue",
-    href: "/vault",
-  },
-  {
-    num: "09",
-    title: "Tip Jar",
-    tag: "Daily Merkle Claims",
-    href: "/tipjar",
-  },
-  {
-    num: "10",
-    title: "Leaderboard",
-    tag: "Top Comics & Crowd",
-    href: "/leaderboard",
-  },
-  {
-    num: "11",
-    title: "Seasons",
-    tag: "Straight Man Upgrades",
-    href: "/seasons",
-  },
-  {
-    num: "12",
-    title: "Producers",
-    tag: "Pro Stage & Vault Licenses",
-    href: "/producers",
-  },
+const DIRECTORY_LINKS = [
+  { num: "01", title: "Punchline Set", tag: "Expectation Flip", href: "/#punchline", icon: Sparkles },
+  { num: "02", title: "Subtext Set", tag: "Polite vs Real", href: "/#subtext", icon: Layers },
+  { num: "03", title: "IRL Dynamics", tag: "Physical World", href: "/#irl", icon: Orbit },
+  { num: "04", title: "Double Meaning", tag: "Two Readings", href: "/#double-meaning", icon: FileCode },
+  { num: "05", title: "Showtime Orbit", tag: "3D Laocoon Experience", href: "/showtime", icon: Orbit },
+  { num: "06", title: "Take the Stage", tag: "Submit a Bit", href: "/stage", icon: Mic },
+  { num: "07", title: "The Crowd", tag: "Human Quorum Judging", href: "/crowd", icon: Users },
+  { num: "08", title: "The Joke Vault", tag: "Verified Dataset & Revenue", href: "/vault", icon: Database },
+  { num: "09", title: "Tip Jar", tag: "Daily Merkle Claims", href: "/tipjar", icon: Coins },
+  { num: "10", title: "Leaderboard", tag: "Top Comics & Crowd", href: "/leaderboard", icon: Trophy },
+  { num: "11", title: "Seasons", tag: "Straight Man Upgrades", href: "/seasons", icon: Shield },
+  { num: "12", title: "Producers", tag: "Pro Stage & Vault Licenses", href: "/producers", icon: Sparkles },
 ];
 
 export default function SiteNav() {
   const pathname = usePathname();
   const [modalOpen, setModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [condensed, setCondensed] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [clockText, setClockText] = useState("21:40");
   const [accounts, setAccounts] = useState<string[]>([]);
   const first = accounts[0] ?? null;
@@ -130,7 +82,7 @@ export default function SiteNav() {
 
   useEffect(() => {
     const onScroll = () => {
-      setCondensed(window.scrollY > 180);
+      setScrolled(window.scrollY > 30);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -147,54 +99,57 @@ export default function SiteNav() {
 
   return (
     <>
+      {/* ================= SINGLE UNIFIED FLOATING HEADER ================= */}
       <header
-        className={`topbar ${condensed ? "condensed" : ""}`}
+        className={`topbar ${scrolled ? "scrolled" : ""}`}
         aria-label="Primary"
       >
+        {/* Left: Brand mark */}
         <div className="left">
-          <button
-            type="button"
-            className="pill-btn"
-            onClick={() => setMenuOpen(true)}
-            aria-expanded={menuOpen}
-            aria-controls="haha-menu-overlay"
-          >
-            <span className="bars" aria-hidden="true" />
-            <span>Menu</span>
-          </button>
-          <nav
-            className="hidden items-center gap-1 lg:flex"
-            aria-label="Quick navigation"
-          >
-            {QUICK_LINKS.map((l) => {
-              const active =
-                pathname === l.href || pathname?.startsWith(`${l.href}/`);
-              return (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className={`rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition-colors ${
-                    active
-                      ? "bg-[#ffb13b]/15 text-[#ffb13b]"
-                      : "text-[#a49b8e] hover:text-[#efe8dc]"
-                  }`}
-                >
-                  {l.label}
-                </Link>
-              );
-            })}
-          </nav>
+          <Link href="/" className="brand-mark group" aria-label="HAHA Home">
+            <span className="dot" aria-hidden="true" />
+            <span className="font-mono text-sm tracking-[0.22em] font-semibold text-white group-hover:text-[#ffb13b] transition-colors">
+              HAHA
+            </span>
+            <span className="hidden lg:inline-block border-l border-white/10 pl-3 font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-500">
+              AI Comedy Lab
+            </span>
+          </Link>
         </div>
 
-        <Link href="/" className="brand-mark" aria-label="HAHA Home">
-          <span className="dot" aria-hidden="true" />
-          <span>HAHA</span>
-        </Link>
+        {/* Center: Sleek floating pill navigation */}
+        <nav
+          className="topbar-nav hidden md:flex"
+          aria-label="Quick navigation"
+        >
+          {PRIMARY_NAV.map((l) => {
+            const Icon = l.icon;
+            const active =
+              pathname === l.href || pathname?.startsWith(`${l.href}/`);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] transition-all duration-200 ${
+                  active
+                    ? "bg-[#ffb13b]/15 text-[#ffb13b] shadow-[0_0_12px_rgba(255,177,59,0.2)] font-medium"
+                    : "text-zinc-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Icon className={`w-3 h-3 ${active ? "text-[#ffb13b]" : "text-zinc-500"}`} />
+                <span>{l.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
+        {/* Right: Showtime clock + Wallet + Primary CTA + Mobile hamburger */}
         <div className="right">
-          <span className="clock hidden xl:inline-flex" title="Your local showtime">
-            Showtime <b>{clockText}</b>
-          </span>
+          <div className="clock hidden xl:inline-flex items-center gap-1.5" title="Your local showtime">
+            <Clock className="w-3 h-3 text-[#ffb13b]" />
+            <span>Showtime <b>{clockText}</b></span>
+          </div>
+
           <button
             type="button"
             onClick={() => setModalOpen(true)}
@@ -204,65 +159,27 @@ export default function SiteNav() {
               className={`h-1.5 w-1.5 rounded-full ${
                 first
                   ? "bg-emerald-400 shadow-[0_0_8px_#34d399]"
-                  : "bg-[#a49b8e]"
+                  : "bg-zinc-500"
               }`}
             />
             <span>{first ? truncateAddress(first) : "Connect"}</span>
           </button>
-          <Link href="/stage" className="pill-btn hot hidden sm:inline-flex">
-            <span>🎤 Take the stage</span>
+
+          <Link href="/stage" className="pill-btn hot hidden sm:inline-flex items-center gap-1.5">
+            <Mic className="w-3.5 h-3.5" />
+            <span>Take the stage</span>
           </Link>
+
+          <button
+            type="button"
+            className="pill-btn md:hidden"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle directory menu"
+          >
+            {menuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
+          </button>
         </div>
       </header>
-
-      {/* Condensed floating glass pill when scrolled */}
-      <div
-        className={`condensed-pill ${condensed ? "visible" : ""}`}
-        role="navigation"
-        aria-label="Condensed navigation"
-      >
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          className="inline-flex items-center gap-2 text-[#efe8dc] hover:text-[#ffb13b]"
-        >
-          <span style={{ color: "var(--amber)" }}>●</span>
-          <span>HAHA</span>
-        </button>
-        <span style={{ color: "var(--bone-faint)" }}>·</span>
-        <Link
-          href="/showtime"
-          className="hidden text-[#a49b8e] hover:text-[#efe8dc] sm:inline"
-        >
-          Showtime
-        </Link>
-        <Link
-          href="/crowd"
-          className="hidden text-[#a49b8e] hover:text-[#efe8dc] sm:inline"
-        >
-          Crowd
-        </Link>
-        <Link
-          href="/vault"
-          className="hidden text-[#a49b8e] hover:text-[#efe8dc] md:inline"
-        >
-          Vault
-        </Link>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="rounded-full border border-[#efe8dc]/20 px-2.5 py-1 text-[10px] text-[#efe8dc] hover:border-[#ffb13b]"
-        >
-          {first ? truncateAddress(first) : "Wallet"}
-        </button>
-        <Link
-          href="/stage"
-          className="pill-btn hot"
-          style={{ padding: "5px 12px", fontSize: "10px" }}
-        >
-          🎤 Stage
-        </Link>
-      </div>
 
       {/* Fullscreen Editorial Overlay Menu */}
       <aside
@@ -294,49 +211,63 @@ export default function SiteNav() {
               type="button"
               className="pill-btn"
               onClick={() => setMenuOpen(false)}
+              aria-label="Close menu"
             >
-              <span>Close ✕</span>
+              <X className="w-3.5 h-3.5" />
+              <span>Close</span>
             </button>
           </div>
         </div>
 
         <nav className="menu-list" aria-label="Full club directory">
-          {MENU_ITEMS.map((item) => (
-            <Link
-              key={item.num}
-              href={item.href}
-              onClick={() => setMenuOpen(false)}
-              className="menu-item"
-            >
-              <span className="num">{item.num}</span>
-              <span>{item.title}</span>
-              <span className="tag">{item.tag}</span>
-            </Link>
-          ))}
+          {DIRECTORY_LINKS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.num}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="menu-item group"
+              >
+                <span className="num">{item.num}</span>
+                <span className="flex items-center gap-2">
+                  <Icon className="w-4 h-4 text-zinc-500 group-hover:text-[#ffb13b] transition-colors" />
+                  <span>{item.title}</span>
+                </span>
+                <span className="tag flex items-center gap-1">
+                  <span>{item.tag}</span>
+                  <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="menu-foot">
-          <span>Humans Are Hard to Automate — Comedy Club &amp; Open Lab</span>
+          <span>Humans Are Hard to Automate — Comedy Club &amp; Open AI Lab</span>
           <div className="flex flex-wrap gap-5">
             <Link
               href="/rules"
               onClick={() => setMenuOpen(false)}
-              className="hover:text-[#ffb13b]"
+              className="hover:text-[#ffb13b] transition-colors flex items-center gap-1"
             >
+              <Shield className="w-3 h-3" />
               House Rules
             </Link>
             <Link
               href="/faq"
               onClick={() => setMenuOpen(false)}
-              className="hover:text-[#ffb13b]"
+              className="hover:text-[#ffb13b] transition-colors flex items-center gap-1"
             >
+              <HelpCircle className="w-3 h-3" />
               FAQ
             </Link>
             <Link
               href="/vault/method"
               onClick={() => setMenuOpen(false)}
-              className="hover:text-[#ffb13b]"
+              className="hover:text-[#ffb13b] transition-colors flex items-center gap-1"
             >
+              <FileCode className="w-3 h-3" />
               Methodology
             </Link>
           </div>

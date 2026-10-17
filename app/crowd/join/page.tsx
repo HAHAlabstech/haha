@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, Disclaimer, PageHero, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
+import { CheckCircle2, XCircle, ArrowUpRight } from "lucide-react";
 import {
   authHeaders,
   ensureSiweSession,
@@ -33,9 +34,9 @@ const QUIZ: QuizItem[] = [
   },
   {
     scenario:
-      "You cancel dinner for the third time this month. Your friend replies: “No worries at all!! Totally get it 😊 Maybe next year haha.”",
+      "You cancel dinner for the third time this month. Your friend replies: “No worries at all!! Totally get it. Maybe next year haha.”",
     question: "How does your friend actually feel?",
-    a: "Completely fine and understanding — the smiley proves it.",
+    a: "Completely fine and understanding — the cheerful phrasing proves it.",
     b: "Hurt and fed up; the over-cheerful tone and “next year” are passive-aggressive.",
     correct: "B",
     fair: true,
@@ -248,7 +249,19 @@ export default function CrowdJoinPage() {
                       aria-pressed={f === val}
                       className={`pill-btn ${f === val ? "hot" : ""}`}
                     >
-                      <span>{val ? "✓ Fair Bit" : "✕ Unfair Trick"}</span>
+                      <span className="flex items-center gap-1.5">
+                        {val ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Fair Bit</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>Unfair Trick</span>
+                          </>
+                        )}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -279,7 +292,7 @@ export default function CrowdJoinPage() {
             <p className="display-serif text-3xl text-[#fff6ed]" role="status">
               {score} / {QUIZ.length} —{" "}
               {score >= PASS_MARK
-                ? "Welcome to the Crowd. 🎤"
+                ? "Welcome to the Crowd."
                 : "Not quite — review & retry."}
             </p>
             <p className="mt-2 text-sm text-[#a49b8e]">

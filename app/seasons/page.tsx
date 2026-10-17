@@ -69,36 +69,36 @@ export default function SeasonsPage() {
           How the Straight Man <em>learns.</em>
         </SectionTitle>
         <Card hot>
-          <p className="text-base leading-relaxed text-[#efe8dc]">
+          <p className="text-base leading-relaxed text-zinc-300">
             <code className="font-mono text-sm text-[#ffb13b]">
               mimo_playbook_max:
             </code>{" "}
             The Straight Man upgrades by compiling a structured playbook of
             blindspot patterns plus k-NN retrieved examples from{" "}
-            <b>The Joke Vault</b>. Every verified miss teaches the next Season
+            <b className="text-white">The Joke Vault</b>. Every verified miss teaches the next Season
             playbook what to watch out for.
           </p>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <div className="rounded-xl border border-[#efe8dc]/12 bg-[#0c0a08] p-5">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#a49b8e]">
+            <div className="rounded-xl border border-white/10 bg-[#09090c] p-5 shadow-lg">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                 Tier 01 · 1.0× Weight
               </span>
-              <h3 className="display-serif mt-2 text-2xl text-[#fff6ed]">
+              <h3 className="display-serif mt-2 text-2xl text-[#f4f4f5]">
                 Open Mic — Weakened AI
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#a49b8e]">
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
                 Fast, literal baseline setup without playbook retrieval. Easier
                 to stump and ideal for testing new premises.
               </p>
             </div>
-            <div className="rounded-xl border border-[#ffb13b]/40 bg-[#ffb13b]/10 p-5">
+            <div className="rounded-xl border border-[#ffb13b]/40 bg-[#ffb13b]/10 p-5 shadow-lg">
               <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
                 Tier 02 · 2.5× Weight
               </span>
-              <h3 className="display-serif mt-2 text-2xl text-[#fff6ed]">
+              <h3 className="display-serif mt-2 text-2xl text-[#f4f4f5]">
                 Pro Stage — Full Playbook
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#efe8dc]">
+              <p className="mt-2 text-sm leading-relaxed text-zinc-300">
                 Full chain-of-thought reasoning armed with the complete Season
                 playbook and similar Vault bits. Worth 2.5× reward weight.
               </p>
@@ -116,19 +116,19 @@ export default function SeasonsPage() {
             <Card key={s.id || s.name}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-4">
-                  <h3 className="display-serif text-3xl text-[#fff6ed]">
+                  <h3 className="display-serif text-3xl text-[#f4f4f5]">
                     {s.name}
                   </h3>
                   <Stamp tone={s.is_active ? "amber" : "green"}>
                     {s.is_active ? "● Current Season" : "Archived"}
                   </Stamp>
                 </div>
-                <p className="font-mono text-xs uppercase tracking-widest text-[#a49b8e]">
+                <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
                   {s.kind}
                   {s.base_model ? ` · ${s.base_model}` : ""}
                 </p>
               </div>
-              <p className="mt-3 text-sm leading-relaxed text-[#efe8dc]">
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
                 {s.body}
               </p>
               <p className="mt-4 font-mono text-xs uppercase tracking-widest text-[#ffb13b]">
