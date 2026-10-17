@@ -27,6 +27,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
+            # Reclaim disk space from unused images/caches to avoid ENOSPC
+            docker image prune -af || true
+            docker builder prune -af || true
+            rm -rf ~/.npm /tmp/* || true
             cd /srv/haha
             export PW=$(grep "^DB_PASSWORD=" .env | cut -d= -f2-)
             export DATABASE_URL="postgresql://haha:$PW@127.0.0.1:5432/haha"
@@ -71,6 +75,7 @@ jobs:
             export REGISTRY_IMAGE="ghcr.io/hahalabstech/haha-app"
             TAG=${{ github.sha }} docker compose pull app worker
             TAG=${{ github.sha }} docker compose up -d
+            docker image prune -f || true
       - name: healthcheck
         uses: appleboy/ssh-action@v1
         with:
