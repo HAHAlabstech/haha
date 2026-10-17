@@ -209,13 +209,13 @@ export default function StagePage() {
   return (
     <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16">
       {/* Editorial Case Header */}
-      <div className="mb-14 grid gap-10 border-b border-[#efe8dc]/12 pb-12 lg:grid-cols-[1.25fr_1fr] lg:items-end">
+      <div className="mb-14 grid gap-10 border-b border-white/10 pb-12 lg:grid-cols-[1.25fr_1fr] lg:items-end">
         <div>
           <span className="eyebrow">The Stage · Live Performance</span>
-          <h1 className="display-serif mt-4 text-5xl text-[#fff6ed] md:text-7xl">
+          <h1 className="display-serif mt-4 text-5xl text-[#f4f4f5] md:text-7xl tracking-tight">
             Walk up to the <em>mic.</em>
           </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-[#a49b8e]">
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-400">
             Pick a comedy set, paint the scene, and ask the Straight Man one
             sharp question. If it answers with literal confidence and the Crowd
             laughs, you earn tonight&apos;s Tip Jar share.
@@ -246,7 +246,7 @@ export default function StagePage() {
 
       {/* Category Radio Cards */}
       <section aria-label="Pick a category" className="mb-10">
-        <div className="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-[#a49b8e]">
+        <div className="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-400">
           <span>Step 01 · Choose Your Set</span>
           <span>4 Categories</span>
         </div>
@@ -272,16 +272,16 @@ export default function StagePage() {
                   active ? "hot" : ""
                 }`}
               >
-                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
                   <span>{c.num}</span>
                   <span className={active ? "text-[#ffb13b]" : ""}>
                     {active ? "● Selected" : c.sub}
                   </span>
                 </div>
-                <h2 className="display-serif mt-3 text-3xl text-[#fff6ed]">
+                <h2 className="display-serif mt-3 text-3xl text-[#f4f4f5]">
                   {c.name}
                 </h2>
-                <p className="mt-2 font-mono text-[11px] leading-relaxed text-[#a49b8e]">
+                <p className="mt-2 font-mono text-[11px] leading-relaxed text-zinc-400">
                   {c.prompt}
                 </p>
               </button>
@@ -294,7 +294,7 @@ export default function StagePage() {
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
         <section aria-label="Write your bit">
           <Card>
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#efe8dc]/10 pb-5">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
               <div className="flex flex-wrap gap-2.5">
                 <button
                   type="button"
@@ -337,7 +337,7 @@ export default function StagePage() {
                 </label>
                 <span
                   className={`font-mono text-[11px] tabular-nums ${
-                    scenarioLeft < 0 ? "text-[#c93b2b]" : "text-[#a49b8e]"
+                    scenarioLeft < 0 ? "text-rose-500" : "text-zinc-400"
                   }`}
                 >
                   {scenario.length} / {SCENARIO_MAX}

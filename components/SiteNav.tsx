@@ -122,25 +122,60 @@ export default function SiteNav() {
           className="topbar-nav hidden md:flex"
           aria-label="Quick navigation"
         >
-          {PRIMARY_NAV.map((l) => {
-            const Icon = l.icon;
-            const active =
-              pathname === l.href || pathname?.startsWith(`${l.href}/`);
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] transition-all duration-200 ${
-                  active
-                    ? "bg-[#ffb13b]/15 text-[#ffb13b] shadow-[0_0_12px_rgba(255,177,59,0.2)] font-medium"
-                    : "text-zinc-400 hover:text-white hover:bg-white/5"
-                }`}
+          {pathname === "/" ? (
+            <>
+              <a
+                href="#how-it-works"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
               >
-                <Icon className={`w-3 h-3 ${active ? "text-[#ffb13b]" : "text-zinc-500"}`} />
-                <span>{l.label}</span>
-              </Link>
-            );
-          })}
+                <span>How It Works</span>
+              </a>
+              <a
+                href="#waveform"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+              >
+                <span>The Science</span>
+              </a>
+              <a
+                href="#vault"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+              >
+                <span>Joke Vault</span>
+              </a>
+              <a
+                href="#telemetry"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+              >
+                <span>Live Feed</span>
+              </a>
+              <a
+                href="#faq"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+              >
+                <span>FAQ</span>
+              </a>
+            </>
+          ) : (
+            PRIMARY_NAV.map((l) => {
+              const Icon = l.icon;
+              const active =
+                pathname === l.href || pathname?.startsWith(`${l.href}/`);
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] transition-all duration-200 ${
+                    active
+                      ? "bg-[#ffb13b]/15 text-[#ffb13b] shadow-[0_0_12px_rgba(255,177,59,0.2)] font-medium"
+                      : "text-zinc-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <Icon className={`w-3 h-3 ${active ? "text-[#ffb13b]" : "text-zinc-500"}`} />
+                  <span>{l.label}</span>
+                </Link>
+              );
+            })
+          )}
         </nav>
 
         {/* Right: Showtime clock + Wallet + Primary CTA + Mobile hamburger */}
@@ -165,9 +200,13 @@ export default function SiteNav() {
             <span>{first ? truncateAddress(first) : "Connect"}</span>
           </button>
 
-          <Link href="/stage" className="pill-btn hot hidden sm:inline-flex items-center gap-1.5">
+          <Link
+            href="/stage"
+            className="pill-btn hot hidden sm:inline-flex items-center gap-1.5 shadow-[0_0_16px_rgba(255,177,59,0.25)]"
+          >
             <Mic className="w-3.5 h-3.5" />
-            <span>Take the stage</span>
+            <span>{pathname === "/" ? "Launch App" : "Take the stage"}</span>
+            <ArrowUpRight className="w-3 h-3" />
           </Link>
 
           <button
