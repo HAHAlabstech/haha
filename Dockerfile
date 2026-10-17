@@ -1,12 +1,15 @@
 # HAHA — lean multi-stage image (app + worker share it).
 # Built in CI, never on the 2GB VPS. Pruned.–only runtime deps ship.
-FROM node:22-alpine AS deps
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 
-FROM node:22-alpine AS build
+FROM node:22-bookworm-slim AS build
 WORKDIR /app
+# Prisma engines are platform-specific: build on the SAME libc as runtime (glibc).
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
