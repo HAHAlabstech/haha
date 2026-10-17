@@ -95,7 +95,7 @@ async function run(job) {
   const idem = `five-minute-ops:${new Date().toISOString().slice(0, 16)}`;
   await prisma.cronJobRun.upsert({
     where: { idempotency_key: idem },
-    create: { job_name: "five-minute-ops", stage: "tick", epoch_number: epoch, idempotency_key: idem, status: "started" },
+    create: { job_name: "five-minute-ops", stage: `tick:${idem}`, epoch_number: epoch, idempotency_key: idem, status: "started" },
     update: { status: "started", attempt: { increment: 1 } },
   });
 
