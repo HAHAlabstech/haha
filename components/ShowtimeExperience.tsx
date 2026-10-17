@@ -225,6 +225,22 @@ export default function ShowtimeExperience() {
       opacity: 0.22,
     });
 
+    function rounded(w: number, h: number, r: number) {
+      const s = new THREE.Shape();
+      const x = -w / 2;
+      const y = -h / 2;
+      s.moveTo(x + r, y);
+      s.lineTo(x + w - r, y);
+      s.quadraticCurveTo(x + w, y, x + w, y + r);
+      s.lineTo(x + w, y + h - r);
+      s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      s.lineTo(x + r, y + h);
+      s.quadraticCurveTo(x, y + h, x, y + h - r);
+      s.lineTo(x, y + r);
+      s.quadraticCurveTo(x, y, x + r, y);
+      return s;
+    }
+
     const stageGroup = new THREE.Group();
     stageGroup.scale.setScalar(1.38);
     stageGroup.position.y = 0.15;
@@ -299,10 +315,19 @@ export default function ShowtimeExperience() {
     robot.add(torso);
 
     const chest = new THREE.Mesh(
-      new THREE.BoxGeometry(0.86, 0.78, 0.52),
+      new THREE.CylinderGeometry(0.46, 0.36, 0.76, 48),
       bronzeMat,
     );
+    chest.position.y = 0.02;
     torso.add(chest);
+
+    const collar = new THREE.Mesh(
+      new THREE.TorusGeometry(0.28, 0.045, 12, 48),
+      goldMat,
+    );
+    collar.rotation.x = Math.PI / 2;
+    collar.position.y = 0.4;
+    torso.add(collar);
 
     const shoulderBar = new THREE.Mesh(
       new THREE.CylinderGeometry(0.06, 0.06, 0.94, 24),
@@ -408,17 +433,24 @@ export default function ShowtimeExperience() {
     head.position.set(0, 0.88, 0);
     torso.add(head);
 
-    const skull = new THREE.Mesh(
-      new THREE.BoxGeometry(0.92, 0.68, 0.64),
-      bronzeMat,
-    );
+    const hg = new THREE.ExtrudeGeometry(rounded(1.2, 0.85, 0.24), {
+      depth: 0.64,
+      bevelEnabled: true,
+      bevelThickness: 0.07,
+      bevelSize: 0.07,
+      bevelSegments: 5,
+      curveSegments: 16,
+    });
+    hg.center();
+    const skull = new THREE.Mesh(hg, bronzeMat);
     head.add(skull);
 
+    const faceZ = 0.32 + 0.07 + 0.004;
     const faceplate = new THREE.Mesh(
-      new THREE.BoxGeometry(0.82, 0.56, 0.04),
+      new THREE.ShapeGeometry(rounded(0.96, 0.62, 0.18), 16),
       darkBronze,
     );
-    faceplate.position.z = 0.315;
+    faceplate.position.z = faceZ;
     head.add(faceplate);
 
     const brow = new THREE.Mesh(

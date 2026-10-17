@@ -151,42 +151,58 @@ export default function HomePage() {
       {/* ==================== LIVE CLUB TELEMETRY STRIP ==================== */}
       <section
         aria-label="Live club telemetry"
-        className="border-b border-[#efe8dc]/12 bg-[#110e0b] px-[clamp(20px,4vw,56px)] py-10"
+        className="border-b border-[#efe8dc]/08 bg-[#08080a] px-[clamp(20px,4vw,56px)] py-8 relative"
       >
         <div className="mx-auto grid max-w-[1440px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="border-l border-[#ffb13b]/45 pl-5">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
-              01 · Bits Performed Today
+          <div className="laocoon-card p-5 border-l-2 border-l-[#ffb13b]">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+              <span>01 · Bits Performed Today</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#ffb13b] shadow-[0_0_8px_#ffb13b]" />
             </div>
-            <div className="display-serif mt-1.5 text-4xl text-[#fff6ed] tabular-nums">
+            <div className="display-serif mt-2 text-4xl text-[#fff6ed] tabular-nums">
               {bitsToday}
             </div>
+            <div className="mt-2 font-mono text-[10px] text-[#a49b8e]">
+              Active open mic submissions
+            </div>
           </div>
 
-          <div className="border-l border-[#efe8dc]/15 pl-5">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
-              02 · Killed It Today
+          <div className="laocoon-card p-5 border-l-2 border-l-[#3b82f6]">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+              <span>02 · Killed It Today</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#3b82f6] shadow-[0_0_8px_#3b82f6]" />
             </div>
-            <div className="display-serif mt-1.5 text-4xl text-[#ffb13b] tabular-nums">
+            <div className="display-serif mt-2 text-4xl text-[#ffb13b] tabular-nums">
               {killedToday}
             </div>
+            <div className="mt-2 font-mono text-[10px] text-[#3b82f6]">
+              Stumped Straight Man quorum
+            </div>
           </div>
 
-          <div className="border-l border-[#efe8dc]/15 pl-5">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
-              03 · On-Chain Tip Jar (USDG)
+          <div className="laocoon-card p-5 border-l-2 border-l-[#ffb13b]">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+              <span>03 · On-Chain Tip Jar</span>
+              <span className="hud-badge text-[9px] py-0 px-1.5">USDG</span>
             </div>
-            <div className="display-serif mt-1.5 text-4xl text-[#fff6ed] tabular-nums">
+            <div className="display-serif mt-2 text-4xl text-[#fff6ed] tabular-nums">
               {tipJarUsdg}
             </div>
+            <div className="mt-2 font-mono text-[10px] text-[#a49b8e]">
+              Robinhood Chain pool
+            </div>
           </div>
 
-          <div className="border-l border-[#efe8dc]/15 pl-5">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
-              04 · Joke Vault Replacement Cost
+          <div className="laocoon-card p-5 border-l-2 border-l-[#8fb596]">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#a49b8e]">
+              <span>04 · Vault Replacement Cost</span>
+              <span className="hud-badge text-[9px] py-0 px-1.5 border-[#8fb596]/30 text-[#8fb596]">HNSW</span>
             </div>
-            <div className="display-serif mt-1.5 text-4xl text-[#8fb596] tabular-nums">
+            <div className="display-serif mt-2 text-4xl text-[#8fb596] tabular-nums">
               {vaultCost}
+            </div>
+            <div className="mt-2 font-mono text-[10px] text-[#a49b8e]">
+              Adversarial nuance corpus
             </div>
           </div>
         </div>
@@ -195,7 +211,7 @@ export default function HomePage() {
       {/* ==================== RECENTLY KILLED IT (SPOTLIGHT) ==================== */}
       <section
         aria-label="Bits that killed it"
-        className="px-[clamp(20px,4vw,56px)] pt-20 pb-8"
+        className="px-[clamp(20px,4vw,56px)] pt-20 pb-12"
       >
         <div className="mx-auto max-w-[1440px]">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
@@ -206,10 +222,10 @@ export default function HomePage() {
               </h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/vault" className="pill-btn">
+              <Link href="/vault" className="laocoon-pill">
                 <span>Inspect the Joke Vault →</span>
               </Link>
-              <Link href="/tipjar" className="pill-btn">
+              <Link href="/tipjar" className="laocoon-pill">
                 <span>Tip Jar &amp; Claims →</span>
               </Link>
             </div>
@@ -217,35 +233,39 @@ export default function HomePage() {
 
           <div className="grid gap-6 md:grid-cols-3">
             {spotlight.map((b, idx) => (
-              <div key={b.id || `${b.text}-${idx}`} className="screen">
-                <div className="screen-bar">
-                  <span>{b.category}</span>
-                  <span className="dots">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
-                </div>
-                <div className="screen-body">
-                  <p className="quote">“{b.text}”</p>
-                  <div className="flex items-center justify-between gap-3 pt-4">
-                    <span className="stamp">★ {b.result}</span>
-                    {b.id ? (
-                      <Link
-                        href={`/bit/${encodeURIComponent(b.id)}`}
-                        className="font-mono text-[11px] uppercase tracking-widest text-[#ffb13b] underline hover:text-[#ffd27d]"
-                      >
-                        Inspect Bit →
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/stage"
-                        className="font-mono text-[11px] uppercase tracking-widest text-[#a49b8e] hover:text-[#ffb13b]"
-                      >
-                        Try on Stage →
-                      </Link>
-                    )}
+              <div key={b.id || `${b.text}-${idx}`} className="laocoon-card p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between border-b border-[#efe8dc]/08 pb-3">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
+                      {b.category}
+                    </span>
+                    <span className="dots flex gap-1">
+                      <i className="h-1.5 w-1.5 rounded-full bg-[#ffb13b]" />
+                      <i className="h-1.5 w-1.5 rounded-full bg-[#ffb13b]/60" />
+                      <i className="h-1.5 w-1.5 rounded-full bg-[#ffb13b]/30" />
+                    </span>
                   </div>
+                  <p className="font-serif text-lg leading-relaxed text-[#fff6ed] mt-4">
+                    “{b.text}”
+                  </p>
+                </div>
+                <div className="flex items-center justify-between gap-3 pt-6 border-t border-[#efe8dc]/08 mt-6">
+                  <span className="hud-badge text-[10px]">★ {b.result}</span>
+                  {b.id ? (
+                    <Link
+                      href={`/bit/${encodeURIComponent(b.id)}`}
+                      className="font-mono text-[11px] uppercase tracking-widest text-[#ffb13b] underline hover:text-[#ffd27d]"
+                    >
+                      Inspect Bit →
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/stage"
+                      className="font-mono text-[11px] uppercase tracking-widest text-[#a49b8e] hover:text-[#ffb13b]"
+                    >
+                      Try on Stage →
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
