@@ -35,7 +35,9 @@ jobs:
             export PW=$(grep "^DB_PASSWORD=" .env | cut -d= -f2-)
             export DATABASE_URL="postgresql://haha:$PW@127.0.0.1:5432/haha"
             export DIRECT_URL="$DATABASE_URL"
-            npx -y prisma@6.19.3 migrate deploy
+            # prisma installed globally on the VPS (npm-cache ENOSPC guard).
+            prisma migrate deploy 2>/dev/null || npx -y prisma@6.19.3 migrate deploy
+            docker image prune -f >/dev/null 2>&1 || true
 
   build-push:
     name: build + push image
