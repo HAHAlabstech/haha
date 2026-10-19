@@ -22,11 +22,15 @@ function tally(votes) {
   let total = 0, comedian = 0, ai = 0, wrong = 0, fair = 0;
   for (const v of votes) {
     total += v.weight;
+    // Fairness is a separate axis from the pick: a both_right or both_wrong
+    // with fairness=fair still counts toward fair_ratio (mirrors the API
+    // route's tally exactly — this was previously divergent and worker
+    // settlement could contradict the route's recorded outcome).
+    if (v.fair) fair += v.weight;
     if (v.bothWrong) { wrong += v.weight; continue; }
     if (v.bothRight) { ai += v.weight; continue; }
     if (v.forComedian) comedian += v.weight;
     else ai += v.weight;
-    if (v.fair) fair += v.weight;
   }
   const win = total > 0 ? comedian / total : 0;
   const fairRatio = total > 0 ? fair / total : 0;

@@ -34,7 +34,17 @@ function toVote(a) {
 }
 
 async function settleBit(bitId) {
-  const votes = (await prisma.crowdAssignment.findMany({ where: { bit_id: bitId, voted_at: { not: null } } })).map(toVote);
+  // Vote scope = the bit's ACTIVE round (retrial_round for round>=2 bits).
+  // Mixing standings across rounds let a late five-minute tick overwrite a
+  // clean verdict with a hybrid of retired and retrial votes.
+  const bit = await prisma.bit.findUnique({ where: { id: bitId }, select: { id: true, retrial_round: true } });
+  if (!bit) return { bitId, action: "missing" };
+  const activeRound = bit.retrial_round ?? 1;
+  const votes = (
+    await prisma.crowdAssignment.findMany({
+      where: { bit_id: bitId, round: activeRound, voted_at: { not: null } },
+    })
+  ).map(toVote);
   const d = decide(votes);
   if (d.action === "expand") {
     const have = await prisma.crowdAssignment.count({ where: { bit_id: bitId } });
