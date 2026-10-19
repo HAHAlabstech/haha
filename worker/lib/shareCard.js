@@ -113,7 +113,7 @@ async function ensureCardForBit(prisma, bitId, putR2) {
     fairRatio: bit.outcome?.fair_ratio,
     jurorCount: bit.outcome?.juror_count,
   });
-  await putR2(cardKey(bitId), png, "image/png");
+  await putR2(cardKey(bitId), png, "image/png", { cacheControl: "public, max-age=300" });
   return { bitId, url: cardUrl(bitId), bytes: png.length };
 }
 

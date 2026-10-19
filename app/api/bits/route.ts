@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
 import { type PrismaClient, type Category } from "@prisma/client";
+import { cardUrl } from "@/lib/shareUrl";
 import {
   bad,
   enqueueJob,
@@ -128,8 +129,9 @@ export async function GET() {
         },
       }),
     ]);
+    const spotlightOut = spotlight.map((b) => ({ ...b, card_url: cardUrl(b.id) }));
     return NextResponse.json(
-      { bitsToday, killedToday, spotlight },
+      { bitsToday, killedToday, spotlight: spotlightOut },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {

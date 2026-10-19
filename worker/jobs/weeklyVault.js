@@ -21,9 +21,14 @@ function r2() {
 }
 const BUCKET = process.env.R2_BUCKET_NAME ?? "haha-storage";
 
-async function putR2(key, body, contentType) {
+async function putR2(key, body, contentType, opts) {
   const client = r2();
-  await client.send(new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: body, ContentType: contentType }));
+  await client.send(new PutObjectCommand({
+    Bucket: BUCKET, Key: key, Body: body, ContentType: contentType,
+    // Custom-domain CDN default-caches PNGs; short TTL keeps retrial card
+    // overwrites visible after a few minutes instead of serving stale art.
+    CacheControl: opts?.cacheControl ?? "public, max-age=86400",
+  }));
   return `r2://${BUCKET}/${key}`;
 }
 
