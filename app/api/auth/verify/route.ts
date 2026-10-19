@@ -162,6 +162,7 @@ export async function POST(req: Request) {
     const sessionToken = signSessionToken(wallet, nonce, expiresAt.getTime());
     const res = NextResponse.json(
       {
+        ok: true,
         wallet,
         handle: user?.handle ?? `anon_${wallet.slice(2, 10)}`,
         sessionToken,
