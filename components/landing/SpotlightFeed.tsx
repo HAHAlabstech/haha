@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { CheckCircle2, Bot, Users, ArrowUpRight, Flame } from "lucide-react";
 import Link from "next/link";
 
@@ -14,6 +15,7 @@ const SAMPLE_BATTLES = [
     comedianRep: "+24 REP",
     jurySplit: "6/7 Voted Human (85.7% Quorum)",
     tipEarned: "$36.50 USDG",
+    cardUrl: null,
   },
   {
     id: "bit-102",
@@ -25,6 +27,7 @@ const SAMPLE_BATTLES = [
     comedianRep: "+18 REP",
     jurySplit: "5/5 Voted Human (100% Quorum)",
     tipEarned: "$18.20 USDG",
+    cardUrl: null,
   },
   {
     id: "bit-103",
@@ -36,10 +39,75 @@ const SAMPLE_BATTLES = [
     comedianRep: "Safe Stake",
     jurySplit: "2/5 Voted Human (AI Won - 60%)",
     tipEarned: "Archived to Holdout",
+    cardUrl: null,
   },
 ];
 
+type FeedEntry = {
+  id: string;
+  category: string;
+  stage: string;
+  status: string;
+  setup: string;
+  straightManResponse: string;
+  comedianRep: string;
+  jurySplit: string;
+  tipEarned: string;
+  cardUrl: string | null;
+};
+
+// Live spotlight (GET /api/bits) falls back to fixture copy.
+function useSpotlightFeed() {
+  const [feed, setFeed] = useState<FeedEntry[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/bits")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d) return;
+        const spot = Array.isArray(d.spotlight) ? d.spotlight : [];
+        if (spot.length === 0) {
+          setFeed([]); // keep fixtures when nothing verified yet
+          return;
+        }
+        setFeed(
+          spot.map(
+            (s: {
+              id: string;
+              category: string;
+              stage: string;
+              scenario: string;
+              question: string;
+              card_url: string | null;
+            }): FeedEntry => ({
+              id: s.id,
+              category: (s.category ?? "punchline").replace(/_/g, " "),
+              stage: "Open Mic",
+              status: "killed_it",
+              setup: s.scenario,
+              straightManResponse: s.question,
+              comedianRep: "Season 01",
+              jurySplit: "Crowd Verified · On Chain",
+              tipEarned: "Killed It",
+              cardUrl: s.card_url ?? null,
+            }),
+          ),
+        );
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return feed;
+}
+
 export default function SpotlightFeed() {
+  const live = useSpotlightFeed();
+  const battles = live === null || live.length === 0 ? SAMPLE_BATTLES : live;
+
   return (
     <section id="telemetry" className="relative py-24 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto">
       {/* Header */}
@@ -68,57 +136,79 @@ export default function SpotlightFeed() {
 
       {/* Battle Cards Grid */}
       <div className="grid gap-6 md:grid-cols-3">
-        {SAMPLE_BATTLES.map((b) => (
+        {battles.map((b) => (
           <div
             key={b.id}
-            className="rounded-2xl border border-white/10 bg-[#09090c] p-6 shadow-xl flex flex-col justify-between transition-all duration-300 hover:border-white/20"
+            className="rounded-2xl border border-white/10 bg-[#09090c] shadow-xl transition-all duration-300 hover:border-white/20 overflow-hidden flex flex-col"
           >
-            <div>
-              {/* Card Meta Top */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-                  {b.category} · {b.stage}
-                </span>
-                {b.status === "killed_it" ? (
-                  <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Killed It
+            {b.cardUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <a href={b.cardUrl} target="_blank" rel="noopener noreferrer" className="block">
+                <img
+                  src={b.cardUrl}
+                  alt={`Crowd verdict card for bit ${b.id}`}
+                  loading="lazy"
+                  className="w-full aspect-[16/9] object-cover hover:opacity-90 transition-opacity"
+                />
+              </a>
+            ) : (
+              <div className="p-6">
+                {/* Card Meta Top */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                    {b.category} · {b.stage}
                   </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#3b82f6] bg-[#3b82f6]/10 px-2 py-0.5 rounded-full border border-[#3b82f6]/20">
-                    <Bot className="w-3 h-3" />
-                    AI Won
-                  </span>
-                )}
-              </div>
-
-              {/* Comedian Bit Setup */}
-              <div className="mb-5">
-                <span className="font-mono text-[9px] uppercase tracking-widest text-[#ffb13b] block mb-1">
-                  Comedian Bit:
-                </span>
-                <p className="font-serif text-base text-[#f4f4f5] italic leading-relaxed">
-                  “{b.setup}”
-                </p>
-              </div>
-
-              {/* Straight Man Response */}
-              <div className="rounded-xl border border-white/5 bg-[#050507] p-3.5 mb-5 font-mono text-xs text-zinc-400 leading-relaxed">
-                <div className="flex items-center gap-1.5 text-zinc-500 mb-1">
-                  <Bot className="w-3 h-3 text-[#3b82f6]" />
-                  <span className="text-[10px] uppercase tracking-wider">The Straight Man:</span>
+                  {b.status === "killed_it" ? (
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Killed It
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#3b82f6] bg-[#3b82f6]/10 px-2 py-0.5 rounded-full border border-[#3b82f6]/20">
+                      <Bot className="w-3 h-3" />
+                      AI Won
+                    </span>
+                  )}
                 </div>
-                {b.straightManResponse}
+
+                {/* Comedian Bit Setup */}
+                <div className="mb-5">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#ffb13b] block mb-1">
+                    Comedian Bit:
+                  </span>
+                  <p className="font-serif text-base text-[#f4f4f5] italic leading-relaxed">
+                    {b.setup}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
+
+            {!b.cardUrl && (
+              <div className="px-6 pb-6">
+                {/* Straight Man Response */}
+                <div className="rounded-xl border border-white/5 bg-[#050507] p-3.5 mb-5 font-mono text-xs text-zinc-400 leading-relaxed">
+                  <div className="flex items-center gap-1.5 text-zinc-500 mb-1">
+                    <Bot className="w-3 h-3 text-[#3b82f6]" />
+                    <span className="text-[10px] uppercase tracking-wider">The Straight Man:</span>
+                  </div>
+                  {b.straightManResponse}
+                </div>
+              </div>
+            )}
 
             {/* Bottom Jury Split & Action */}
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between font-mono text-[10px]">
+            <div className="mt-auto px-6 py-4 border-t border-white/10 flex items-center justify-between font-mono text-[10px]">
               <div className="flex items-center gap-1.5 text-zinc-400">
                 <Users className="w-3 h-3 text-zinc-500" />
                 <span>{b.jurySplit}</span>
               </div>
-              <span className="text-[#ffb13b] font-semibold">{b.tipEarned}</span>
+              {b.cardUrl ? (
+                <Link href={`/bit/${b.id}`} className="text-[#ffb13b] font-semibold hover:text-[#ffa71a]">
+                  View Bit →
+                </Link>
+              ) : (
+                <span className="text-[#ffb13b] font-semibold">{b.tipEarned}</span>
+              )}
             </div>
           </div>
         ))}

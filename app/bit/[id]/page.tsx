@@ -48,6 +48,7 @@ interface BitPayload {
     voted: number;
     round: number;
   };
+  share_card_url?: string | null;
 }
 
 const STAGES = [
@@ -98,6 +99,7 @@ export default function BitPage({
   const [reportStatus, setReportStatus] = useState<string | null>(null);
 
   const [error, setError] = useState<string | null>(null);
+  const [cardCopied, setCardCopied] = useState(false);
 
   useEffect(() => {
     const st = getSharedWalletState();
@@ -414,6 +416,37 @@ export default function BitPage({
           </div>
         </div>
       </div>
+
+      {/* Share Card (renders once the bit settles and the card pipeline runs) */}
+      {bit?.share_card_url ? (
+        <section aria-label="Share card" className="pb-2">
+          <div className="mx-auto max-w-[860px] rounded-2xl border border-white/10 bg-[#09090c] overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bit.share_card_url}
+              alt="Crowd verdict share card"
+              loading="lazy"
+              className="w-full aspect-[16/9] object-cover"
+            />
+            <div className="flex items-center justify-between gap-4 px-5 py-3 border-t border-white/10">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                Crowd verdict card · auto-rendered on settle
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  void navigator.clipboard.writeText(bit.share_card_url ?? "");
+                  setCardCopied(true);
+                  window.setTimeout(() => setCardCopied(false), 1800);
+                }}
+                className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b] border border-[#ffb13b]/30 bg-[#ffb13b]/10 rounded-full px-4 py-1.5 hover:bg-[#ffb13b]/20 transition"
+              >
+                {cardCopied ? "Link Copied ✓" : "Copy Card Link"}
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* Verdict Action Panel */}
       <section aria-label="Verdict">

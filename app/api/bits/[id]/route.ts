@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/server";
+import { cardUrl } from "@/lib/shareUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -91,7 +92,7 @@ export async function GET(
           fairWeight,
           totalWeight,
         },
-        share_card_url: bit.share_card_r2_url,
+        share_card_url: isSettled ? (bit.share_card_r2_url ?? cardUrl(bit.id)) : null,
       },
       { headers: { "cache-control": "no-store" } },
     );
