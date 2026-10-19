@@ -28,16 +28,17 @@ async function main() {
   }, OPTS);
 
   const five = new Worker("five-minute-ops", (job) => require("./jobs/fiveMinuteOps").run(job), { ...OPTS, concurrency: 1 });
+  const card = new Worker("share-card", (job) => require("./jobs/shareCard").run(job), { ...OPTS, concurrency: 2 });
   const settle = new Worker("daily-settlement", (job) => require("./jobs/dailySettlement").run(job), { ...OPTS, concurrency: 1 });
   const vault = new Worker("weekly-vault", (job) => require("./jobs/weeklyVault").run(job), { ...OPTS, concurrency: 1 });
   const season = new Worker("season-upgrade", (job) => require("./jobs/seasonUpgrade").run(job), { ...OPTS, concurrency: 1 });
   const sync = new Worker("sync-chain", (job) => require("./jobs/syncChain").run(job), { ...OPTS, concurrency: 2 });
 
-  for (const w of [bits, five, settle, vault, season, sync]) {
+  for (const w of [bits, five, card, settle, vault, season, sync]) {
     w.on("failed", (job, err) => console.error(`[worker] ${w.name}/${job?.name} failed: ${err.message}`));
     w.on("completed", (job) => console.log(`[worker] ${w.name}/${job?.name} done`));
   }
-  console.log("[worker] HAHA queues serving (bits, five-minute-ops, daily-settlement, weekly-vault, season-upgrade, sync-chain)");
+  console.log("[worker] HAHA queues serving (bits, five-minute-ops, share-card, daily-settlement, weekly-vault, season-upgrade, sync-chain)");
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

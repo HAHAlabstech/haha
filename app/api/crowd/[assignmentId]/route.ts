@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { type VoteChoice, type FairnessChoice } from "@prisma/client";
 import {
   bad,
+  enqueueJob,
   getPrisma,
   isColluding,
   shuffleInPlace,
@@ -304,6 +305,14 @@ export async function POST(
           data: { comedian_rep: { decrement: 1 } },
         });
       }
+    }
+
+    // Share card render (5-min-ops settles render inline; app-settled bits
+    // enqueue — enqueue failure must never fail the vote itself).
+    try {
+      await enqueueJob("share-card", "render", { bitId: assignment.bit_id });
+    } catch (e) {
+      console.error("share-card enqueue failed", assignment.bit_id, e);
     }
 
     return NextResponse.json(
