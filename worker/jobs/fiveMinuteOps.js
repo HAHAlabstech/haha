@@ -129,6 +129,16 @@ async function run(job) {
   const settled = [];
   for (const b of open) {
     await prisma.crowdAssignment.deleteMany({ where: { bit_id: b.id, voted_at: null, expires_at: { lt: new Date() } } });
+    // Re-seat when EVERY juror let the SLA lapse — otherwise the bit strands
+    // in disputed forever (no live assignments => decide() just waits).
+    const live = await prisma.crowdAssignment.count({
+      where: { bit_id: b.id, voted_at: null, expires_at: { gt: new Date() } },
+    });
+    if (live === 0) {
+      const bitRow = await prisma.bit.findUnique({ where: { id: b.id }, select: { retrial_round: true } });
+      const round = bitRow?.retrial_round ?? 1;
+      await topUpJurors(b.id, 5, round, round >= 2);
+    }
     settled.push(await settleBit(b.id));
   }
 
