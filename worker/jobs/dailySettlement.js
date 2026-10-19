@@ -209,6 +209,11 @@ async function run(job) {
       },
     });
 
+    // Idempotent payouts: a reconciliation/retry of the SAME idempotency key
+    // recomputes the same pool — REPLACE this epoch's rows instead of
+    // appending duplicates (real bug found on testnet: 30 rows instead 15).
+    await prisma.reward.deleteMany({ where: { epoch_id: epochRow.id } });
+
     for (const [account, amt] of comedianDist.payouts) {
       if (amt < DUST_MICRO) continue;
       const user = await prisma.user.findUnique({ where: { wallet: account } });
