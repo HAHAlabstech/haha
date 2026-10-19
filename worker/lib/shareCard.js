@@ -38,9 +38,42 @@ function pct(x) {
   return Number.isFinite(n) ? Math.round(n * 100) : null;
 }
 
-// data: { id, category, scenario, result, winStrength, fairRatio, jurorCount }
+// data: { id, category, scenario, result, winStrength, fairRatio, jurorCount, holdout, seasonName }
 async function renderShareCard(data) {
   const badge = MAINNET_BADGES[data.result] ?? { label: esc(data.result), color: "#8b5cf6" };
+  const seasonChip = esc(data.seasonName ?? "SEASON 01");
+
+  // Holdout: rubrik §4.6 — isi skenario/jawaban WAJIB disembunyikan di kartu.
+  if (data.holdout) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#141c33"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#26304d" stroke-width="2"/>
+  <text x="96" y="104" font-size="40" font-weight="bold" fill="#facc15">HAHA</text>
+  <text x="310" y="100" font-size="22" fill="#8fa3c8">the crowd judges</text>
+  <rect x="816" y="70" width="288" height="48" rx="24" fill="#1b2540"/>
+  <text x="960" y="101" font-size="24" fill="#9db2dc" text-anchor="middle">${esc(data.category)}</text>
+  <rect x="96" y="180" width="${40 + badge.label.length * 26}" height="64" rx="32" fill="${badge.color}"/>
+  <text x="120" y="226" font-size="34" font-weight="bold" fill="#0b1020">${esc(badge.label)}</text>
+  <rect x="96" y="270" width="240" height="56" rx="28" fill="#1b2540"/>
+  <text x="216" y="306" font-size="26" fill="#9db2dc" text-anchor="middle">${seasonChip}</text>
+  <text x="96" y="400" font-size="34" font-weight="bold" fill="#e8eefc">CONTENT SEALED</text>
+  <text x="96" y="448" font-size="26" fill="#8fa3c8">This bit is reserved for the holdout training set.</text>
+  <text x="96" y="488" font-size="26" fill="#8fa3c8">Joke text and reveals are hidden by design.</text>
+  <line x1="96" y1="584" x2="1104" y2="584" stroke="#26304d" stroke-width="2"/>
+  <text x="96" y="622" font-size="26" fill="#c7d4ef">jurors ${data.jurorCount ?? 0}</text>
+  <text x="1104" y="622" font-size="22" fill="#5d6f96" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
+</svg>`;
+    return sharp(Buffer.from(svg, "utf8"), { density: 96 })
+      .resize(1200, 675)
+      .png({ compressionLevel: 9 })
+      .toBuffer();
+  }
+
   // DejaVu advances ~0.51em avg but caps/digits reach ~0.72em -> fs 30 * 46
   // chars stays inside the 1008px text column even all-caps (994px limit).
   const all = wrap(data.scenario, 46, 7);
@@ -102,7 +135,7 @@ function cardUrl(bitId) {
 async function ensureCardForBit(prisma, bitId, putR2) {
   const bit = await prisma.bit.findUnique({
     where: { id: bitId },
-    include: { outcome: true },
+    include: { outcome: true, season: { select: { name: true } } },
   });
   if (!bit) throw new Error(`[card] bit ${bitId} not found`);
   const png = await renderShareCard({
@@ -114,6 +147,8 @@ async function ensureCardForBit(prisma, bitId, putR2) {
     winStrength: bit.outcome?.win_strength,
     fairRatio: bit.outcome?.fair_ratio,
     jurorCount: bit.outcome?.juror_count,
+    holdout: bit.is_holdout,
+    seasonName: bit.season?.name,
   });
   await putR2(cardKey(bitId), png, "image/png", { cacheControl: "public, max-age=300" });
   return { bitId, url: cardUrl(bitId), bytes: png.length };
