@@ -275,7 +275,7 @@ async function run(job) {
       const cumBig = BigInt(a.cum || "0");
       await prisma.$executeRaw`
         UPDATE "Reward" r
-        SET merkle_proof = ${JSON.stringify(proof)}::jsonb,
+        SET merkle_proof = ${JSON.stringify({ proof })}::jsonb,
             cumulative_micro_usdg = ${cumBig}
         FROM "User" u
         WHERE r.user_id = u.id AND u.wallet = ${a.account} AND r.epoch_id = (SELECT id FROM "Epoch" WHERE epoch_number = ${epoch})`;
