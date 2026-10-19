@@ -77,7 +77,7 @@ export default function HomePage() {
           {/* Primary Action Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <Link
-              href="/stage"
+              href="/app?tab=stage"
               className="inline-flex items-center gap-2.5 rounded-full bg-[#ffb13b] px-7 py-4 font-mono text-xs uppercase tracking-widest text-[#060606] font-semibold transition-all duration-200 hover:bg-[#ffa71a] hover:scale-[1.02] shadow-[0_0_24px_rgba(255,177,59,0.35)]"
             >
               <Mic className="w-4 h-4" />
@@ -86,7 +86,7 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/vault"
+              href="/app?tab=vault"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-200 backdrop-blur-md transition-all duration-200 hover:bg-white/10 hover:text-white"
             >
               <Database className="w-4 h-4 text-zinc-400" />

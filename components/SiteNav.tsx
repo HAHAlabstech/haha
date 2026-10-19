@@ -26,13 +26,12 @@ import {
   truncateAddress,
 } from "@/lib/wallets";
 
-const PRIMARY_NAV = [
-  { href: "/stage", label: "Stage", icon: Mic },
-  { href: "/showtime", label: "Showtime", icon: Orbit },
-  { href: "/crowd", label: "Crowd", icon: Users },
-  { href: "/vault", label: "Vault", icon: Database },
-  { href: "/tipjar", label: "Tip Jar", icon: Coins },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+const LANDING_NAV = [
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#waveform", label: "The Science" },
+  { href: "/#vault", label: "Joke Vault" },
+  { href: "/showtime", label: "Showtime" },
+  { href: "/faq", label: "FAQ" },
 ];
 
 const DIRECTORY_LINKS = [
@@ -41,11 +40,11 @@ const DIRECTORY_LINKS = [
   { num: "03", title: "IRL Dynamics", tag: "Physical World", href: "/#irl", icon: Orbit },
   { num: "04", title: "Double Meaning", tag: "Two Readings", href: "/#double-meaning", icon: FileCode },
   { num: "05", title: "Showtime Orbit", tag: "3D Laocoon Experience", href: "/showtime", icon: Orbit },
-  { num: "06", title: "Take the Stage", tag: "Submit a Bit", href: "/stage", icon: Mic },
-  { num: "07", title: "The Crowd", tag: "Human Quorum Judging", href: "/crowd", icon: Users },
-  { num: "08", title: "The Joke Vault", tag: "Verified Dataset & Revenue", href: "/vault", icon: Database },
-  { num: "09", title: "Tip Jar", tag: "Daily Merkle Claims", href: "/tipjar", icon: Coins },
-  { num: "10", title: "Leaderboard", tag: "Top Comics & Crowd", href: "/leaderboard", icon: Trophy },
+  { num: "06", title: "Take the Stage", tag: "Submit a Bit", href: "/app?tab=stage", icon: Mic },
+  { num: "07", title: "The Crowd", tag: "Human Quorum Judging", href: "/app?tab=crowd", icon: Users },
+  { num: "08", title: "The Joke Vault", tag: "Verified Dataset & Revenue", href: "/app?tab=vault", icon: Database },
+  { num: "09", title: "Tip Jar", tag: "Daily Merkle Claims", href: "/app?tab=tipjar", icon: Coins },
+  { num: "10", title: "Leaderboard", tag: "Top Comics & Crowd", href: "/app?tab=leaderboard", icon: Trophy },
   { num: "11", title: "Seasons", tag: "Straight Man Upgrades", href: "/seasons", icon: Shield },
   { num: "12", title: "Producers", tag: "Pro Stage & Vault Licenses", href: "/producers", icon: Sparkles },
 ];
@@ -108,54 +107,15 @@ export default function SiteNav() {
           className="topbar-nav hidden md:flex"
           aria-label="Quick navigation"
         >
-          {pathname === "/" ? (
-            <>
-              <a
-                href="#how-it-works"
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-              >
-                <span>How It Works</span>
-              </a>
-              <a
-                href="#waveform"
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-              >
-                <span>The Science</span>
-              </a>
-              <a
-                href="#vault"
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-              >
-                <span>Joke Vault</span>
-              </a>
-              <a
-                href="#faq"
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-              >
-                <span>FAQ</span>
-              </a>
-            </>
-          ) : (
-            PRIMARY_NAV.map((l) => {
-              const Icon = l.icon;
-              const active =
-                pathname === l.href || pathname?.startsWith(`${l.href}/`);
-              return (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] transition-all duration-200 ${
-                    active
-                      ? "bg-[#ffb13b]/15 text-[#ffb13b] shadow-[0_0_12px_rgba(255,177,59,0.2)] font-medium"
-                      : "text-zinc-400 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <Icon className={`w-3 h-3 ${active ? "text-[#ffb13b]" : "text-zinc-500"}`} />
-                  <span>{l.label}</span>
-                </Link>
-              );
-            })
-          )}
+          {LANDING_NAV.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+            >
+              <span>{l.label}</span>
+            </Link>
+          ))}
         </nav>
 
         {/* Right: Wallet + Primary CTA + Directory drawer */}
@@ -175,24 +135,14 @@ export default function SiteNav() {
             <span>{first ? truncateAddress(first) : "Connect"}</span>
           </button>
 
-          {pathname === "/" ? (
-            <Link
-              href="/stage"
-              className="pill-btn hot hidden sm:inline-flex items-center gap-1.5 shadow-[0_0_16px_rgba(255,177,59,0.25)]"
-            >
-              <Mic className="w-3.5 h-3.5" />
-              <span>Launch App</span>
-              <ArrowUpRight className="w-3 h-3" />
-            </Link>
-          ) : (
-            <Link
-              href="/"
-              className="pill-btn hidden sm:inline-flex items-center gap-1.5 text-zinc-400 hover:text-white hover:bg-white/5"
-            >
-              <span>Landing Page</span>
-              <ArrowUpRight className="w-3 h-3" />
-            </Link>
-          )}
+          <Link
+            href="/app"
+            className="pill-btn hot hidden sm:inline-flex items-center gap-1.5 shadow-[0_0_16px_rgba(255,177,59,0.25)]"
+          >
+            <Mic className="w-3.5 h-3.5" />
+            <span>Launch App</span>
+            <ArrowUpRight className="w-3 h-3" />
+          </Link>
 
           <button
             type="button"

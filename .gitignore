@@ -12,3 +12,4 @@ contracts/cache/
 contracts/out/
 pgdata/
 *.tsbuildinfo
+.opencode-ui-*.png

@@ -324,8 +324,8 @@ export default function CrowdJoinPage() {
                     </span>
                   </button>
                 ) : null}
-                <Link href="/crowd" className="pill-btn">
-                  <span>Go to the Crowd Jury →</span>
+                <Link href="/app?tab=crowd" className="pill-btn hot">
+                  <span>Enter Crowd Jury Console →</span>
                 </Link>
               </div>
             ) : (
