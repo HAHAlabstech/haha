@@ -38,10 +38,16 @@ function pct(x) {
   return Number.isFinite(n) ? Math.round(n * 100) : null;
 }
 
-// data: { id, category, question, scenario, result, win strength, fairRatio, jurorCount }
+// data: { id, category, scenario, result, winStrength, fairRatio, jurorCount }
 async function renderShareCard(data) {
   const badge = MAINNET_BADGES[data.result] ?? { label: esc(data.result), color: "#8b5cf6" };
-  const jokeLines = wrap(data.scenario, 58, 5);
+  // DejaVu advances ~0.51em avg but caps/digits reach ~0.72em -> fs 30 * 46
+  // chars stays inside the 1008px text column even all-caps (994px limit).
+  const all = wrap(data.scenario, 46, 7);
+  const shown = all.length > 6 ? all.slice(0, 6) : all;
+  const totalWords = String(data.scenario ?? "").trim().split(/\s+/).length;
+  const shownWords = shown.join(" ").trim().split(/\s+/).length;
+  const moreWords = Math.max(0, totalWords - shownWords);
   const win = pct(data.winStrength);
   const fair = pct(data.fairRatio);
   const stats = [
@@ -50,8 +56,8 @@ async function renderShareCard(data) {
     `jurors ${data.jurorCount ?? 0}`,
   ].filter(Boolean).join("   ·   ");
 
-  const body = jokeLines
-    .map((l, i) => `<text x="96" y="${300 + i * 56}" font-size="44" fill="#e8eefc">${esc(l)}</text>`)
+  const body = shown
+    .map((l, i) => `<text x="96" y="${300 + i * 48}" font-size="30" fill="#e8eefc">${esc(l)}</text>`)
     .join("\n    ");
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
@@ -63,15 +69,16 @@ async function renderShareCard(data) {
   <rect width="1200" height="675" fill="url(#bg)"/>
   <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#26304d" stroke-width="2"/>
   <text x="96" y="104" font-size="40" font-weight="bold" fill="#facc15">HAHA</text>
-  <text x="200" y="104" font-size="22" fill="#8fa3c8">the crowd judges</text>
+  <text x="310" y="100" font-size="22" fill="#8fa3c8">the crowd judges</text>
   <rect x="896" y="70" width="208" height="48" rx="24" fill="#1b2540"/>
   <text x="1000" y="101" font-size="24" fill="#9db2dc" text-anchor="middle">${esc(data.category)}</text>
   <rect x="96" y="150" width="${40 + badge.label.length * 26}" height="64" rx="32" fill="${badge.color}"/>
   <text x="120" y="196" font-size="34" font-weight="bold" fill="#0b1020">${esc(badge.label)}</text>
   ${body}
-  <line x1="96" y1="560" x2="1104" y2="560" stroke="#26304d" stroke-width="2"/>
-  <text x="96" y="614" font-size="26" fill="#c7d4ef">${esc(stats)}</text>
-  <text x="1104" y="614" font-size="22" fill="#5d6f96" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
+  ${moreWords ? `<text x="96" y="572" font-size="24" fill="#8fa3c8">… +${moreWords} more words</text>` : ""}
+  <line x1="96" y1="584" x2="1104" y2="584" stroke="#26304d" stroke-width="2"/>
+  <text x="96" y="622" font-size="26" fill="#c7d4ef">${esc(stats)}</text>
+  <text x="1104" y="622" font-size="22" fill="#5d6f96" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
 </svg>`;
 
   return sharp(Buffer.from(svg, "utf8"), { density: 96 })
