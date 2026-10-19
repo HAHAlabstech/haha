@@ -74,7 +74,7 @@ export async function GET() {
         crowd_rep: u.crowd_rep,
         votes_cast: voteMap.get(u.id) ?? 0,
       }))
-      .sort((a, b) => b.crowd_rep - a.crowd_rep || b.votes_cast - a.votes_cast)
+      .sort((a, b) => b.votes_cast - a.votes_cast || b.crowd_rep - a.crowd_rep)
       .slice(0, 10);
 
     return jsonBig({ ok: true, comedians, jurors });
