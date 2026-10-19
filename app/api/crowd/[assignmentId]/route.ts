@@ -181,7 +181,13 @@ export async function POST(
         ...seated.map((s) => s.juror_id),
       ]);
       const rawCandidates = await prisma.user.findMany({
-        where: { onboarding_passed: true, id: { notIn: [...excluded] } },
+        where: {
+          onboarding_passed: true,
+          id: { notIn: [...excluded] },
+          // Signless seed wallets can never sign a ballot — seating them as
+          // extension jurors blocked the 7-vote finalize for the full SLA.
+          NOT: { wallet: { startsWith: "0x000000000000000000000000" } },
+        },
         select: {
           id: true,
           crowd_tier: true,
@@ -196,7 +202,7 @@ export async function POST(
       );
       shuffleInPlace(candidates);
       const picked = candidates.slice(0, EXTENSION_VOTES);
-      const expires_at = new Date(Date.now() + 48 * 3600 * 1000);
+      const expires_at = new Date(Date.now() + 30 * 60 * 1000); // SLA 30 min — same as the primary quorum (plan §7); stale extensions blocked liveness.
       await prisma.$transaction(
         picked.map((j) =>
           prisma.crowdAssignment.create({

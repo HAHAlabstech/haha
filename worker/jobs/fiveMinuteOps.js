@@ -44,7 +44,10 @@ async function settleBit(bitId) {
   // clean verdict with a hybrid of retired and retrial votes.
   const bit = await prisma.bit.findUnique({ where: { id: bitId }, select: { id: true, retrial_round: true } });
   if (!bit) return { bitId, action: "missing" };
-  const activeRound = bit.retrial_round ?? 1;
+  // Round semantics: retrial_round 0/1 = round 1 (fresh debut); 2+ = retrial.
+  // Historical bits stored retrial_round=0 with round-1 seats; deciding on
+  // the raw 0 made those seats invisible (votes recorded, never counted).
+  const activeRound = bit.retrial_round >= 2 ? bit.retrial_round : 1;
   const votes = (
     await prisma.crowdAssignment.findMany({
       where: { bit_id: bitId, round: activeRound, voted_at: { not: null } },
@@ -54,7 +57,7 @@ async function settleBit(bitId) {
   if (d.action === "expand") {
     const have = await prisma.crowdAssignment.count({ where: { bit_id: bitId } });
     const need = EXPAND_TO - have;
-    if (need > 0) await topUpJurors(bitId, need, 1, false);
+    if (need > 0) await topUpJurors(bitId, need, activeRound, activeRound >= 2);
     return { bitId, action: "expand" };
   }
   if (d.action === "final") {
@@ -129,15 +132,24 @@ async function run(job) {
   const settled = [];
   for (const b of open) {
     await prisma.crowdAssignment.deleteMany({ where: { bit_id: b.id, voted_at: null, expires_at: { lt: new Date() } } });
-    // Re-seat when EVERY juror let the SLA lapse — otherwise the bit strands
-    // in disputed forever (no live assignments => decide() just waits).
+    // Re-seat when jurors let the SLA lapse — otherwise the bit strands:
+    // no live assignments => decide() just waits, forever.
+    const bitRow = await prisma.bit.findUnique({ where: { id: b.id }, select: { retrial_round: true } });
+    const round = (bitRow?.retrial_round ?? 1) >= 2 ? bitRow.retrial_round : 1;
     const live = await prisma.crowdAssignment.count({
-      where: { bit_id: b.id, voted_at: null, expires_at: { gt: new Date() } },
+      where: { bit_id: b.id, round, voted_at: null, expires_at: { gt: new Date() } },
     });
     if (live === 0) {
-      const bitRow = await prisma.bit.findUnique({ where: { id: b.id }, select: { retrial_round: true } });
-      const round = bitRow?.retrial_round ?? 1;
-      await topUpJurors(b.id, 5, round, round >= 2);
+      const votedThis = await prisma.crowdAssignment.count({
+        where: { bit_id: b.id, round, voted_at: { not: null } },
+      });
+      // Quorum target: 5 fresh tally votes; 7 while waiting out a thin
+      // majority (the expansion seats must be votable or it stays thin).
+      const target = votedThis >= 5 ? EXPAND_TO : 5;
+      const need = target - votedThis - live;
+      if (need > 0) {
+        await topUpJurors(b.id, need, round, round >= 2);
+      }
     }
     settled.push(await settleBit(b.id));
   }
