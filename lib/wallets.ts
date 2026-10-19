@@ -429,7 +429,7 @@ export async function ensureSiweSession(
     const res = await fetch("/api/auth/verify", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ message, signature }),
+      body: JSON.stringify({ message, signature, nonce }),
     });
     const data = (await res.json().catch(() => ({}))) as {
       ok?: boolean;
