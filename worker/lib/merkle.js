@@ -1,10 +1,19 @@
 "use strict";
-// Cumulative Merkle tree (plan §5.1 TipJar). Leaf MUST be double-hashed on
-// BOTH sides (contract + worker) or every proof fails:
-//   leaf = keccak256(bytes.concat(keccak256(abi.encode(account, cumulativeMicroUsdg))))
-// Canonical construction with @openzeppelin/merkle-tree (same pinned OZ
-// version as contracts): feed the INNER hash as a bytes32 value, so OZ's
-// leaf = keccak256(abi.encode(inner)) == keccak256(bytes.concat(inner)).
+// Cumulative Merkle tree (plan §5.1 TipJar).
+// THE LEAF MUST BE EXACTLY TipJar.leafHash(account, cumulativeMicro):
+//   leaf = keccak256(bytes.concat(keccak256(abi.encode(account, cumulativeMicro))))
+// The contract already applies the double hash; the backend keeps leaves
+// PRE-HASHED and must NOT hash them again. A previous draft fed
+// keccak(abi.encode(account, cumulative)) into StandardMerkleTree, whose
+// standardLeafHash keccak'd it once more — leaves ended TRIPLE-hashed and
+// every claim reverted InvalidProof on-chain, even though the staged root
+// matched (the on-chain root was built from those same wrong leaves).
+// Backend tree = @openzeppelin/merkle-tree SimpleMerkleTree, which takes the
+// leaf values VERBATIM (formatLeaf = abi.encode(["bytes32"], [v]) = identity
+// for 32-byte hex) and hashes sorted pairs with keccak256(msg-order) — the
+// exact semantics of the on-chain OZ Solidity MerkleProof.verify. When OZ
+// is unavailable we fail LOUD: a silently inconsistent tree is worse than
+// no settlement. Empty reward sets produce the canonical empty root.
 // BigInt micro only; tree JSON mirrored to R2 private/merkle/epoch-{n}.json.
 
 const { keccak256, encodeAbiParameters, concat } = require("viem");
@@ -16,6 +25,7 @@ function innerHash(account, cumulativeMicro) {
   ));
 }
 
+/// Canonical TipJar-compatible leaf (double-hash): keccak(inner).
 function leafHash(account, cumulativeMicro) {
   return keccak256(concat([innerHash(account, cumulativeMicro)]));
 }
@@ -23,43 +33,52 @@ function leafHash(account, cumulativeMicro) {
 // pairs: [{ account, cumulativeMicro: bigint|number|string }]
 // Returns { root, proofs: Map(account->hex[]), treeJson }.
 async function buildTree(pairs) {
-  const inners = pairs.map((p) => ({ account: p.account, cum: BigInt(p.cumulativeMicro).toString(), inner: innerHash(p.account, p.cumulativeMicro) }));
-  try {
-    const { StandardMerkleTree } = await import("@openzeppelin/merkle-tree");
-    const tree = StandardMerkleTree.of(inners.map((e) => [e.inner]), ["bytes32"]);
-    const proofs = new Map();
-    for (const [i, e] of tree.entries()) proofs.set(inners[i].account, tree.getProof(i));
-    const treeJson = JSON.stringify({ root: tree.root, leaves: inners.map((e) => ({ account: e.account, cumulativeMicro: e.cum, inner: e.inner, leaf: leafHash(e.account, e.cum) })) });
-    return { root: tree.root, proofs, treeJson };
-  } catch (err) {
-    console.warn(`[merkle] OZ lib unavailable (${err.message}) — minimal sorted-pair fallback with identical leaf hashing`);
-    const leaves = inners
-      .map((e) => ({ ...e, hash: keccak256(concat([e.inner])) }))
-      .sort((a, b) => (a.hash < b.hash ? -1 : 1));
-    const layers = [leaves.map((l) => l.hash)];
-    while (layers[layers.length - 1].length > 1) {
-      const prev = layers[layers.length - 1];
-      const next = [];
-      for (let i = 0; i < prev.length; i += 2) {
-        const a = prev[i], b = prev[i + 1] ?? prev[i];
-        const [x, y] = a < b ? [a, b] : [b, a];
-        next.push(keccak256(concat([x, y])));
-      }
-      layers.push(next);
-    }
-    const root = layers[layers.length - 1][0] ?? keccak256("0x");
-    const proofs = new Map();
-    leaves.forEach((leaf, idx) => {
-      const proof = [];
-      let i = idx;
-      for (let l = 0; l < layers.length - 1; l++) {
-        proof.push(i % 2 === 0 ? (layers[l][i + 1] ?? layers[l][i]) : layers[l][i - 1]);
-        i = Math.floor(i / 2);
-      }
-      proofs.set(leaf.account, proof);
-    });
-    return { root, proofs, treeJson: JSON.stringify({ root, leaves: leaves.map((l) => ({ account: l.account, cumulativeMicro: l.cum, leaf: l.hash })) }) };
+  if (!pairs || pairs.length === 0) {
+    const empty = keccak256("0x");
+    return { root: empty, proofs: new Map(), treeJson: JSON.stringify({ root: empty, leaves: [] }) };
   }
+
+  const { SimpleMerkleTree } = await import("@openzeppelin/merkle-tree");
+
+  const entries = pairs.map((p) => ({
+    account: String(p.account).toLowerCase(),
+    cumulativeMicro: BigInt(p.cumulativeMicro).toString(),
+    leaf: leafHash(p.account, p.cumulativeMicro),
+  }));
+
+  // Simple tree keeps the 32-byte leaves verbatim.
+  const tree = SimpleMerkleTree.of(entries.map((e) => e.leaf));
+
+  // Map leaf -> value index (independent of how OZ orders values).
+  const leafIndex = new Map();
+  for (const [i, leafHex] of tree.entries()) {
+    if (leafIndex.has(leafHex)) throw new Error("[merkle] duplicate leaf hash in reward set");
+    leafIndex.set(leafHex, i);
+  }
+
+  const proofs = new Map();
+  for (const e of entries) {
+    const idx = leafIndex.get(e.leaf);
+    if (idx === undefined) throw new Error("[merkle] internal error: leaf missing from tree entries");
+    const proof = tree.getProof(idx);
+
+    // Fail loud BEFORE the root ever reaches the chain: the proof must roll
+    // leaf -> root with plain sorted-pair keccak (MerkleProof.verify semantics).
+    let acc = e.leaf;
+    for (const sib of proof) {
+      acc = keccak256(concat(acc < sib ? [acc, sib] : [sib, acc]));
+    }
+    if (acc !== tree.root) {
+      throw new Error(`[merkle] self-verification failed for ${e.account}: got ${acc} expected ${tree.root}`);
+    }
+    proofs.set(e.account, proof);
+  }
+
+  const treeJson = JSON.stringify({
+    root: tree.root,
+    leaves: entries.map((e) => ({ account: e.account, cumulativeMicro: e.cumulativeMicro, leaf: e.leaf })),
+  });
+  return { root: tree.root, proofs, treeJson };
 }
 
 module.exports = { innerHash, leafHash, buildTree };
