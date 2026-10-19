@@ -1404,7 +1404,7 @@ export default function ClubStage3D() {
       </div>
 
       {/* Live Straight Man Monologue Ticker */}
-      <div className="pointer-events-none absolute top-[94px] left-[clamp(20px,4vw,56px)] z-6 hidden max-w-lg rounded-full border border-white/10 bg-[#060606]/85 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 backdrop-blur-md lg:flex lg:items-center lg:gap-2.5 shadow-xl">
+      <div className="pointer-events-none absolute bottom-6 left-[clamp(20px,4vw,56px)] z-6 hidden max-w-md rounded-full border border-white/10 bg-[#060606]/85 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 backdrop-blur-md lg:flex lg:items-center lg:gap-2.5 shadow-xl">
         <span className="h-2 w-2 rounded-full bg-[#ffb13b] shadow-[0_0_12px_#ffb13b]" />
         <span className="truncate text-[#f4f4f5]">{lastReaction}</span>
       </div>

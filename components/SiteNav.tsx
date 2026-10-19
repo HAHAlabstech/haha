@@ -12,7 +12,6 @@ import {
   Trophy,
   Menu,
   X,
-  Clock,
   Sparkles,
   ArrowUpRight,
   Shield,
@@ -56,7 +55,6 @@ export default function SiteNav() {
   const [modalOpen, setModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [clockText, setClockText] = useState("21:40");
   const [accounts, setAccounts] = useState<string[]>([]);
   const first = accounts[0] ?? null;
 
@@ -66,18 +64,6 @@ export default function SiteNav() {
     return subscribeWalletState((st) => {
       setAccounts(st.account ? [st.account] : []);
     });
-  }, []);
-
-  useEffect(() => {
-    const tickClock = () => {
-      const d = new Date();
-      const hh = String(d.getHours()).padStart(2, "0");
-      const mm = String(d.getMinutes()).padStart(2, "0");
-      setClockText(`${hh}:${mm}`);
-    };
-    tickClock();
-    const id = setInterval(tickClock, 15_000);
-    return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
@@ -126,37 +112,25 @@ export default function SiteNav() {
             <>
               <a
                 href="#how-it-works"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
               >
                 <span>How It Works</span>
               </a>
               <a
                 href="#waveform"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
               >
                 <span>The Science</span>
               </a>
               <a
-                href="#scrub"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-[#ffb13b] hover:text-white hover:bg-[#ffb13b]/10 border border-[#ffb13b]/20 transition-all duration-200"
-              >
-                <span>Pinned Scrub</span>
-              </a>
-              <a
                 href="#vault"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
               >
                 <span>Joke Vault</span>
               </a>
               <a
-                href="#telemetry"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-              >
-                <span>Live Feed</span>
-              </a>
-              <a
                 href="#faq"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200"
               >
                 <span>FAQ</span>
               </a>
@@ -170,7 +144,7 @@ export default function SiteNav() {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-[0.14em] transition-all duration-200 ${
                     active
                       ? "bg-[#ffb13b]/15 text-[#ffb13b] shadow-[0_0_12px_rgba(255,177,59,0.2)] font-medium"
                       : "text-zinc-400 hover:text-white hover:bg-white/5"
@@ -184,13 +158,8 @@ export default function SiteNav() {
           )}
         </nav>
 
-        {/* Right: Showtime clock + Wallet + Primary CTA + Mobile hamburger */}
+        {/* Right: Wallet + Primary CTA + Directory drawer */}
         <div className="right">
-          <div className="clock hidden xl:inline-flex items-center gap-1.5" title="Your local showtime">
-            <Clock className="w-3 h-3 text-[#ffb13b]" />
-            <span>Showtime <b>{clockText}</b></span>
-          </div>
-
           <button
             type="button"
             onClick={() => setModalOpen(true)}
@@ -206,22 +175,33 @@ export default function SiteNav() {
             <span>{first ? truncateAddress(first) : "Connect"}</span>
           </button>
 
-          <Link
-            href="/stage"
-            className="pill-btn hot hidden sm:inline-flex items-center gap-1.5 shadow-[0_0_16px_rgba(255,177,59,0.25)]"
-          >
-            <Mic className="w-3.5 h-3.5" />
-            <span>{pathname === "/" ? "Launch App" : "Take the stage"}</span>
-            <ArrowUpRight className="w-3 h-3" />
-          </Link>
+          {pathname === "/" ? (
+            <Link
+              href="/stage"
+              className="pill-btn hot hidden sm:inline-flex items-center gap-1.5 shadow-[0_0_16px_rgba(255,177,59,0.25)]"
+            >
+              <Mic className="w-3.5 h-3.5" />
+              <span>Launch App</span>
+              <ArrowUpRight className="w-3 h-3" />
+            </Link>
+          ) : (
+            <Link
+              href="/"
+              className="pill-btn hidden sm:inline-flex items-center gap-1.5 text-zinc-400 hover:text-white hover:bg-white/5"
+            >
+              <span>Landing Page</span>
+              <ArrowUpRight className="w-3 h-3" />
+            </Link>
+          )}
 
           <button
             type="button"
-            className="pill-btn md:hidden"
+            className="pill-btn"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle directory menu"
           >
             {menuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
+            <span className="hidden xl:inline text-[10px]">Directory</span>
           </button>
         </div>
       </header>
@@ -316,7 +296,7 @@ export default function SiteNav() {
               Methodology
             </Link>
           </div>
-          <span>Local Showtime — {clockText}</span>
+          <span>Robinhood Chain Testnet · Season 01</span>
         </div>
       </aside>
 

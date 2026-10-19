@@ -644,25 +644,6 @@ export default function ShowtimeExperience() {
         </div>
       ))}
 
-      {/* Floating Header */}
-      <header className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-[clamp(20px,4vw,56px)] py-6 pointer-events-auto">
-        <Link href="/" className="flex items-center gap-2 group">
-          <span className="h-2 w-2 rounded-full bg-[#ffb13b] shadow-[0_0_10px_#ffb13b]" />
-          <span className="font-mono text-sm tracking-[0.22em] font-semibold text-white group-hover:text-[#ffb13b] transition-colors">
-            HAHA SHOWTIME
-          </span>
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/stage"
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#ffb13b] font-mono text-xs uppercase tracking-widest text-black font-semibold hover:bg-white transition-all shadow-[0_0_16px_rgba(255,177,59,0.3)]"
-          >
-            <Mic className="w-3.5 h-3.5" />
-            <span>Take the Stage</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      </header>
 
       {/* Vertical Story Dashes Tracker */}
       <div className="fixed right-6 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3 pointer-events-none">

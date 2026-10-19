@@ -45,31 +45,29 @@ export default function PinnedScrollMoment() {
       {/* =========================================================================
           STICKY PINNED VIEWPORT (100vh pinned while scrolling 320vh)
           ========================================================================= */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-between p-[clamp(20px,4vw,56px)] overflow-hidden">
-        {/* Top HUD: Label, Active Phase, and Real-time Scrub Indicator */}
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
-          <div className="flex items-center gap-3">
-            <span className="h-2 w-2 rounded-full bg-[#ffb13b] animate-ping" />
-            <span className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffb13b] font-semibold">
-              Pinned Scroll Scrub
-            </span>
-            <span className="text-zinc-600">|</span>
-            <span className="font-mono text-xs uppercase tracking-wider text-zinc-400">
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-between pt-24 pb-8 px-[clamp(20px,4vw,56px)] overflow-hidden">
+        {/* Scrub Progress Bar (Discrete HUD clear of navbar) */}
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#ffb13b] animate-pulse" />
+            <span className="text-[#ffb13b] font-medium">Scrub Reel</span>
+            <span className="text-zinc-600">/</span>
+            <span>
               {isPhase1 && "Chapter 01 · The Pronoun Trap"}
               {isPhase2 && "Chapter 02 · The Subtext Translator"}
               {isPhase3 && "Chapter 03 · IRL Physics Dynamics"}
             </span>
           </div>
 
-          <div className="flex items-center gap-4 font-mono text-xs text-zinc-400">
-            <span className="hidden sm:inline">Scrub progress:</span>
-            <div className="w-32 h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div className="flex items-center gap-3 font-mono text-[11px] text-zinc-400">
+            <span className="hidden sm:inline">Progress</span>
+            <div className="w-28 h-1 rounded-full bg-white/10 overflow-hidden">
               <div
                 className="h-full bg-[#ffb13b] transition-all duration-75 shadow-[0_0_8px_#ffb13b]"
                 style={{ width: `${(k * 100).toFixed(1)}%` }}
               />
             </div>
-            <span className="text-zinc-200 tabular-nums font-semibold w-10 text-right">
+            <span className="text-zinc-200 tabular-nums font-medium w-8 text-right">
               {Math.round(k * 100)}%
             </span>
           </div>
