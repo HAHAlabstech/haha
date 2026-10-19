@@ -301,6 +301,18 @@ async function run(job) {
     const agg = await prisma.$queryRaw`
       SELECT SUM(r.amount_micro_usdg)::text AS cum FROM "Reward" r`;
     const totalCumulative = BigInt(agg[0]?.cum ?? "0");
+    // Chain-state guards (pending staged / already active) win over the
+    // previous-epoch DB check: reconciliation re-runs must not double-queue.
+    const pc = publicClient();
+    const [activeRoot, pendingRootNow, pendingEpochNow] = await Promise.all([
+      pc.readContract({ address: tipjar, abi: ABI.tipJar, functionName: "merkleRoot" }),
+      pc.readContract({ address: tipjar, abi: ABI.tipJar, functionName: "pendingRoot" }),
+      pc.readContract({ address: tipjar, abi: ABI.tipJar, functionName: "pendingEpoch" }),
+    ]);
+    if (activeRoot === merkle.root) return { proposed: false, reason: "already_active_onchain" };
+    if (pendingRootNow === merkle.root && Number(pendingEpochNow) === epoch) {
+      return { proposed: false, reason: "already_pending_onchain" };
+    }
     const { client, account } = walletClient();
     const hash = await client.writeContract({
       address: tipjar,

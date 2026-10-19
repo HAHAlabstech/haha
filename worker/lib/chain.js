@@ -75,6 +75,9 @@ const ABI = {
       inputs: [],
       outputs: [],
     },
+    { type: "function", name: "merkleRoot", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
+    { type: "function", name: "pendingRoot", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
+    { type: "function", name: "pendingEpoch", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   ],
 };
 
