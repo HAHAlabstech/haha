@@ -7,43 +7,29 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const prisma = getPrisma();
-    const [topComedians, topJurors, killedItGroups, voteGroups] =
-      await Promise.all([
-        prisma.user.findMany({
-          orderBy: [{ comedian_rep: "desc" }, { created_at: "asc" }],
-          take: 15,
-          select: {
-            id: true,
-            wallet: true,
-            handle: true,
-            comedian_tier: true,
-            comedian_rep: true,
-          },
-        }),
-        prisma.user.findMany({
-          orderBy: [{ crowd_rep: "desc" }, { created_at: "asc" }],
-          take: 15,
-          select: {
-            id: true,
-            wallet: true,
-            handle: true,
-            crowd_tier: true,
-            crowd_rep: true,
-            plant_total: true,
-            plant_correct: true,
-          },
-        }),
-        prisma.bit.groupBy({
-          by: ["user_id"],
-          where: { status: "killed_it" },
-          _count: { id: true },
-        }),
-        prisma.crowdAssignment.groupBy({
-          by: ["juror_id"],
-          where: { is_plant: false, voted_at: { not: null } },
-          _count: { id: true },
-        }),
-      ]);
+    const [topComedians, killedItGroups, voteGroups] = await Promise.all([
+      prisma.user.findMany({
+        orderBy: [{ comedian_rep: "desc" }, { created_at: "asc" }],
+        take: 15,
+        select: {
+          id: true,
+          wallet: true,
+          handle: true,
+          comedian_tier: true,
+          comedian_rep: true,
+        },
+      }),
+      prisma.bit.groupBy({
+        by: ["user_id"],
+        where: { status: "killed_it" },
+        _count: { id: true },
+      }),
+      prisma.crowdAssignment.groupBy({
+        by: ["juror_id"],
+        where: { is_plant: false, voted_at: { not: null } },
+        _count: { id: true },
+      }),
+    ]);
 
     const killedMap = new Map<string, number>();
     for (const g of killedItGroups) killedMap.set(g.user_id, g._count.id);
@@ -66,16 +52,39 @@ export async function GET() {
       )
       .slice(0, 10);
 
-    const jurors = topJurors
-      .map((u) => ({
-        wallet: u.wallet,
-        handle: u.handle,
-        crowd_tier: u.crowd_tier,
-        crowd_rep: u.crowd_rep,
-        votes_cast: voteMap.get(u.id) ?? 0,
-      }))
-      .sort((a, b) => b.votes_cast - a.votes_cast || b.crowd_rep - a.crowd_rep)
-      .slice(0, 10);
+    // Jurors: rank by ACTUAL votes cast (aggregate first), then fetch those
+    // users — the crowd_rep-ordered pre-select pushed real voters out of the
+    // candidate set entirely (seed wallets fill the take:15 window).
+    const jurorIds = [...voteMap.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([id]) => id);
+    const topJurors =
+      jurorIds.length > 0
+        ? await prisma.user.findMany({
+            where: { id: { in: jurorIds } },
+            select: {
+              id: true,
+              wallet: true,
+              handle: true,
+              crowd_tier: true,
+              crowd_rep: true,
+            },
+          })
+        : [];
+    const jurors = jurorIds
+      .map((id) => {
+        const u = topJurors.find((x) => x.id === id);
+        if (!u) return null;
+        return {
+          wallet: u.wallet,
+          handle: u.handle,
+          crowd_tier: u.crowd_tier,
+          crowd_rep: u.crowd_rep,
+          votes_cast: voteMap.get(id) ?? 0,
+        };
+      })
+      .filter(Boolean);
 
     return jsonBig({ ok: true, comedians, jurors });
   } catch (err) {
