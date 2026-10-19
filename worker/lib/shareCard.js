@@ -89,8 +89,10 @@ async function renderShareCard(data) {
 
 /// R2 key + PUBLIC URL for a settled bit (deterministic — retrial overwrites).
 /// R2_PUBLIC_URL is the public domain bound to the R2_BUCKET_NAME bucket.
+/// v2 key prefix: pre-fix renders were edge-cached (CF forces 4h TTL) under
+/// public/share/; bumping the prefix gives every card a fresh, cacheable URL.
 function cardKey(bitId) {
-  return `public/share/bit-${String(bitId).toLowerCase()}.png`;
+  return `public/share/v2/bit-${String(bitId).toLowerCase()}.png`;
 }
 function cardUrl(bitId) {
   const base = (process.env.R2_PUBLIC_URL ?? "").replace(/\/+$/, "");
