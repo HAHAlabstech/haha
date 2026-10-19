@@ -34,7 +34,7 @@ contract DeployTestnet is Script {
         vm.startBroadcast(vm.envUint("OPERATOR_PRIVATE_KEY"));
         _deployMocks();
         TipJar tipJar = new TipJar(address(usdg), cold, deployer, cold, 10 minutes);
-        MicDrop placeholder = new MicDrop(address(usdg), address(tipJar), address(0), cold, deployer);
+        MicDrop placeholder = new MicDrop(address(usdg), address(tipJar), address(0), cold, deployer, 10 minutes);
         FeeSplitter splitter = new FeeSplitter(
             address(usdg), address(_escrow()), address(tipJar), address(placeholder), cold, deployer, 10 minutes
         );
@@ -85,7 +85,8 @@ contract DeployTestnet is Script {
         address deployerAddr
     ) internal {
         MockUniversalRouter router = new MockUniversalRouter(usdgAddr, hahaAddr, splitterAddr);
-        MicDrop micDrop = new MicDrop(usdgAddr, splitterAddr, address(router), coldAddr, deployerAddr);
+        // Testnet rehearsal uses the SHORT confirm window; DeployMainnet passes 48h.
+        MicDrop micDrop = new MicDrop(usdgAddr, splitterAddr, address(router), coldAddr, deployerAddr, 10 minutes);
         CrowdStaking staking = new CrowdStaking(hahaAddr, tipJarAddr, coldAddr, deployerAddr, 10 ether);
         VaultRegistry registry = new VaultRegistry(coldAddr, deployerAddr);
         uint256[4] memory prices =

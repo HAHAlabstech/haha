@@ -21,7 +21,11 @@ contract MicDrop is AccessControl, ReentrancyGuard {
     bytes32 public constant KEEPER_ROLE = keccak256("KEEPER_ROLE");
 
     uint256 public constant HOLD_CAP_MICRO = 50_000_000_000; // 50k USDG (6 dec)
-    uint256 public constant CONFIRM_DELAY = 48 hours;
+    /// @notice Confirm timeout is CONSTRUCTOR-SET (not a constant): mainnet
+    ///         deploy script passes 48h so mainnet semantics stay untouched,
+    ///         while a testnet redeploy uses a short window for rehearsal —
+    ///         same bytecode path, no code divergence between environments.
+    uint256 public immutable confirmDelay;
     uint256 public constant MAX_BUYBACK_BPS = 200; // 2% of pool reserve
     uint256 public constant MAX_IMPACT_BPS = 100; // 1% price impact
     uint256 public constant EXPECTED_CREATOR_TAX_BPS = 200; // locked 2% (K2)
@@ -61,13 +65,21 @@ contract MicDrop is AccessControl, ReentrancyGuard {
     error DeadlineExpired();
     error ZeroAddress();
 
-    constructor(address usdg_, address feeSplitter_, address router_, address admin_, address keeper_) {
+    constructor(
+        address usdg_,
+        address feeSplitter_,
+        address router_,
+        address admin_,
+        address keeper_,
+        uint256 confirmDelay_
+    ) {
         if (usdg_ == address(0) || feeSplitter_ == address(0) || admin_ == address(0) || keeper_ == address(0)) {
             revert ZeroAddress();
         }
         usdg = IERC20(usdg_);
         feeSplitter = feeSplitter_;
         router = router_;
+        confirmDelay = confirmDelay_;
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
         _grantRole(KEEPER_ROLE, keeper_);
     }
@@ -100,7 +112,7 @@ contract MicDrop is AccessControl, ReentrancyGuard {
         if (exemptCount != 0) revert ExemptNotEmpty();
         pendingHahaToken = token;
         pendingLaunchTxHash = launchTxHash;
-        pendingHahaEta = block.timestamp + CONFIRM_DELAY;
+        pendingHahaEta = block.timestamp + confirmDelay;
         emit HahaTokenProposed(token, launchTxHash, pendingHahaEta);
     }
 
