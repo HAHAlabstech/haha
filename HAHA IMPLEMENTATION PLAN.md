@@ -703,9 +703,11 @@ Sebelum melakukan deploy ke Mainnet (`4663`), kedelapan skenario pengujian ini *
 2. **Test 2 — Uji Pre-Screen, Duplikat `pgvector`, & Deteksi Krisis (`Subtext`)(haha.md):**
    - Duplikat 17 contoh → tolak `sim>=0.88`. Budget <3s: embed p95 <800ms + MiMo prescreen <1500ms + pgvector <200ms; cold-start Edge dikecualikan warming. Flake → retry 1x lalu antre.
    - Kirim kalimat berindikasi *self-harm* di kategori `Subtext` → pastikan modal dukungan krisis muncul dan bit tidak diproses(haha.md).
+   - ✅ PASS (scriptable) 19 Okt 2026 LIVE — near-dupe varian tolak otomatis `duplicate sim=0.937 of …` (threshold 0.88 hidup, p95 gate jalan di worker); kalimat self-harm Subtext → `crisis_support` + bit tidak pernah diproses. **GAP follow-up: 17 contoh seed belum punya `Bit.embedding`** (seed tidak backfill) → dupe persis ke seed masih lolos prescreen; buat backfill embedding seed di worker sebelum QA penuh.
 3. **Test 3 — Uji Straight Man (`mimo-v2.6-pro`) & Normalisasi Gaya A/B(haha.md):**
    - Kirim bit baru yang orisinal → pastikan Straight Man menjawab dengan JSON `{answer, reasoning, confidence}`(haha.md).
    - Klik **"Missed it 😂"** → cek `normalized_text` terisi via BullMQ worker + retry (tanpa serverless)(haha.md).
+   - ✅ PASS (scriptable) 19 Okt 2026 LIVE — bit orisinal → `mimo-v2.6-pro` JSON (answer 256c, conf 0.92, latency ~4.4s); `missed_it` API → reveal sekali-tulis + 5 assignment blind (reveal disembunyikan pre-settle) + `normalized_text` AI terisi (288c) via worker; normalisasi Comedian menyusul di tick `five-minute-ops`. NOTE: konsolidasi prescreen + straightman realtime ≈9s (budget doc harap diulang saat kalibrasi T8).
 4. **Test 4 — Uji Blind Crowd (5 Juri, Eskalasi 7 Juri, Retrial Banding & Plants 2-Stage)(haha.md):**
    - Gunakan 5 akun uji di Testnet untuk memberi vote `Fair` dan memilih jawaban Comedian → pastikan status berubah menjadi `killed_it`(haha.md).
    - Uji thin heckled: 2 fair vs 3 unfair (fair=0.40) → HARUS expand ke 7 (T11), bukan final di 5.
@@ -713,14 +715,14 @@ Sebelum melakukan deploy ke Mainnet (`4663`), kedelapan skenario pengujian ini *
    - Uji Plants: gunakan flag time-travel testnet (`plant_candidate_at = now()-8d`) → 5 validasi → promosi hanya jika 5/5. Tanpa flag, test skip (butuh umur 7 hari).
    - Pastikan kartu share `1200x675` otomatis ter-upload ke bucket publik **Cloudflare R2** dan bisa dibuka lewat URL R2(haha.md).
 5. **Test 5 — Aliran Uang (split dua sub-tes, tidak campur)(haha.md):**
-   - **5a USDG-only:** `simulateTradingFees(splitter, 1000_000000)` tanpa ETH → settlement stages → assert 700.000000 TipJar + 300.000000 MicDrop (micro exact). ✅ PASS 17 Okt 2026 di set deploy FINAL (TipJar `0x03f2…a675`, MicDrop real `0xdfB0…0466`, FeeSplitter `0xC79D…9C7d`) — 700/300 exact, sweep refs + rotasi MicDrop terkonfirmasi.
-   - **5b ETH-only:** 0.02 ETH tanpa USDG → assert total = swap(ETH) ±2%, lalu 70/30 dari total itu. Pre-graduasi MicDrop HOLD, post-graduasi burn.
+   - **5a USDG-only:** `simulateTradingFees(splitter, 1000_000000)` tanpa ETH → settlement stages → assert 700.000000 TipJar + 300.000000 MicDrop (micro exact). ✅ PASS 17 Okt 2026 di set deploy FINAL (TipJar `0x03f2…a675`, MicDrop real `0xdfB0…0466`, FeeSplitter `0xC79D…9C7d`) — 700/300 exact + splitter kosong, re-cek saldo on-chain 19 Okt identik. Sweep refs (curve/hook) terpasang; **rotasi `MicDrop.hahaToken`: pending** — propose ulang di set final 19 Okt (tx `0x3ac1…b98e`, pending MockHAHA) → confirm WIB 21 Okt 11:00 (timelock set final = 48h penuh, bukan 10 mnt).
+   - **5b ETH-only:** 0.02 ETH tanpa USDG → assert total = swap(ETH) ±2%, lalu 70/30 dari total itu. Pre-graduasi MicDrop HOLD, post-graduasi burn. ⛔ OBSOLETE per T10 (FeeSplitter USDG-only, jalur swap ETH dihapus) — keluarkan dari ceklis kecuali jalur ETH dibuka lagi.
    - Trigger `/api/cron/daily-settlement`.
    - Verifikasi explorer: 5a exact micro; 5b rangebound slippage.
 6. **Test 6 — Klaim Merkle + delay guardian (testnet 10 mnt)(haha.md):**
    - Setelah Test 5 selesai, pastikan `TipJar.merkleRoot()` di Testnet ter-update.
    - Login sebagai Comedian pemenang di `/tipjar`, klik **Claim USDG**, juga uji fitur **Claim to Alternate Address** → pastikan saldo `MockUSDG` bertambah sesuai perhitungan rumus reward(haha.md).
-7. **Test 7 - Uji Checkout B2B `/producers` (Split 40/30/20/10 & R2 Presigned URL)(haha.md):** ✅ PASS live 16 Okt 2026 — Snapshot $2.500: TipJar +1.000 (750 umum + 250 royalti), MicDrop real +500, cold +1.000.
+7. **Test 7 - Uji Checkout B2B `/producers` (Split 40/30/20/10 & R2 Presigned URL)(haha.md):** ✅ PASS live 16 Okt 2026 — Snapshot $2.500: TipJar +1.000 (750 umum + 250 royalti), MicDrop real +500, cold +1.000. ⚠️ PASS di set deploy PERTAMA; re-run di set FINAL (dan alamat baru) masih open.
    - Gunakan `MockUSDG` di halaman `/producers` untuk membeli paket *Snapshot License* ($2,500 USDG)(haha.md).
    - Pastikan **40% ($1,000 USDG) langsung masuk ke wallet pribadimu (`OPERATOR_WALLET`)**, 40% ke `TipJar` (30% umum + 10% royalti batch `orderId`, cek event `ProducerPurchase`), 20% ke `MicDrop`(haha.md), dan layar langsung menampilkan link unduhan dataset terenkripsi dari **Cloudflare R2**.
 8. **Test 8 — Pre-flight DRY-RUN (TANPA broadcast, 72h):**
