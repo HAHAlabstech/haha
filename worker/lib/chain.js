@@ -50,7 +50,7 @@ const ABI = {
       type: "event",
       name: "FeeSplitExecuted",
       inputs: [
-        { type: "uint256", name: "totalMicro", indexed: false },
+        { type: "uint256", name: "totalMicro", indexed: true },
         { type: "uint256", name: "tipShare", indexed: false },
         { type: "uint256", name: "dropShare", indexed: false },
       ],

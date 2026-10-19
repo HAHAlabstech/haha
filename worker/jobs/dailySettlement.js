@@ -66,11 +66,14 @@ async function harvestOnChain() {
   const receipt = await waitForReceipt(publicClient(), hash);
   if (receipt.status !== "success") throw new Error(`[settle] harvest reverted: ${hash}`);
   const split = parseFeeSplit(receipt);
+  // Never allow a silent mismatch between chain and DB: if the split event
+  // cannot be decoded, fail loudly and reconcile manually (no fake zeros).
+  if (!split) throw new Error(`[settle] harvest moved funds but FeeSplitExecuted undecodable (tx ${hash})`);
   return {
     tx: hash,
-    tipjarMicro: split ? split.tipShare : 0n,
-    micdropMicro: split ? split.dropShare : 0n,
-    totalMicro: split ? split.totalMicro : 0n,
+    tipjarMicro: split.tipShare,
+    micdropMicro: split.dropShare,
+    totalMicro: split.totalMicro,
   };
 }
 
