@@ -23,6 +23,7 @@ export async function GET() {
   let feeSplitterMicroUsdg = "0";
   let micDropMicroUsdg = "0";
   let totalPaidOutMicroUsdg = "0";
+  let chainEpoch = 0;
 
   try {
     const override =
@@ -71,6 +72,13 @@ export async function GET() {
               functionName: "totalPaidOut",
             })
           : Promise.resolve(0n),
+        isDeployed(contracts, "tipJar")
+          ? client.readContract({
+              address: contracts.tipJar,
+              abi: tipJarAbi,
+              functionName: "currentEpoch",
+            })
+          : Promise.resolve(0n),
       ]);
       if (reads[0].status === "fulfilled") {
         tipJarMicroUsdg = (reads[0].value as bigint).toString();
@@ -83,6 +91,9 @@ export async function GET() {
       }
       if (reads[3].status === "fulfilled") {
         totalPaidOutMicroUsdg = (reads[3].value as bigint).toString();
+      }
+      if (reads[4].status === "fulfilled") {
+        chainEpoch = Number(reads[4].value as bigint);
       }
     }
   } catch {
@@ -126,10 +137,15 @@ export async function GET() {
     // DB optional for summary endpoint.
   }
 
+  const tipJarMicro = Number(tipJarMicroUsdg) || 0;
+
   return NextResponse.json(
     {
       chainEnv,
       chainId: chain.id,
+      // Hero/header badge number (USDG, whole units) consumed by landing +
+      // AppShell navbar. Keep in sync with escrow.tipJar.microUsdg.
+      dailyPoolUSDG: Math.round(tipJarMicro / 1_000_000),
       escrow: {
         tipJar: { address: contracts.tipJar, microUsdg: tipJarMicroUsdg },
         feeSplitter: {
@@ -139,7 +155,8 @@ export async function GET() {
         micDrop: { address: contracts.micDrop, microUsdg: micDropMicroUsdg },
       },
       totalPaidOutMicroUsdg,
-      latestEpoch,
+      // Chain is the source of truth; DB epoch rows lag the rewrite path.
+      latestEpoch: chainEpoch || latestEpoch,
       micDropEvents,
       launched: isDeployed(contracts, "hahaToken"),
       launchProof: {

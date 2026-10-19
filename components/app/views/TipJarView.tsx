@@ -26,11 +26,11 @@ interface RewardInfo {
 
 interface TipJarSummary {
   escrow?: {
-    tipJarMicroUsdg?: string;
-    feeSplitterMicroUsdg?: string;
-    micDropMicroUsdg?: string;
-    totalPaidOutMicroUsdg?: string;
+    tipJar?: { address?: string; microUsdg?: string };
+    feeSplitter?: { address?: string; microUsdg?: string };
+    micDrop?: { address?: string; microUsdg?: string };
   };
+  totalPaidOutMicroUsdg?: string;
   latestEpoch?: number;
   micDropEvents?: {
     id: string;
@@ -256,9 +256,9 @@ export default function TipJarView() {
 
   const cumulativeUsdg =
     reward != null ? Number(BigInt(reward.cumulativeMicroUsdg)) / 1_000_000 : 0;
-  const inEscrowUsdg = fmtUsdg(summary?.escrow?.tipJarMicroUsdg);
-  const paidOutUsdg = fmtUsdg(summary?.escrow?.totalPaidOutMicroUsdg);
-  const micDropUsdg = fmtUsdg(summary?.escrow?.micDropMicroUsdg);
+  const inEscrowUsdg = fmtUsdg(summary?.escrow?.tipJar?.microUsdg);
+  const paidOutUsdg = fmtUsdg(summary?.totalPaidOutMicroUsdg);
+  const micDropUsdg = fmtUsdg(summary?.escrow?.micDrop?.microUsdg);
 
   return (
     <div className="mx-auto max-w-[1440px] px-[clamp(16px,3vw,36px)] py-8 space-y-12">
