@@ -195,11 +195,16 @@ export default function ProducersPage() {
         <Card className="space-y-5">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="block font-mono text-xs uppercase tracking-widest text-[#ffb13b]">
+              <label
+                htmlFor="p-org"
+                className="block font-mono text-xs uppercase tracking-widest text-[#ffb13b]"
+              >
                 Organization / AI Lab Name
               </label>
               <input
+                id="p-org"
                 type="text"
+                name="orgName"
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
                 placeholder="Acme AI Research"
@@ -207,11 +212,16 @@ export default function ProducersPage() {
               />
             </div>
             <div>
-              <label className="block font-mono text-xs uppercase tracking-widest text-[#ffb13b]">
+              <label
+                htmlFor="p-contact"
+                className="block font-mono text-xs uppercase tracking-widest text-[#ffb13b]"
+              >
                 Contact Email or Handle
               </label>
               <input
+                id="p-contact"
                 type="text"
+                name="contact"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 placeholder="datasets@acme.ai"
@@ -222,10 +232,15 @@ export default function ProducersPage() {
 
           <div className="grid gap-4 md:grid-cols-[240px_1fr]">
             <div>
-              <label className="block font-mono text-xs uppercase tracking-widest text-[#a49b8e]">
+              <label
+                htmlFor="p-plan"
+                className="block font-mono text-xs uppercase tracking-widest text-[#a49b8e]"
+              >
                 Selected Plan
               </label>
               <select
+                id="p-plan"
+                name="plan"
                 value={plan}
                 onChange={(e) => setPlan(e.target.value)}
                 className="mt-2 w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-3.5 text-sm text-[#fff6ed] focus:border-[#ffb13b] focus:outline-none"
@@ -238,11 +253,16 @@ export default function ProducersPage() {
               </select>
             </div>
             <div>
-              <label className="block font-mono text-xs uppercase tracking-widest text-[#a49b8e]">
+              <label
+                htmlFor="p-txhash"
+                className="block font-mono text-xs uppercase tracking-widest text-[#a49b8e]"
+              >
                 On-Chain Payment Transaction Hash (0x…)
               </label>
               <input
+                id="p-txhash"
                 type="text"
+                name="txHash"
                 value={txHash}
                 onChange={(e) => setTxHash(e.target.value)}
                 placeholder="0x..."
@@ -305,14 +325,24 @@ export default function ProducersPage() {
           Exchange Snapshot <em>Decryption Key.</em>
         </SectionTitle>
         <Card className="space-y-4">
+          <label htmlFor="p-xchg-token" className="sr-only">
+            One-time key exchange token
+          </label>
           <input
+            id="p-xchg-token"
+            name="exchangeToken"
             type="text"
             value={exchangeToken}
             onChange={(e) => setExchangeToken(e.target.value)}
             placeholder="One-time key exchange token"
             className="w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-3.5 font-mono text-xs text-[#fff6ed] focus:border-[#ffb13b] focus:outline-none"
           />
+          <label htmlFor="p-xchg-pem" className="sr-only">
+            RSA public key PEM
+          </label>
           <textarea
+            id="p-xchg-pem"
+            name="publicKeyPem"
             rows={4}
             value={publicKeyPem}
             onChange={(e) => setPublicKeyPem(e.target.value)}
