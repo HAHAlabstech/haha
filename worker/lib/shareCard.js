@@ -124,13 +124,19 @@ async function renderShareCard(data) {
 /// R2_PUBLIC_URL is the public domain bound to the R2_BUCKET_NAME bucket.
 /// v2 key prefix: pre-fix renders were edge-cached (CF forces 4h TTL) under
 /// public/share/; bumping the prefix gives every card a fresh, cacheable URL.
-function cardKey(bitId) {
-  return `public/share/v2/bit-${String(bitId).toLowerCase()}.png`;
+/// Holdout gets its own key (sealed-bit-…) so a normal->holdout transition
+/// never serves stale unsealed art from the edge.
+function cardKey(bitId, opts) {
+  const id = String(bitId).toLowerCase();
+  return opts?.holdout
+    ? `public/share/v2/sealed-bit-${id}.png`
+    : `public/share/v2/bit-${id}.png`;
 }
-function cardUrl(bitId) {
+function cardUrl(bitId, opts) {
   const base = (process.env.R2_PUBLIC_URL ?? "").replace(/\/+$/, "");
   if (!base) return null;
-  return base.startsWith("http") ? `${base}/${cardKey(bitId)}` : `https://${base}/${cardKey(bitId)}`;
+  const key = cardKey(bitId, opts);
+  return base.startsWith("http") ? `${base}/${key}` : `https://${base}/${key}`;
 }
 async function ensureCardForBit(prisma, bitId, putR2) {
   const bit = await prisma.bit.findUnique({
@@ -150,8 +156,8 @@ async function ensureCardForBit(prisma, bitId, putR2) {
     holdout: bit.is_holdout,
     seasonName: bit.season?.name,
   });
-  await putR2(cardKey(bitId), png, "image/png", { cacheControl: "public, max-age=300" });
-  return { bitId, url: cardUrl(bitId), bytes: png.length };
+  await putR2(cardKey(bitId, { holdout: bit.is_holdout }), png, "image/png", { cacheControl: "public, max-age=300" });
+  return { bitId, url: cardUrl(bitId, { holdout: bit.is_holdout }), bytes: png.length };
 }
 
 module.exports = { renderShareCard, ensureCardForBit, cardKey, cardUrl };
