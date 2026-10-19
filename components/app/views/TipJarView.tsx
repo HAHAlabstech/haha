@@ -281,7 +281,7 @@ export default function TipJarView() {
         <dl className="case-meta-grid">
           <div>
             <dt>In Escrow</dt>
-            <dd className="display-serif text-3xl text-[#ffb13b] tabular-nums">
+            <dd className="display-serif text-3xl text-[#ffc53d] tabular-nums">
               {inEscrowUsdg}
             </dd>
           </div>
@@ -336,7 +336,7 @@ export default function TipJarView() {
                 <button
                   type="button"
                   onClick={() => void loadReward()}
-                  className="font-mono text-xs uppercase tracking-widest text-zinc-400 underline hover:text-[#ffb13b] cursor-pointer"
+                  className="font-mono text-xs uppercase tracking-widest text-zinc-400 underline hover:text-[#ffc53d] cursor-pointer"
                 >
                   ↻ Refresh Proof
                 </button>
@@ -348,7 +348,7 @@ export default function TipJarView() {
               ) : reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n ? (
                 <div className="space-y-5 pt-2">
                   <div>
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
                       Lifetime Cumulative Allocation
                     </span>
                     <p className="display-serif mt-1 text-5xl text-[#fff6ed] tabular-nums">
@@ -373,7 +373,7 @@ export default function TipJarView() {
                       value={recipientOverride}
                       onChange={(e) => setRecipientOverride(e.target.value)}
                       placeholder={account}
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-[#0c0a08] px-4 py-3 font-mono text-xs text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffb13b] focus:outline-none"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-[#0c0a08] px-4 py-3 font-mono text-xs text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
                     />
                   </div>
 
@@ -412,7 +412,7 @@ export default function TipJarView() {
               )}
               {error ? (
                 <p
-                  className="rounded-xl border border-rose-500/40 bg-rose-500/15 p-3 font-mono text-xs text-[#ffb13b]"
+                  className="rounded-xl border border-rose-500/40 bg-rose-500/15 p-3 font-mono text-xs text-[#ffc53d]"
                   role="alert"
                 >
                   {error}

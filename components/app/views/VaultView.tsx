@@ -223,7 +223,7 @@ export default function VaultView() {
             <dd>
               <Link
                 href="/vault/method"
-                className="font-mono text-xs uppercase tracking-widest text-[#ffb13b] underline"
+                className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] underline"
               >
                 Inspect Formula →
               </Link>
@@ -243,7 +243,7 @@ export default function VaultView() {
             >
               <defs>
                 <linearGradient id="apertureBronze" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#ffb13b" stopOpacity="0.8" />
+                  <stop offset="0%" stopColor="#ffc53d" stopOpacity="0.8" />
                   <stop offset="100%" stopColor="#d97706" stopOpacity="0.3" />
                 </linearGradient>
                 <linearGradient id="apertureSapphire" x1="0" y1="0" x2="1" y2="1">
@@ -255,10 +255,10 @@ export default function VaultView() {
                 <circle cx="170" cy="170" r="150" stroke="url(#apertureBronze)" strokeWidth="2.5" fill="none" />
                 <circle cx="170" cy="170" r="142" stroke="rgba(255,177,59,0.3)" strokeWidth="1" strokeDasharray="4 8" fill="none" />
               </g>
-              <circle cx="170" cy="170" r="42" stroke="#ffb13b" strokeWidth="2.5" fill="none" />
+              <circle cx="170" cy="170" r="42" stroke="#ffc53d" strokeWidth="2.5" fill="none" />
             </svg>
 
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#ffb13b]">
+            <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#ffc53d]">
               Corpus Valuation · Live Metric
             </span>
             <div className="mt-4 flex flex-wrap items-baseline gap-4">
@@ -283,7 +283,7 @@ export default function VaultView() {
                 Dataset releases are cryptographically anchored on Robinhood Chain Testnet every Sunday.
               </p>
             </div>
-            <div className="mt-6 border-t border-white/10 pt-4 font-mono text-xs text-[#ffb13b]">
+            <div className="mt-6 border-t border-white/10 pt-4 font-mono text-xs text-[#ffc53d]">
               <span>Dataset Hash Verification Active</span>
             </div>
           </div>
@@ -303,19 +303,19 @@ export default function VaultView() {
             <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full min-w-[700px] h-auto">
               <defs>
                 <linearGradient id="vaultSplineGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ffb13b" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#ffb13b" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#ffc53d" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#ffc53d" stopOpacity="0" />
                 </linearGradient>
               </defs>
               <path d={areaD} fill="url(#vaultSplineGrad)" />
-              <path d={pathD} fill="none" stroke="#ffb13b" strokeWidth="3" />
+              <path d={pathD} fill="none" stroke="#ffc53d" strokeWidth="3" />
               {points.map((pt, idx) => (
                 <circle
                   key={idx}
                   cx={pt.x}
                   cy={pt.y}
                   r={activeChartPoint === idx ? "7" : "4.5"}
-                  fill={activeChartPoint === idx ? "#ffd27d" : "#ffb13b"}
+                  fill={activeChartPoint === idx ? "#ffd27d" : "#ffc53d"}
                   className="cursor-pointer transition-all"
                   onMouseEnter={() => setActiveChartPoint(idx)}
                 />

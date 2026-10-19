@@ -39,7 +39,7 @@ export default function PinnedScrollMoment() {
     <section
       ref={containerRef}
       id="scrub"
-      className="relative w-full h-[320vh] bg-[#060606] text-[#f4f4f5] border-y border-white/10"
+      className="relative w-full h-[320vh] bg-[#070709] text-[#f4f4f5] border-y border-white/10"
       aria-label="Pinned Scroll Signature Moments"
     >
       {/* =========================================================================
@@ -49,8 +49,8 @@ export default function PinnedScrollMoment() {
         {/* Scrub Progress Bar (Discrete HUD clear of navbar) */}
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-wider text-zinc-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#ffb13b] animate-pulse" />
-            <span className="text-[#ffb13b] font-medium">Scrub Reel</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-[#ffc53d] animate-pulse" />
+            <span className="text-[#ffc53d] font-medium">Scrub Reel</span>
             <span className="text-zinc-600">/</span>
             <span>
               {isPhase1 && "Chapter 01 · The Pronoun Trap"}
@@ -63,7 +63,7 @@ export default function PinnedScrollMoment() {
             <span className="hidden sm:inline">Progress</span>
             <div className="w-28 h-1 rounded-full bg-white/10 overflow-hidden">
               <div
-                className="h-full bg-[#ffb13b] transition-all duration-75 shadow-[0_0_8px_#ffb13b]"
+                className="h-full bg-[#ffc53d] transition-all duration-75 shadow-[0_0_8px_#ffc53d]"
                 style={{ width: `${(k * 100).toFixed(1)}%` }}
               />
             </div>
@@ -78,7 +78,7 @@ export default function PinnedScrollMoment() {
           {/* ================= PHASE 1: THE PRONOUN TRAP ================= */}
           {isPhase1 && (
             <div className="transition-all duration-300">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-widest text-[#ffb13b] mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-widest text-[#ffc53d] mb-4">
                 <Sparkles className="w-3 h-3" />
                 <span>Expectation Flip</span>
               </div>
@@ -88,7 +88,7 @@ export default function PinnedScrollMoment() {
                 <span
                   className={`inline-block px-2 py-0.5 rounded transition-all duration-300 ${
                     p1 > 0.3
-                      ? "text-[#ffb13b] bg-[#ffb13b]/15 border border-[#ffb13b]/40 font-semibold"
+                      ? "text-[#ffc53d] bg-[#ffc53d]/15 border border-[#ffc53d]/40 font-semibold"
                       : "text-zinc-400"
                   }`}
                 >
@@ -108,7 +108,7 @@ export default function PinnedScrollMoment() {
               </h3>
 
               {/* Scrubbed Live Metrics Panel */}
-              <div className="grid gap-4 sm:grid-cols-2 rounded-2xl border border-white/10 bg-[#09090c]/90 p-6 backdrop-blur-md">
+              <div className="grid gap-4 sm:grid-cols-2 rounded-2xl border border-white/10 bg-[#0c0c12]/90 p-6 backdrop-blur-md">
                 <div>
                   <div className="flex justify-between font-mono text-xs uppercase text-zinc-400 mb-2">
                     <span>Straight Man Literal Confidence</span>
@@ -151,7 +151,7 @@ export default function PinnedScrollMoment() {
           {/* ================= PHASE 2: THE SUBTEXT TRANSLATOR ================= */}
           {isPhase2 && (
             <div className="transition-all duration-300">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-widest text-[#ffb13b] mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-widest text-[#ffc53d] mb-4">
                 <Activity className="w-3 h-3" />
                 <span>The Subtext Translator</span>
               </div>
@@ -163,7 +163,7 @@ export default function PinnedScrollMoment() {
               {/* Chat Split Comparison */}
               <div className="grid gap-6 md:grid-cols-2 mb-8">
                 {/* Surface Polite Text */}
-                <div className="rounded-2xl border border-white/10 bg-[#09090c] p-6">
+                <div className="rounded-2xl border border-white/10 bg-[#0c0c12] p-6">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 block mb-2">
                     Surface Text (What Was Said)
                   </span>
@@ -179,14 +179,14 @@ export default function PinnedScrollMoment() {
                 <div
                   className={`rounded-2xl border transition-all duration-300 p-6 ${
                     p2 > 0.4
-                      ? "border-[#ffb13b]/40 bg-[#0c0c10] shadow-[0_0_24px_rgba(255,177,59,0.15)]"
-                      : "border-white/5 bg-[#09090c]/40 opacity-40"
+                      ? "border-[#ffc53d]/40 bg-[#0c0c10] shadow-[0_0_24px_rgba(255,177,59,0.15)]"
+                      : "border-white/5 bg-[#0c0c12]/40 opacity-40"
                   }`}
                 >
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b] block mb-2">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d] block mb-2">
                     Subtext Reality (What Was Meant)
                   </span>
-                  <div className="rounded-2xl rounded-tl-sm bg-[#ffb13b]/10 border border-[#ffb13b]/20 p-4 text-lg font-serif text-[#f4f4f5] italic">
+                  <div className="rounded-2xl rounded-tl-sm bg-[#ffc53d]/10 border border-[#ffc53d]/20 p-4 text-lg font-serif text-[#f4f4f5] italic">
                     “I have already emotionally archived your existence.”
                   </div>
                   <div className="mt-4 font-mono text-xs text-rose-400">
@@ -196,7 +196,7 @@ export default function PinnedScrollMoment() {
               </div>
 
               <div className="font-mono text-xs text-zinc-400 flex items-center gap-2">
-                <span className="text-[#ffb13b]">&rarr;</span>
+                <span className="text-[#ffc53d]">&rarr;</span>
                 <span>Scrub deeper to reveal the physical dynamics experiment below...</span>
               </div>
             </div>
@@ -205,22 +205,22 @@ export default function PinnedScrollMoment() {
           {/* ================= PHASE 3: IRL PHYSICAL DYNAMICS ================= */}
           {isPhase3 && (
             <div className="transition-all duration-300">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-widest text-[#ffb13b] mb-4">
-                <AlertTriangle className="w-3 h-3 text-[#ffb13b]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-widest text-[#ffc53d] mb-4">
+                <AlertTriangle className="w-3 h-3 text-[#ffc53d]" />
                 <span>Physical World Understanding</span>
               </div>
 
               <div className="grid gap-8 md:grid-cols-[1.2fr_1fr] items-center">
                 <div>
                   <h3 className="display-serif text-3xl sm:text-5xl text-white font-normal leading-tight mb-4">
-                    Hard brake at a <em className="italic text-[#ffb13b]">red light.</em>
+                    Hard brake at a <em className="italic text-[#ffc53d]">red light.</em>
                   </h3>
                   <p className="text-base text-zinc-300 leading-relaxed mb-6">
                     A full glass of water sitting loosely on a car dashboard. The driver slams on the brakes.
                   </p>
 
                   <div className="space-y-3 font-mono text-xs">
-                    <div className="rounded-xl border border-white/10 bg-[#09090c] p-3.5">
+                    <div className="rounded-xl border border-white/10 bg-[#0c0c12] p-3.5">
                       <span className="text-zinc-500 uppercase block text-[10px]">Straight Man AI Output:</span>
                       <span className="text-zinc-300">
                         “The vehicle decelerates smoothly. Surface friction maintains the glass's center of gravity.”
@@ -237,7 +237,7 @@ export default function PinnedScrollMoment() {
                 </div>
 
                 {/* Interactive SVG Water Glass Tipping on Scrub */}
-                <div className="relative h-64 w-full rounded-2xl border border-white/10 bg-[#09090c] p-6 flex flex-col items-center justify-center overflow-hidden">
+                <div className="relative h-64 w-full rounded-2xl border border-white/10 bg-[#0c0c12] p-6 flex flex-col items-center justify-center overflow-hidden">
                   <div
                     className="transition-transform duration-100 ease-out flex flex-col items-center"
                     style={{
@@ -281,13 +281,13 @@ export default function PinnedScrollMoment() {
         {/* Bottom Navigation Indicators for the 3 Pinned Chapters */}
         <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-4 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
           <div className="flex items-center gap-6">
-            <span className={isPhase1 ? "text-[#ffb13b] font-semibold" : "text-zinc-600"}>
+            <span className={isPhase1 ? "text-[#ffc53d] font-semibold" : "text-zinc-600"}>
               01 Pronoun
             </span>
-            <span className={isPhase2 ? "text-[#ffb13b] font-semibold" : "text-zinc-600"}>
+            <span className={isPhase2 ? "text-[#ffc53d] font-semibold" : "text-zinc-600"}>
               02 Subtext
             </span>
-            <span className={isPhase3 ? "text-[#ffb13b] font-semibold" : "text-zinc-600"}>
+            <span className={isPhase3 ? "text-[#ffc53d] font-semibold" : "text-zinc-600"}>
               03 Physical IRL
             </span>
           </div>

@@ -173,7 +173,7 @@ export default function CrowdView() {
         <dl className="case-meta-grid">
           <div>
             <dt>Juror Wallet</dt>
-            <dd className="font-mono text-xs text-[#ffb13b]">
+            <dd className="font-mono text-xs text-[#ffc53d]">
               {account ? truncateAddress(account) : "Not connected"}
             </dd>
           </div>
@@ -196,7 +196,7 @@ export default function CrowdView() {
               ) : (
                 <Link
                   href="/crowd/join"
-                  className="font-mono text-xs text-[#ffb13b] underline"
+                  className="font-mono text-xs text-[#ffc53d] underline"
                 >
                   Take Quiz →
                 </Link>
@@ -240,7 +240,7 @@ export default function CrowdView() {
           ) : assignment ? (
             <div className="space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4 font-mono text-xs uppercase tracking-widest text-zinc-400">
-                <span className="text-[#ffb13b]">
+                <span className="text-[#ffc53d]">
                   Set: {assignment.category} · Round {assignment.round}
                 </span>
                 <span>
@@ -252,7 +252,7 @@ export default function CrowdView() {
                 <p className="display-serif text-2xl leading-snug text-[#fff6ed] md:text-3xl">
                   “{assignment.scenario}”
                 </p>
-                <p className="mt-3 font-mono text-xs uppercase tracking-widest text-[#ffb13b]">
+                <p className="mt-3 font-mono text-xs uppercase tracking-widest text-[#ffc53d]">
                   Question: {assignment.question}
                 </p>
               </div>
@@ -266,11 +266,11 @@ export default function CrowdView() {
                     aria-pressed={selectedVote === opt}
                     className={`rounded-2xl border p-5 text-left transition cursor-pointer ${
                       selectedVote === opt
-                        ? "border-[#ffb13b] bg-[#ffb13b]/12 text-[#fff6ed]"
+                        ? "border-[#ffc53d] bg-[#ffc53d]/12 text-[#fff6ed]"
                         : "border-white/10 bg-[#0c0a08] text-zinc-300 hover:border-white/30"
                     }`}
                   >
-                    <div className="font-mono text-xs uppercase tracking-widest text-[#ffb13b]">
+                    <div className="font-mono text-xs uppercase tracking-widest text-[#ffc53d]">
                       Option {opt}
                     </div>
                     <p className="mt-2 text-sm leading-relaxed">
@@ -413,7 +413,7 @@ export default function CrowdView() {
               <h3 className="display-serif mt-2 text-2xl text-[#fff6ed]">
                 {t.name}
               </h3>
-              <p className="mt-2 font-mono text-base text-[#ffb13b]">
+              <p className="mt-2 font-mono text-base text-[#ffc53d]">
                 {t.weight}
               </p>
               <p className="mt-1 font-mono text-xs text-zinc-400">{t.votes}</p>

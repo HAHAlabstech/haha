@@ -100,40 +100,6 @@ export default function LaocoonChrome({
 
   return (
     <>
-      <div className="grid-horizontal-line" aria-hidden="true" />
-      <div className="grid-lines" aria-hidden="true">
-        <div className="grid-line">
-          <div ref={dot0Ref} className="grid-dot" style={{ top: "14%" }} />
-        </div>
-        <div className="grid-line">
-          <div
-            ref={dot1Ref}
-            className="grid-dot amber"
-            style={{ top: "82%" }}
-          />
-        </div>
-        <div className="grid-line">
-          <div ref={dot2Ref} className="grid-dot" style={{ top: "34%" }} />
-        </div>
-        <div className="grid-line">
-          <div ref={dot3Ref} className="grid-dot" style={{ top: "68%" }} />
-        </div>
-        <div className="grid-line">
-          {showStoryDashes ? (
-            <div className="story-dashes">
-              {dashProgress.map((p, idx) => (
-                <div
-                  key={idx}
-                  className="story-dash"
-                  style={{
-                    transform: `scaleY(${Math.max(0, Math.min(1, p))})`,
-                  }}
-                />
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </div>
       <div ref={cursorInnerRef} className="cursor-inner" aria-hidden="true" />
       <div ref={cursorOuterRef} className="cursor-outer" aria-hidden="true" />
     </>

@@ -28,7 +28,7 @@ function placeholderRows(label: string) {
       key={i}
       className="border-b border-white/10 text-sm text-zinc-400"
     >
-      <td className="py-3.5 pr-4 font-mono text-xs text-[#ffb13b]">0{i}</td>
+      <td className="py-3.5 pr-4 font-mono text-xs text-[#ffc53d]">0{i}</td>
       <td className="py-3.5 pr-4 font-serif text-lg text-[#fff6ed]">
         {label} #{i}{" "}
         <span className="font-mono text-xs text-zinc-500">· 0x…</span>
@@ -88,15 +88,15 @@ export default function LeaderboardView() {
                   ? comedians.map((c, i) => (
                       <tr
                         key={c.wallet}
-                        className="border-b border-white/10 text-sm transition hover:bg-[#ffb13b]/5"
+                        className="border-b border-white/10 text-sm transition hover:bg-[#ffc53d]/5"
                       >
-                        <td className="py-3.5 pr-4 font-mono text-xs text-[#ffb13b]">
+                        <td className="py-3.5 pr-4 font-mono text-xs text-[#ffc53d]">
                           {String(i + 1).padStart(2, "0")}
                         </td>
                         <td className="py-3.5 pr-4">
                           <Link
                             href={`/u/${encodeURIComponent(c.handle)}`}
-                            className="font-serif text-xl text-[#fff6ed] hover:text-[#ffb13b]"
+                            className="font-serif text-xl text-[#fff6ed] hover:text-[#ffc53d]"
                           >
                             @{c.handle}
                           </Link>{" "}
@@ -107,7 +107,7 @@ export default function LeaderboardView() {
                         <td className="py-3.5 text-right">
                           <Stamp>
                             <span className="flex items-center gap-1">
-                              <Flame className="w-3 h-3 text-[#ffb13b]" />
+                              <Flame className="w-3 h-3 text-[#ffc53d]" />
                               <span>{c.killed_it_count} · {c.comedian_rep} rep</span>
                             </span>
                           </Stamp>
@@ -138,15 +138,15 @@ export default function LeaderboardView() {
                   ? jurors.map((j, i) => (
                       <tr
                         key={j.wallet}
-                        className="border-b border-white/10 text-sm transition hover:bg-[#ffb13b]/5"
+                        className="border-b border-white/10 text-sm transition hover:bg-[#ffc53d]/5"
                       >
-                        <td className="py-3.5 pr-4 font-mono text-xs text-[#ffb13b]">
+                        <td className="py-3.5 pr-4 font-mono text-xs text-[#ffc53d]">
                           {String(i + 1).padStart(2, "0")}
                         </td>
                         <td className="py-3.5 pr-4">
                           <Link
                             href={`/u/${encodeURIComponent(j.handle)}`}
-                            className="font-serif text-xl text-[#fff6ed] hover:text-[#ffb13b]"
+                            className="font-serif text-xl text-[#fff6ed] hover:text-[#ffc53d]"
                           >
                             @{j.handle}
                           </Link>{" "}

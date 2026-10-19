@@ -50,7 +50,7 @@ export default function VaultTerminal() {
       {/* Header with Title & Stats */}
       <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-end mb-16">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffb13b] mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] mb-4">
             <Database className="w-3 h-3" />
             <span>The Data Engine</span>
           </div>
@@ -63,7 +63,7 @@ export default function VaultTerminal() {
         </div>
 
         {/* Live Replacement Cost Terminal Card */}
-        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#121218] to-[#09090c] p-6 shadow-2xl backdrop-blur-md">
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#121218] to-[#0c0c12] p-6 shadow-2xl backdrop-blur-md">
           <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
             <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
               Live Replacement Cost
@@ -75,7 +75,7 @@ export default function VaultTerminal() {
           </div>
 
           <div className="display-serif text-4xl sm:text-5xl text-[#f4f4f5] font-semibold tabular-nums">
-            $105,420<span className="text-xl text-[#ffb13b]">.00</span>
+            $105,420<span className="text-xl text-[#ffc53d]">.00</span>
           </div>
           <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
             Theoretical cost for an AI enterprise to independently source, adversarially benchmark, and human-verify comparable humor tokens.
@@ -84,7 +84,7 @@ export default function VaultTerminal() {
           <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
             <Link
               href="/vault"
-              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#ffb13b] hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#ffc53d] hover:text-white transition-colors"
             >
               <span>Explore Joke Vault</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -106,11 +106,11 @@ export default function VaultTerminal() {
           return (
             <div
               key={cat.key}
-              className="group rounded-2xl border border-white/10 bg-[#09090c]/80 p-6 backdrop-blur-md shadow-lg transition-all duration-300 hover:border-[#ffb13b]/30 hover:-translate-y-1 flex flex-col justify-between"
+              className="group rounded-2xl border border-white/10 bg-[#0c0c12]/80 p-6 backdrop-blur-md shadow-lg transition-all duration-300 hover:border-[#ffc53d]/30 hover:-translate-y-1 flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[#ffb13b] group-hover:bg-[#ffb13b]/10 transition-colors">
+                  <span className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[#ffc53d] group-hover:bg-[#ffc53d]/10 transition-colors">
                     <Icon className="w-4 h-4" />
                   </span>
                   <span className="font-mono text-[9px] uppercase tracking-widest text-zinc-500">
@@ -127,7 +127,7 @@ export default function VaultTerminal() {
 
               <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between font-mono text-[10px] text-zinc-500">
                 <span className="text-zinc-300">{cat.stats.split(" · ")[0]}</span>
-                <span className="text-[#ffb13b]">{cat.stats.split(" · ")[1]}</span>
+                <span className="text-[#ffc53d]">{cat.stats.split(" · ")[1]}</span>
               </div>
             </div>
           );
@@ -137,12 +137,12 @@ export default function VaultTerminal() {
       {/* Revenue Split Ribbon */}
       <div className="mt-12 rounded-xl border border-white/10 bg-[#0c0c10] p-6 flex flex-wrap items-center justify-between gap-6 font-mono text-xs">
         <div className="flex items-center gap-3">
-          <Coins className="w-4 h-4 text-[#ffb13b]" />
+          <Coins className="w-4 h-4 text-[#ffc53d]" />
           <span className="text-zinc-300 font-semibold uppercase tracking-wider">Vault Revenue Distribution:</span>
         </div>
         <div className="flex flex-wrap items-center gap-6 text-zinc-400">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#ffb13b]" />
+            <span className="h-2 w-2 rounded-full bg-[#ffc53d]" />
             <span><b>30%</b> to Daily Tip Jar Pool</span>
           </div>
           <div className="flex items-center gap-2">

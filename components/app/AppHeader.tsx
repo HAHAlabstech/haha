@@ -54,16 +54,16 @@ export default function AppHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#060606]/90 backdrop-blur-xl transition-all">
+      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-[#070709]/90 backdrop-blur-xl transition-all">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-[clamp(16px,3vw,36px)]">
           {/* Left: Brand mark + Return to Landing */}
           <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="group flex items-center gap-2.5 font-mono text-sm font-semibold tracking-[0.2em] text-white transition-colors hover:text-[#ffb13b]"
+              className="group flex items-center gap-2.5 font-display text-sm font-bold tracking-[0.2em] text-white transition-colors hover:text-[#ffc53d]"
               aria-label="Back to landing"
             >
-              <span className="h-2 w-2 rounded-full bg-[#ffb13b] shadow-[0_0_12px_#ffb13b] animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-[#ffc53d] shadow-[0_0_12px_#ffc53d] animate-pulse" />
               <span>HAHA</span>
             </Link>
 
@@ -94,13 +94,13 @@ export default function AppHeader({
                   key={t.id}
                   type="button"
                   onClick={() => onTabChange(t.id)}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-all duration-200 cursor-pointer ${
                     active
-                      ? "bg-[#ffb13b] text-[#060606] font-semibold shadow-[0_0_16px_rgba(255,177,59,0.35)]"
+                      ? "bg-gradient-to-r from-[#ffc53d] to-[#f59e0b] text-[#070709] font-bold shadow-[0_0_16px_rgba(255,197,61,0.35)]"
                       : "text-zinc-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  <Icon className={`h-3 w-3 ${active ? "text-[#060606]" : "text-zinc-500"}`} />
+                  <Icon className={`h-3 w-3 ${active ? "text-[#070709]" : "text-zinc-500"}`} />
                   <span className="hidden sm:inline">{t.label}</span>
                 </button>
               );
@@ -110,7 +110,7 @@ export default function AppHeader({
           {/* Right: Network info + Pool + Connect Wallet */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Live Pool Pill */}
-            <div className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#ffb13b]/25 bg-[#ffb13b]/10 px-3 py-1 font-mono text-[10px] text-[#ffb13b]">
+            <div className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#ffc53d]/25 bg-[#ffc53d]/10 px-3 py-1 font-mono text-[10px] text-[#ffc53d]">
               <Flame className="h-3 w-3" />
               <span>${dailyPoolUSDG} USDG</span>
             </div>

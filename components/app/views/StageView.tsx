@@ -219,7 +219,7 @@ export default function StageView() {
           </div>
           <div>
             <dt>Performer</dt>
-            <dd className="font-mono text-xs text-[#ffb13b]">
+            <dd className="font-mono text-xs text-[#ffc53d]">
               {account ? truncateAddress(account) : "Not connected"}
             </dd>
           </div>
@@ -256,7 +256,7 @@ export default function StageView() {
               >
                 <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
                   <span>{c.num}</span>
-                  <span className={active ? "text-[#ffb13b]" : ""}>
+                  <span className={active ? "text-[#ffc53d]" : ""}>
                     {active ? "● Selected" : c.sub}
                   </span>
                 </div>
@@ -313,7 +313,7 @@ export default function StageView() {
               <div className="flex items-baseline justify-between">
                 <label
                   htmlFor="scenario"
-                  className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffb13b]"
+                  className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffc53d]"
                 >
                   Step 02 · Paint the Scene / Setup
                 </label>
@@ -332,7 +332,7 @@ export default function StageView() {
                 maxLength={SCENARIO_MAX + 50}
                 onChange={(e) => setScenario(e.target.value)}
                 placeholder="Drop the setup, the passive-aggressive message, or the real-world moment…"
-                className="mt-2.5 w-full rounded-xl border border-white/10 bg-[#0c0a08] p-4 font-serif text-xl leading-relaxed text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffb13b] focus:outline-none"
+                className="mt-2.5 w-full rounded-xl border border-white/10 bg-[#0c0a08] p-4 font-serif text-xl leading-relaxed text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
               />
             </div>
 
@@ -340,7 +340,7 @@ export default function StageView() {
               <div className="flex items-baseline justify-between">
                 <label
                   htmlFor="question"
-                  className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffb13b]"
+                  className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffc53d]"
                 >
                   Step 03 · Ask the Straight Man One Question
                 </label>
@@ -359,7 +359,7 @@ export default function StageView() {
                 maxLength={QUESTION_MAX + 50}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="Ask the one question the Straight Man must answer…"
-                className="mt-2.5 w-full rounded-xl border border-white/10 bg-[#0c0a08] p-4 text-base text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffb13b] focus:outline-none"
+                className="mt-2.5 w-full rounded-xl border border-white/10 bg-[#0c0a08] p-4 text-base text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
               />
             </div>
 
@@ -384,7 +384,7 @@ export default function StageView() {
 
               <Link
                 href="/producers"
-                className="font-mono text-[11px] uppercase tracking-[0.15em] text-zinc-400 underline hover:text-[#ffb13b] flex items-center gap-1"
+                className="font-mono text-[11px] uppercase tracking-[0.15em] text-zinc-400 underline hover:text-[#ffc53d] flex items-center gap-1"
               >
                 <span>Need Pro Stage credits?</span>
                 <ArrowUpRight className="w-3 h-3" />
@@ -393,7 +393,7 @@ export default function StageView() {
 
             {crisisSupport ? (
               <div
-                className="mt-5 rounded-xl border border-[#ffb13b]/40 bg-[#ffb13b]/10 p-4 text-sm text-[#fff6ed]"
+                className="mt-5 rounded-xl border border-[#ffc53d]/40 bg-[#ffc53d]/10 p-4 text-sm text-[#fff6ed]"
                 role="alert"
               >
                 <p className="font-semibold">You are not alone.</p>
@@ -424,7 +424,7 @@ export default function StageView() {
                 Bit submitted!{" "}
                 <Link
                   href={`/bit/${encodeURIComponent(createdBitId)}`}
-                  className="font-semibold text-[#ffb13b] underline"
+                  className="font-semibold text-[#ffc53d] underline"
                 >
                   Open bit #{createdBitId} →
                 </Link>
@@ -433,7 +433,7 @@ export default function StageView() {
 
             {error ? (
               <p
-                className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/15 p-3.5 text-sm text-[#ffb13b]"
+                className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/15 p-3.5 text-sm text-[#ffc53d]"
                 role="alert"
               >
                 {error}
@@ -452,7 +452,7 @@ export default function StageView() {
           <Card>
             <div className="flex items-center justify-between">
               <span className="eyebrow">Green Room · Prompts</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
                 {category.toUpperCase()}
               </span>
             </div>
@@ -486,7 +486,7 @@ export default function StageView() {
                     <button
                       type="button"
                       onClick={() => setScenario(t)}
-                      className="w-full rounded-xl border border-white/10 bg-[#0c0a08]/70 p-3 text-left font-mono text-xs leading-relaxed text-zinc-300 transition hover:border-[#ffb13b] hover:text-[#ffb13b] cursor-pointer"
+                      className="w-full rounded-xl border border-white/10 bg-[#0c0a08]/70 p-3 text-left font-mono text-xs leading-relaxed text-zinc-300 transition hover:border-[#ffc53d] hover:text-[#ffc53d] cursor-pointer"
                     >
                       {t}
                     </button>
@@ -500,7 +500,7 @@ export default function StageView() {
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between font-mono text-xs uppercase tracking-[0.16em] text-zinc-300">
                 <span>What makes a good bit · 5 House Rules</span>
-                <span className="text-[#ffb13b] transition group-open:rotate-45">
+                <span className="text-[#ffc53d] transition group-open:rotate-45">
                   +
                 </span>
               </summary>

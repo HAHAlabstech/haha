@@ -12,10 +12,10 @@ export function PageHero({
   rightMeta?: ReactNode;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-[#121217] via-[#09090c] to-[#060606] p-8 md:p-12 shadow-2xl">
+    <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-[#121217] via-[#0c0c12] to-[#070709] p-8 md:p-12 shadow-2xl">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 left-1/3 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-[#ffb13b]/10 blur-3xl"
+        className="pointer-events-none absolute -top-24 left-1/3 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-[#ffc53d]/10 blur-3xl"
       />
       <div className="relative grid gap-8 md:grid-cols-[1.35fr_1fr] md:items-end">
         <div>
@@ -99,7 +99,7 @@ export function Stamp({
 
 export function Disclaimer() {
   return (
-    <p className="mt-10 rounded-xl border border-white/10 bg-[#09090c]/80 p-4 font-mono text-[11px] uppercase tracking-[0.13em] leading-relaxed text-zinc-500 backdrop-blur-md">
+    <p className="mt-10 rounded-xl border border-white/10 bg-[#0c0c12]/80 p-4 font-mono text-[11px] uppercase tracking-[0.13em] leading-relaxed text-zinc-500 backdrop-blur-md">
       Rewards vary and depend on the Tip Jar — nothing here is a promise of any
       amount. Nothing on this page is financial advice.
     </p>

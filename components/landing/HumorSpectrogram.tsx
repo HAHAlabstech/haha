@@ -67,12 +67,12 @@ export default function HumorSpectrogram() {
       {/* Background ambient lighting */}
       <div
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[360px] bg-[#ffb13b]/5 blur-[120px] rounded-full"
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[360px] bg-[#ffc53d]/5 blur-[120px] rounded-full"
       />
 
       {/* Section Header */}
       <div className="relative z-1 max-w-3xl mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffb13b] mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] mb-4">
           <Activity className="w-3 h-3" />
           <span>The Science of Stumped AI</span>
         </div>
@@ -85,7 +85,7 @@ export default function HumorSpectrogram() {
       </div>
 
       {/* Interactive Spectrogram Visualizer Card */}
-      <div className="relative z-1 rounded-2xl border border-white/10 bg-gradient-to-b from-[#111116] via-[#09090c] to-[#060606] p-6 sm:p-10 shadow-2xl overflow-hidden">
+      <div className="relative z-1 rounded-2xl border border-white/10 bg-gradient-to-b from-[#111116] via-[#0c0c12] to-[#070709] p-6 sm:p-10 shadow-2xl overflow-hidden">
         {/* Top Control Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
           <div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export default function HumorSpectrogram() {
                   onClick={() => setActiveMode(mode)}
                   className={`px-3 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                     activeMode === mode
-                      ? "bg-[#ffb13b] text-[#060606] font-semibold shadow-[0_0_14px_rgba(255,177,59,0.35)]"
+                      ? "bg-[#ffc53d] text-[#070709] font-semibold shadow-[0_0_14px_rgba(255,177,59,0.35)]"
                       : "text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5"
                   }`}
                 >
@@ -110,7 +110,7 @@ export default function HumorSpectrogram() {
 
           <div className="flex items-center gap-6 font-mono text-xs text-zinc-400">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#ffb13b] shadow-[0_0_8px_#ffb13b]" />
+              <span className="h-2 w-2 rounded-full bg-[#ffc53d] shadow-[0_0_8px_#ffc53d]" />
               <span className="text-zinc-200">Human Resonance</span>
             </div>
             <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export default function HumorSpectrogram() {
 
         {/* Live Setup Quote Display */}
         <div className="mt-6 rounded-xl border border-white/5 bg-black/40 p-4 font-mono text-sm text-zinc-300">
-          <span className="text-[#ffb13b] font-semibold mr-2">[SAMPLE BIT]:</span>
+          <span className="text-[#ffc53d] font-semibold mr-2">[SAMPLE BIT]:</span>
           {data.punchlineSetup}
         </div>
 
@@ -145,9 +145,9 @@ export default function HumorSpectrogram() {
           >
             <defs>
               <linearGradient id="humanWaveGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#ffb13b" stopOpacity="0.8" />
+                <stop offset="0%" stopColor="#ffc53d" stopOpacity="0.8" />
                 <stop offset="50%" stopColor="#ffd080" stopOpacity="1" />
-                <stop offset="100%" stopColor="#ffb13b" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#ffc53d" stopOpacity="0.8" />
               </linearGradient>
               <linearGradient id="aiWaveGradient" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
@@ -184,7 +184,7 @@ export default function HumorSpectrogram() {
           <div className="absolute bottom-3 left-4 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
             Hz Frequency: 124.8 · Phase Inversion Active
           </div>
-          <div className="absolute top-3 right-4 font-mono text-[10px] uppercase tracking-widest text-[#ffb13b] bg-[#ffb13b]/10 px-2.5 py-1 rounded-full border border-[#ffb13b]/20">
+          <div className="absolute top-3 right-4 font-mono text-[10px] uppercase tracking-widest text-[#ffc53d] bg-[#ffc53d]/10 px-2.5 py-1 rounded-full border border-[#ffc53d]/20">
             AI Disruption Confirmed
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function HumorSpectrogram() {
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
             <div className="flex items-center gap-2 text-zinc-400 font-mono text-xs uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-[#ffb13b]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#ffc53d]" />
               <span>Semantic Entropy</span>
             </div>
             <div className="mt-2 text-2xl font-serif text-[#f4f4f5]">{data.entropy}</div>
@@ -222,7 +222,7 @@ export default function HumorSpectrogram() {
             </div>
             <Link
               href="/vault/method"
-              className="mt-3 inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-[#ffb13b] hover:text-white transition-colors"
+              className="mt-3 inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-[#ffc53d] hover:text-white transition-colors"
             >
               <span>Audit Methodology</span>
               <ArrowUpRight className="w-3 h-3" />

@@ -39,7 +39,7 @@ export default function LandingFaq() {
     <section id="faq" className="relative py-24 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto">
       {/* Header */}
       <div className="max-w-3xl mb-16">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffb13b] mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] mb-4">
           <HelpCircle className="w-3 h-3" />
           <span>Box Office FAQ</span>
         </div>
@@ -60,8 +60,8 @@ export default function LandingFaq() {
               key={faq.q}
               className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                 isOpen
-                  ? "border-[#ffb13b]/30 bg-[#0c0c10]"
-                  : "border-white/10 bg-[#09090c]/70 hover:border-white/20"
+                  ? "border-[#ffc53d]/30 bg-[#0c0c10]"
+                  : "border-white/10 bg-[#0c0c12]/70 hover:border-white/20"
               }`}
             >
               <button
@@ -74,7 +74,7 @@ export default function LandingFaq() {
                 </span>
                 <span
                   className={`p-2 rounded-full border border-white/10 bg-white/5 text-zinc-400 transition-transform duration-300 shrink-0 ${
-                    isOpen ? "rotate-180 text-[#ffb13b] border-[#ffb13b]/30" : ""
+                    isOpen ? "rotate-180 text-[#ffc53d] border-[#ffc53d]/30" : ""
                   }`}
                 >
                   <ChevronDown className="w-4 h-4" />
@@ -92,12 +92,12 @@ export default function LandingFaq() {
       </div>
 
       {/* Box Office Link Card */}
-      <div className="mt-12 max-w-4xl rounded-xl border border-white/10 bg-[#09090c] p-6 flex flex-wrap items-center justify-between gap-4 text-sm text-zinc-400">
+      <div className="mt-12 max-w-4xl rounded-xl border border-white/10 bg-[#0c0c12] p-6 flex flex-wrap items-center justify-between gap-4 text-sm text-zinc-400">
         <span>Looking for detailed protocol specs and edge cases?</span>
         <div className="flex items-center gap-4">
           <Link
             href="/faq"
-            className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wider text-[#ffb13b] hover:text-white transition-colors"
+            className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wider text-[#ffc53d] hover:text-white transition-colors"
           >
             <span>Full FAQ Archive</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
