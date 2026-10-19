@@ -7,8 +7,8 @@
 // Text is built EXACTLY like prescreen: `${scenario}\n${question}` (384-d,
 // normalized L2, batch 32). Idempotent: only rows with NULL embedding.
 
-const { PrismaClient } = require("@prisma/client");
-const { embedBatch } = require("../worker/embed");
+import { PrismaClient } from "@prisma/client";
+import { embedBatch } from "../worker/embed.js";
 
 const prisma = new PrismaClient();
 const LIMIT = 500;
