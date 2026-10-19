@@ -21,7 +21,8 @@ FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 # Debian slim (glibc) — onnxruntime-node needs ld-linux-x86-64.so.2 (musl/alpine fails).
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libstdc++6 \
+# fonts-dejavu-core + fontconfig: sharp's librsvg renders <text> in share cards.
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libstdc++6 fonts-dejavu-core fontconfig \
   && rm -rf /var/lib/apt/lists/*
 # Next standalone server (self-contained) + prod modules for the worker BullMQ job.
 COPY --from=build /app/.next/standalone ./

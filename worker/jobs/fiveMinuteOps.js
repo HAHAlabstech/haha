@@ -15,6 +15,11 @@
 const { PrismaClient } = require("@prisma/client");
 const { decide } = require("../lib/quorum");
 const normalize = require("./normalize");
+// Share cards fire on EVERY final settle (normal + retrial overwrite both
+// route through settleBit). Fire-and-succeed; a card failure must never
+// break settlement.
+const cardLib = require("../lib/shareCard");
+const { putR2 } = require("./weeklyVault");
 
 const prisma = new PrismaClient();
 const SLA_MIN = 30;
@@ -67,6 +72,12 @@ async function settleBit(bitId) {
       },
     });
     await prisma.bit.update({ where: { id: bitId }, data: { status: d.result } });
+    try {
+      const card = await cardLib.ensureCardForBit(prisma, bitId, putR2);
+      console.log(`[share-card] ${cardKey(bitId)} bytes=${card.bytes}`);
+    } catch (e) {
+      console.log(`[share-card] fail ${bitId}: ${e.message}`);
+    }
     return { bitId, action: "final", result: d.result };
   }
   return { bitId, action: d.action };
