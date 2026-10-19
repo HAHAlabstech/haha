@@ -76,7 +76,9 @@ jobs:
             echo "${{ github.sha }}" > .tag
             export REGISTRY_IMAGE="ghcr.io/hahalabstech/haha-app"
             TAG=${{ github.sha }} docker compose pull app worker
-            TAG=${{ github.sha }} docker compose up -d
+            TAG=${{ github.sha }} docker compose stop app worker || true
+            TAG=${{ github.sha }} docker compose rm -f app worker || true
+            TAG=${{ github.sha }} docker compose up -d --remove-orphans
             docker image prune -f || true
       - name: healthcheck
         uses: appleboy/ssh-action@v1
