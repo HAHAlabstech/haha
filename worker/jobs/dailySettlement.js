@@ -1,21 +1,24 @@
-"use strict";
 // Job: daily-settlement (BullMQ `0 0 * * *`, staged via CronJobRun).
-// sweep -> claim -> split 70/30 micro-EXACT -> reward micro (cap/account
-// iterative + rollover) -> Merkle BigInt -> R2 -> proposeRoot (hot
-// ROOT_PROPOSER; guardian veto 24h / testnet 10min + Telegram alert).
-// Skips publishing an empty root when Pons-operator sweep is pending
-// (pending>0 but claimable static >12h => alert + skip). Gas float is
-// out-of-band; alert if OPERATOR ETH < 0.005. Pre-graduation: MicDrop HOLD.
+// REAL on-chain stages via the hot keeper (KEEPER_ROLE on FeeSplitter,
+// PROPOSER_ROLE on TipJar): sweep escrow -> claim USDG -> split 70/30
+// micro-EXACT -> reward micro (cap/account iterative + rollover carry) ->
+// stage-1 plant-candidate marking -> Merkle BigInt -> R2 -> proposeRoot
+// on-chain (RootProposed); activation is permissionless after rootDelay
+// (testnet 10min / mainnet 48h). Payload mode {tipjarMicro, micdropMicro}
+// skips the harvest leg (dry / reconciliation) but still pays out + proposes.
 
 const { PrismaClient } = require("@prisma/client");
 const { scoreOf, distribute, DUST_MICRO } = require("../lib/rewards");
 const { buildTree } = require("../lib/merkle");
+const { publicClient, walletClient, ABI, waitForReceipt, parseFeeSplit } = require("../lib/chain");
 
 const prisma = new PrismaClient();
 const SPLIT_TIPJAR_BPS = 7000;
 const SPLIT_MICDROP_BPS = 3000;
 const SPLIT_COMEDIAN_BPS = 8000;
 const SPLIT_CROWD_BPS = 2000;
+const SPLIT_COMEDIAN_NUM = SPLIT_COMEDIAN_BPS; // 80% of TipJar inflow
+const SPLIT_CROWD_NUM = 10_000 - SPLIT_COMEDIAN_BPS;
 
 async function stage(runId, idem, jobName, epoch, name, fn) {
   await prisma.cronJobRun.update({ where: { idempotency_key: idem }, data: { stage: name } });
@@ -23,7 +26,10 @@ async function stage(runId, idem, jobName, epoch, name, fn) {
     const out = await fn();
     return out;
   } catch (err) {
-    await prisma.cronJobRun.update({ where: { idempotency_key: idem }, data: { status: "failed", last_error: String(err.message).slice(0, 500) } });
+    await prisma.cronJobRun.update({
+      where: { idempotency_key: idem },
+      data: { status: "failed", stage: name, last_error: String(err.message || err).slice(0, 500) },
+    });
     throw err;
   }
 }
@@ -39,6 +45,49 @@ function isConsensusVote(outcomeResult, a) {
     return a.vote === a.position_ai || a.vote === "both_right";
   }
   return false;
+}
+
+/** Sweep escrow + claim + split 70/30 on-chain, decode FeeSplitExecuted. */
+async function harvestOnChain() {
+  const splitter = (process.env.FEE_SPLITTER_ADDRESS ?? "").trim();
+  if (!/^0x[0-9a-fA-F]{40}$/.test(splitter)) {
+    throw new Error("[settle] FEE_SPLITTER_ADDRESS missing");
+  }
+  const { client, account } = walletClient();
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
+  const hash = await client.writeContract({
+    address: splitter,
+    abi: ABI.feeSplitter,
+    functionName: "harvestAndSplit",
+    args: [0n, deadline], // minUsdgOut 0: harvest is value-driven, not quota-driven
+    account,
+    gas: 600_000n,
+  });
+  const receipt = await waitForReceipt(publicClient(), hash);
+  if (receipt.status !== "success") throw new Error(`[settle] harvest reverted: ${hash}`);
+  const split = parseFeeSplit(receipt);
+  return {
+    tx: hash,
+    tipjarMicro: split ? split.tipShare : 0n,
+    micdropMicro: split ? split.dropShare : 0n,
+    totalMicro: split ? split.totalMicro : 0n,
+  };
+}
+
+/** Carry unallocated rollover from the previous epoch (pool − written payouts). */
+async function carriedPools(epoch) {
+  const prev = await prisma.epoch.findUnique({ where: { epoch_number: epoch - 1 } });
+  if (!prev) return { com: 0n, crd: 0n };
+  const paid = await prisma.reward.groupBy({
+    by: ["role"],
+    where: { epoch_id: prev.id },
+    _sum: { amount_micro_usdg: true },
+  });
+  const pCom = BigInt(paid.find((p) => p.role === "comedian")?._sum.amount_micro_usdg ?? 0);
+  const pCrd = BigInt(paid.find((p) => p.role === "crowd")?._sum.amount_micro_usdg ?? 0);
+  const cCom = prev.comedian_micro_usdg > pCom ? prev.comedian_micro_usdg - pCom : 0n;
+  const cCrd = prev.crowd_micro_usdg > pCrd ? prev.crowd_micro_usdg - pCrd : 0n;
+  return { com: cCom, crd: cCrd };
 }
 
 async function run(job) {
@@ -60,18 +109,37 @@ async function run(job) {
   const idem = `daily-settlement:${epoch}`;
   await prisma.cronJobRun.upsert({
     where: { idempotency_key: idem },
-    create: { job_name: "daily-settlement", stage: "sweep", epoch_number: epoch, idempotency_key: idem },
+    create: { job_name: "daily-settlement", stage: "sweep_claim", epoch_number: epoch, idempotency_key: idem },
     update: { attempt: { increment: 1 }, status: "started", last_error: null },
   });
 
-  // stages sweep/claim/split execute on-chain via the hot keeper; the worker
-  // records resulting micro amounts (authoritative numbers come from receipts
-  // + FeeSplitExecuted events via scripts/index-events.mjs).
-  const inflow = await stage(null, idem, null, epoch, "sweep_claim", async () => ({
-    tipjarMicro: BigInt(data.tipjarMicro ?? 0),
-    micdropMicro: BigInt(data.micdropMicro ?? 0),
-  }));
+  // ---- sweep + claim + split (on-chain hot keeper; payload mode skips) ----
+  const inflow = await stage(null, idem, null, epoch, "sweep_claim", async () => {
+    if (data.tipjarMicro != null) {
+      return {
+        tipjarMicro: BigInt(data.tipjarMicro),
+        micdropMicro: BigInt(data.micdropMicro ?? 0),
+        onchain: false,
+        tx: data.harvestTxHash ?? null,
+      };
+    }
+    // Retry/reconcile path: reuse the epoch's recorded inflow instead of
+    // double-harvesting when this idempotency key already ran.
+    const existing = await prisma.epoch.findUnique({ where: { epoch_number: epoch } });
+    if (existing && existing.tipjar_micro_usdg > 0n) {
+      return {
+        tipjarMicro: existing.tipjar_micro_usdg,
+        micdropMicro: existing.fee_in_base_units - existing.tipjar_micro_usdg,
+        onchain: false,
+        tx: existing.tx_hash,
+        reused: true,
+      };
+    }
+    const res = await harvestOnChain();
+    return { tipjarMicro: res.tipjarMicro, micdropMicro: res.micdropMicro, tx: res.tx, onchain: true };
+  });
 
+  // ---- rewards (TipJar inflow: 80% comedians / 20% crowd, + rollover) ----
   const rewards = await stage(null, idem, null, epoch, "rewards", async () => {
     const finals = await prisma.outcome.findMany({
       where: { decided_at: { gte: since, lt: until } },
@@ -112,9 +180,9 @@ async function run(job) {
       }
     }
 
-    // Within TipJar inflow: 80% Comedians, 20% Crowd jurors
-    const comedianPool = (inflow.tipjarMicro * BigInt(SPLIT_COMEDIAN_BPS)) / 10_000n;
-    const crowdPool = inflow.tipjarMicro - comedianPool;
+    const carried = await carriedPools(epoch);
+    const comedianPool = (inflow.tipjarMicro * BigInt(SPLIT_COMEDIAN_BPS)) / 10_000n + carried.com;
+    const crowdPool = (inflow.tipjarMicro * BigInt(SPLIT_CROWD_BPS)) / 10_000n + carried.crd;
 
     const comedianDist = distribute(comedianPool, comedianEntries);
     const crowdDist = distribute(crowdPool, crowdEntries);
@@ -125,11 +193,13 @@ async function run(job) {
         epoch_number: epoch,
         start_at: since,
         end_at: until,
+        fee_in_base_units: inflow.tipjarMicro + inflow.micdropMicro,
         tipjar_micro_usdg: inflow.tipjarMicro,
         comedian_micro_usdg: comedianPool,
         crowd_micro_usdg: crowdPool,
       },
       update: {
+        fee_in_base_units: inflow.tipjarMicro + inflow.micdropMicro,
         tipjar_micro_usdg: inflow.tipjarMicro,
         comedian_micro_usdg: comedianPool,
         crowd_micro_usdg: crowdPool,
@@ -154,23 +224,46 @@ async function run(job) {
       });
     }
 
-    const totalRollover = comedianDist.rollover + crowdDist.rollover;
     return {
       comediansPaid: comedianDist.payouts.size,
       crowdPaid: crowdDist.payouts.size,
-      rollover: totalRollover.toString(),
+      carriedCom: carried.com.toString(),
+      carriedCrd: carried.crd.toString(),
+      rollover: (comedianDist.rollover + crowdDist.rollover).toString(),
     };
   });
 
-  // Merkle: leaf = AGGREGATE across (wallet, all epochs, all roles) — sum at
-  // settlement; Reward rows stay per-(epoch,role) for audit. Double-hash both sides.
+  // ---- stage-1 plant candidates (plan §4.6: autonomous 2-stage Plants) ----
+  await stage(null, idem, null, epoch, "plant_stage1", async () => {
+    const finals = await prisma.outcome.findMany({
+      where: { decided_at: { gte: since, lt: until } },
+      include: {
+        bit: { include: { assignments: { where: { voted_at: { not: null } } } } },
+      },
+    });
+    let marked = 0;
+    for (const o of finals) {
+      const bit = o.bit;
+      if (bit.is_holdout || bit.is_plant_bank || bit.plant_candidate_at) continue;
+      if (o.result !== "killed_it" && o.result !== "bombed") continue;
+      const voted = (bit.assignments ?? []).filter((a) => !a.is_plant);
+      if (voted.length < 5 || voted.length < o.juror_count) continue;
+      if (!voted.every((a) => isConsensusVote(o.result, a))) continue;
+      await prisma.bit.update({ where: { id: bit.id }, data: { plant_candidate_at: until } });
+      marked++;
+    }
+    return { marked };
+  });
+
+  // ---- Merkle (aggregate across epochs/roles) + R2 + claimable proofs ----
   const merkle = await stage(null, idem, null, epoch, "merkle_r2", async () => {
     const agg = await prisma.$queryRaw`
       SELECT u.wallet AS account, SUM(r.amount_micro_usdg)::text AS cum
       FROM "Reward" r JOIN "User" u ON u.id = r.user_id
       GROUP BY u.wallet`;
-    const { root, proofs, treeJson } = await buildTree(agg.map((a) => ({ account: a.account, cumulativeMicro: a.cum })));
-    // R2 upload: private/merkle/epoch-{n}.json (S3 PutObject via worker R2 client)
+    const { root, proofs, treeJson } = await buildTree(
+      agg.map((a) => ({ account: a.account, cumulativeMicro: a.cum })),
+    );
     const { putR2 } = require("./weeklyVault");
     const url = await putR2(`private/merkle/epoch-${epoch}.json`, treeJson, "application/json").catch(() => null);
     await prisma.epoch.update({ where: { epoch_number: epoch }, data: { merkle_root: root, merkle_r2_url: url } });
@@ -184,17 +277,40 @@ async function run(job) {
         FROM "User" u
         WHERE r.user_id = u.id AND u.wallet = ${a.account} AND r.epoch_id = (SELECT id FROM "Epoch" WHERE epoch_number = ${epoch})`;
     }
-    return { root, r2: url };
+    return { root, r2: url, leaves: agg.length };
   });
 
+  // ---- proposeRoot on-chain (hot PROPOSER; veto window per rootDelay) ----
   await stage(null, idem, null, epoch, "propose_root", async () => {
-    // On-chain proposeRoot(epoch, newRoot, newTotalEntitled) signed by hot ROOT_PROPOSER.
-    // Guardian veto window 24h (testnet 10min) + Telegram alert fire here.
-    // Recorded tx_hash links the CronJobRun to the chain event.
-    if (data.proposedTxHash) {
-      await prisma.epoch.update({ where: { epoch_number: epoch }, data: { tx_hash: data.proposedTxHash } });
+    // Skip when the root did not move since the previous committed epoch —
+    // re-proposing identical values creates veto-window noise for no change.
+    const prev = await prisma.epoch.findUnique({ where: { epoch_number: epoch - 1 } });
+    if (prev && prev.merkle_root === merkle.root) {
+      return { proposed: false, reason: "root_unchanged" };
     }
-    return { proposed: Boolean(data.proposedTxHash) };
+    if (!merkle.root || merkle.leaves === 0) {
+      return { proposed: false, reason: "no_entitlements_yet" };
+    }
+    const tipjar = (process.env.TIPJAR_ADDRESS ?? "").trim();
+    if (!/^0x[0-9a-fA-F]{40}$/.test(tipjar)) {
+      throw new Error("[settle] TIPJAR_ADDRESS missing");
+    }
+    const agg = await prisma.$queryRaw`
+      SELECT SUM(r.amount_micro_usdg)::text AS cum FROM "Reward" r`;
+    const totalCumulative = BigInt(agg[0]?.cum ?? "0");
+    const { client, account } = walletClient();
+    const hash = await client.writeContract({
+      address: tipjar,
+      abi: ABI.tipJar,
+      functionName: "proposeRoot",
+      args: [BigInt(epoch), merkle.root, totalCumulative],
+      account,
+      gas: 400_000n,
+    });
+    const receipt = await waitForReceipt(publicClient(), hash);
+    if (receipt.status !== "success") throw new Error(`[settle] proposeRoot reverted: ${hash}`);
+    await prisma.epoch.update({ where: { epoch_number: epoch }, data: { tx_hash: receipt.transactionHash } });
+    return { proposed: true, tx: receipt.transactionHash, totalCumulative: totalCumulative.toString(), etaSec: 600 };
   });
 
   await prisma.cronJobRun.update({ where: { idempotency_key: idem }, data: { status: "done", stage: "propose_root" } });
@@ -208,4 +324,5 @@ module.exports = {
   SPLIT_COMEDIAN_BPS,
   SPLIT_CROWD_BPS,
   isConsensusVote,
+  harvestOnChain,
 };
