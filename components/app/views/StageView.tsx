@@ -184,7 +184,9 @@ export default function StageView() {
         }),
       });
       const data = (await res.json().catch(() => ({}))) as {
+        // API returns { bitId, queued, jobId } on create; keep id as legacy.
         id?: string;
+        bitId?: string;
         status?: string;
         reject_reason?: string;
         error?: string;
@@ -200,9 +202,10 @@ export default function StageView() {
         setCrisisSupport(true);
         return;
       }
-      if (data.id) {
-        setCreatedBitId(data.id);
-        router.push(`/bit/${encodeURIComponent(data.id)}`);
+      const newBitId = data.bitId ?? data.id;
+      if (newBitId) {
+        setCreatedBitId(newBitId);
+        router.push(`/bit/${encodeURIComponent(newBitId)}`);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to submit bit.");
