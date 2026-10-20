@@ -158,7 +158,10 @@ export default function CrowdJoinPage() {
         },
         body: JSON.stringify({
           wallet: siwe.wallet ?? st.account,
-          score: computedScore,
+          // Route contract: grade the calibration by correct/total (>=10 items).
+          // "score" alone was ignored by /api/crowd/onboarding -> always 400.
+          correct: computedScore,
+          total: QUIZ.length,
         }),
       });
       if (res.ok) {
