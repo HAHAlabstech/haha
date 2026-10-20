@@ -11,7 +11,7 @@ import Link from "next/link";
    It enters behind the hero zoom: as the hero camera pushes in, the left copy and right card scale in smoothly
    (--zk from 0 to 1), with zero black screen and zero jump. */
 
-const ZIN = 0.62;
+const ZIN = 0.6;
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const PIN_QUERY = "(min-width: 1024px) and (min-height: 680px)";
 const BANDS = [0.33, 0.66];
@@ -176,7 +176,7 @@ export default function HumorSpectrogram() {
               Frontier reasoning models predict the most probable sequence. True comedy does the exact opposite: it sets up an expectation, holds a deadpan pause, and shatters it with human nuance.
             </p>
 
-            <p className="text-sm text-zinc-400 font-light leading-relaxed max-w-xl mb-6">
+            <p className="haha-spec-body-extra text-sm text-zinc-400 font-light leading-relaxed max-w-xl mb-6">
               The Straight Man AI classifies literal semantics with 99% confidence. When human jurors detect subtext, innuendo, or double meanings, the AI chokes—and you get paid.
             </p>
 

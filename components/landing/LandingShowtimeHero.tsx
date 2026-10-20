@@ -754,7 +754,7 @@ export default function LandingShowtimeHero() {
         )}
 
         {/* Minimalist Editorial Chapter Stepper on Right */}
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col gap-6 select-none pointer-events-none">
+        <div className="haha-stage-stepper absolute right-8 top-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col gap-6 select-none pointer-events-none">
           {CHAPTERS.map((ch, i) => (
             <div
               key={i}
@@ -778,63 +778,64 @@ export default function LandingShowtimeHero() {
           ))}
         </div>
 
-        {/* Editorial Text Overlay: Left Half */}
-        <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-end p-[clamp(24px,5vw,72px)] pb-16 max-w-[1440px] mx-auto">
+        {/* Editorial Text Overlay: Left Half (Centered vertically to prevent button sinking) */}
+        <div className="haha-story-wrapper absolute inset-0 z-10 pointer-events-none flex flex-col justify-center px-[clamp(24px,5vw,72px)] pt-[calc(var(--topbar-height,68px)+0.5rem)] pb-8 max-w-[1440px] mx-auto">
           <div className="haha-story-col max-w-xl pointer-events-auto">
-            <div className="relative w-full min-h-[320px]">
+            <div className="haha-story-deck w-full">
               {CHAPTERS.map((ch, i) => {
                 const isCurrent = activeSlide === i;
                 return (
                   <div
                     key={i}
                     data-story-step={i}
-                    className={`haha-story-item ${i === 0 ? "relative" : "absolute inset-0"}`}
+                    className="haha-story-item"
                     style={{ "--n": i } as React.CSSProperties}
                     aria-hidden={!isCurrent}
                   >
                     {/* Clean Monospace Category Kicker */}
-                    <div className="font-mono text-xs uppercase tracking-[0.28em] text-[#ffc53d] font-semibold mb-3">
+                    <div className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-2.5 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
                       {ch.num} / {ch.tag}
                     </div>
 
-                    {/* Editorial Display Headline */}
-                    <h2 className="display-serif text-5xl sm:text-7xl lg:text-8xl text-white font-bold tracking-tight leading-[0.95] mb-4">
+                    {/* Editorial Display Headline - Clamped to Viewport Height */}
+                    <h2 className="display-serif text-3xl sm:text-5xl lg:text-[clamp(2.2rem,min(4.8vw,7.4svh),4.6rem)] text-white font-bold tracking-tight leading-[1.02] mb-3.5">
                       {ch.titleLead}
                       <em className="italic text-[#ffc53d]">{ch.titleEm}</em>
                     </h2>
 
                     {/* Narrative Paragraph */}
-                    <p className="text-base sm:text-lg text-zinc-300 leading-relaxed font-light mb-6">
+                    <p className="text-sm sm:text-base lg:text-[clamp(0.95rem,1.4svh,1.08rem)] text-zinc-300 leading-relaxed font-light mb-5 max-w-lg">
                       {ch.desc}
                     </p>
 
                     {/* Launch App CTAs (Chapter 04 and Chapter 01) */}
                     {i === 3 ? (
-                      <div className="flex flex-wrap items-center gap-4 pt-2">
+                      <div className="flex flex-wrap items-center gap-3.5 pt-1">
                         <Link
                           href="/app?tab=stage"
-                          className="inline-flex items-center justify-center rounded-full bg-[#ffc53d] hover:bg-[#ffd875] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)]"
+                          className="inline-flex items-center justify-center rounded-full bg-[#ffc53d] hover:bg-[#ffd875] px-7 py-3.5 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)]"
                         >
                           Take The Stage
                         </Link>
                         <Link
                           href="/app?tab=vault"
-                          className="inline-flex items-center justify-center rounded-full border border-white/20 hover:border-white/50 bg-[#12121a]/80 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-200 backdrop-blur-md transition-all duration-200 hover:text-white"
+                          className="inline-flex items-center justify-center rounded-full border border-white/20 hover:border-white/50 bg-[#12121a]/80 px-6 py-3.5 font-mono text-xs uppercase tracking-widest text-zinc-200 backdrop-blur-md transition-all duration-200 hover:text-white"
                         >
                           Explore Joke Vault
                         </Link>
                       </div>
                     ) : i === 0 ? (
-                      <div className="flex flex-wrap items-center gap-4 pt-2">
+                      <div className="flex flex-wrap items-center gap-3.5 pt-1">
                         <Link
                           href="/app?tab=stage"
-                          className="inline-flex items-center justify-center rounded-full bg-[#ffc53d] hover:bg-[#ffd875] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)]"
+                          className="inline-flex items-center justify-center rounded-full bg-[#ffc53d] hover:bg-[#ffd875] px-7 py-3.5 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)]"
                         >
                           Launch App · Take The Stage
                         </Link>
                         <Link
                           href="/app?tab=vault"
-                          className="inline-flex items-center justify-center rounded-full border border-white/20 hover:border-white/50 bg-[#12121a]/80 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-300 backdrop-blur-md transition-all duration-200 hover:text-white"
+                          className="inline-flex items-center justify-center rounded-full border border-white/20 hover:border-white/50 bg-[#12121a]/80 px-6 py-3.5 font-mono text-xs uppercase tracking-widest text-zinc-300 backdrop-blur-md transition-all duration-200 hover:text-white"
                         >
                           Explore Vault
                         </Link>
