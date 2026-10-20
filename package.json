@@ -7,6 +7,10 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:worker": "node --env-file=.env worker/index.js",
+    "dev:infra": "wsl -d Ubuntu-22.04 -- bash -lc 'docker start haha-db-local haha-redis-local 2>/dev/null; sleep 100000000'",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"
