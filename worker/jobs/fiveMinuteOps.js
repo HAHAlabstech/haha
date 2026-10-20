@@ -203,8 +203,49 @@ async function run(job) {
     }
   }
 
+  // (5) TipJar keeper: activate a pending root once its veto delay has passed.
+  // Without this the proposed epoch rows never become claimable (nobody else
+  // activates), so /api/rewards claims keep reverting InvalidProof.
+  let activatedRoots = null;
+  let keeperError = null;
+  try {
+    const chainLib = require("../lib/chain");
+    const pc = chainLib.publicClient();
+    const [pendingRoot, pendingEta, activeRoot] = await Promise.all([
+      pc.readContract({ address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "pendingRoot" }),
+      pc.readContract({ address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "pendingEta" }),
+      pc.readContract({ address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "merkleRoot" }),
+    ]);
+    const isPending = pendingRoot && pendingRoot !== viemZeroBytes();
+    if (isPending && pendingRoot !== activeRoot && Number(pendingEta) <= Date.now() / 1000) {
+      const { client, account } = chainLib.walletClient();
+      const hash = await client.writeContract({
+        address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "activateRoot",
+        account, gas: 200_000n,
+      });
+      const receipt = await chainLib.waitForReceipt(pc, hash);
+      if (receipt.status !== "success") throw new Error(`[tipjar-keeper] activateRoot reverted: ${hash}`);
+      activatedRoots = receipt.transactionHash;
+    }
+  } catch (e) {
+    // Keeper failure must not break the tick; it retries in 5 minutes.
+    keeperError = (e.message ?? "").slice(0, 160);
+  }
+
   await prisma.cronJobRun.update({ where: { idempotency_key: idem }, data: { status: "done" } });
-  return { settled: settled.length, promotions, appeals: appeals.length };
+  return { settled: settled.length, promotions, appeals: appeals.length, tipjarActivation: activatedRoots ?? null, keeperError };
+}
+
+/** TipJar address comes from the same env the settlement uses. */
+function tipjarAddress() {
+  const tipjar = (process.env.TIPJAR_ADDRESS ?? "").trim();
+  if (!/^0x[0-9a-fA-F]{40}$/.test(tipjar)) throw new Error("[tipjar-keeper] TIPJAR_ADDRESS missing");
+  return tipjar;
+}
+
+/** empty bytes32 marker (proposeRoot clears pendingRoot to zero after activation) */
+function viemZeroBytes() {
+  return "0x0000000000000000000000000000000000000000000000000000000000000000";
 }
 
 module.exports = { run, settleBit, topUpJurors };

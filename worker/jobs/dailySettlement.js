@@ -309,28 +309,40 @@ async function run(job) {
     // Chain-state guards (pending staged / already active) win over the
     // previous-epoch DB check: reconciliation re-runs must not double-queue.
     const pc = publicClient();
-    const [activeRoot, pendingRootNow, pendingEpochNow] = await Promise.all([
+    const [activeRoot, pendingRootNow, pendingEpochNow, chainEpoch] = await Promise.all([
       pc.readContract({ address: tipjar, abi: ABI.tipJar, functionName: "merkleRoot" }),
       pc.readContract({ address: tipjar, abi: ABI.tipJar, functionName: "pendingRoot" }),
       pc.readContract({ address: tipjar, abi: ABI.tipJar, functionName: "pendingEpoch" }),
+      pc.readContract({ address: tipjar, abi: ABI.tipJar, functionName: "currentEpoch" }),
     ]);
     if (activeRoot === merkle.root) return { proposed: false, reason: "already_active_onchain" };
     if (pendingRootNow === merkle.root && Number(pendingEpochNow) === epoch) {
       return { proposed: false, reason: "already_pending_onchain" };
     }
+    // EPOCH NUMBER MUST COME FROM THE CHAIN: proposeRoot(epoch) reverts
+    // EpochNotIncreasing when the DB's epoch label already exists on-chain
+    // (chain epochs can drift ahead of the DB numbering after restarts or
+    // manual reconciliations). DB numbering stays for bookkeeping only;
+    // the proposal always advances ONE past the chain's current epoch.
+    const chainEpochNum = Number(chainEpoch);
+    const targetEpoch = Math.max(chainEpochNum, epoch) + 1;
+    if (pendingRootNow === merkle.root && Number(pendingEpochNow) === targetEpoch) {
+      return { proposed: false, reason: "already_pending_onchain" };
+    }
+    if (activeRoot === merkle.root) return { proposed: false, reason: "already_active_onchain" };
     const { client, account } = walletClient();
     const hash = await client.writeContract({
       address: tipjar,
       abi: ABI.tipJar,
       functionName: "proposeRoot",
-      args: [BigInt(epoch), merkle.root, totalCumulative],
+      args: [BigInt(targetEpoch), merkle.root, totalCumulative],
       account,
       gas: 400_000n,
     });
     const receipt = await waitForReceipt(publicClient(), hash);
     if (receipt.status !== "success") throw new Error(`[settle] proposeRoot reverted: ${hash}`);
     await prisma.epoch.update({ where: { epoch_number: epoch }, data: { tx_hash: receipt.transactionHash } });
-    return { proposed: true, tx: receipt.transactionHash, totalCumulative: totalCumulative.toString(), etaSec: 600 };
+    return { proposed: true, tx: receipt.transactionHash, epochOnChain: targetEpoch, totalCumulative: totalCumulative.toString(), etaSec: 600 };
   });
 
   await prisma.cronJobRun.update({ where: { idempotency_key: idem }, data: { status: "done", stage: "propose_root" } });

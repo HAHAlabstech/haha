@@ -207,7 +207,7 @@ export default function CrowdJoinPage() {
               <Card className={gradedWrong ? "border-[#c93b2b]/50" : ""}>
                 <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffb13b]">
                   <span>
-                    Case 0{i + 1} / {QUIZ.length}
+                    Case {String(i + 1).padStart(2, "0")} / {QUIZ.length}
                   </span>
                   {graded ? (
                     <Stamp tone={gradedWrong ? "red" : "green"}>
