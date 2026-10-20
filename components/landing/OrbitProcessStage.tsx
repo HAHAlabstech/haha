@@ -515,12 +515,12 @@ export default function OrbitProcessStage() {
       const targetAngle = targetK * Math.PI * 2 + manualRotY;
       currentOrbit += (targetAngle - currentOrbit) * 0.08;
 
-      const radius = 4.2;
-      const camY = 0.45 + Math.sin(currentOrbit * 0.5) * 0.25;
+      const radius = 4.4;
+      const camY = 0.5 + Math.sin(currentOrbit * 0.5) * 0.2;
       camera.position.x = Math.sin(currentOrbit) * radius;
       camera.position.z = Math.cos(currentOrbit) * radius;
       camera.position.y = camY;
-      camera.lookAt(0, 0.15, 0);
+      camera.lookAt(0, 0.28, 0);
 
       // Head tracking pointer
       headPivot.rotation.y += (mouseX * 0.35 - headPivot.rotation.y) * 0.1;
@@ -600,10 +600,10 @@ export default function OrbitProcessStage() {
         </div>
       ))}
 
-      {/* STICKY VIEWPORT CONTAINER (100vh pinned while scrolling 280vh) */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-between pt-20 pb-8 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto overflow-hidden">
+      {/* STICKY VIEWPORT CONTAINER (pinned below navbar while scrolling 280vh) */}
+      <div className="sticky top-20 h-[calc(100vh-5.5rem)] w-full flex flex-col justify-between pt-2 pb-4 px-[clamp(16px,3vw,48px)] max-w-[1440px] mx-auto overflow-hidden">
         {/* Top Control HUD */}
-        <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-3">
           <div className="flex items-center gap-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d]">
               <Sparkles className="w-3.5 h-3.5 text-[#ffc53d]" />
@@ -655,10 +655,10 @@ export default function OrbitProcessStage() {
         </div>
 
         {/* Main Stage: Left Interactive 3D Canvas + Right Dynamic Step Card */}
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center my-auto w-full min-h-[55vh]">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center my-auto w-full">
           {/* LEFT: 3D WEBGL ROBOT ORBIT CANVAS (Col 1-7) */}
           <div
-            className="lg:col-span-7 relative h-[44vh] sm:h-[50vh] lg:h-[62vh] rounded-3xl border border-white/10 bg-gradient-to-b from-[#111118]/80 via-[#0a0a0f]/90 to-[#070709] shadow-2xl overflow-hidden flex items-center justify-center group"
+            className="lg:col-span-7 relative h-[42vh] sm:h-[48vh] lg:h-[58vh] rounded-3xl border border-white/10 bg-gradient-to-b from-[#111118]/80 via-[#0a0a0f]/90 to-[#070709] shadow-2xl overflow-hidden flex items-center justify-center group"
             onMouseEnter={() => setIsHoveringCanvas(true)}
             onMouseLeave={() => setIsHoveringCanvas(false)}
           >
@@ -705,45 +705,45 @@ export default function OrbitProcessStage() {
           </div>
 
           {/* RIGHT: DYNAMIC SYNCHRONIZED STEP STORY CARD (Col 8-12) */}
-          <div className="lg:col-span-5 flex flex-col justify-between rounded-3xl border border-white/10 bg-[#0d0d14]/90 backdrop-blur-xl p-8 sm:p-10 shadow-2xl transition-all duration-300 min-h-[44vh] sm:min-h-[50vh] lg:min-h-[58vh]">
+          <div className="lg:col-span-5 flex flex-col justify-between rounded-3xl border border-white/10 bg-[#0d0d14]/90 backdrop-blur-xl p-6 sm:p-8 lg:p-9 shadow-2xl transition-all duration-300 h-[42vh] sm:h-[48vh] lg:h-[58vh]">
             <div>
               {/* Header Badge */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-5 mb-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
                 <div className="flex items-center gap-3">
                   <span
-                    className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${curStep.accentBg} ${curStep.accent} border ${curStep.accentBorder} shadow-lg`}
+                    className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${curStep.accentBg} ${curStep.accent} border ${curStep.accentBorder} shadow-lg`}
                   >
-                    <StepIcon className="w-6 h-6" />
+                    <StepIcon className="w-5 h-5" />
                   </span>
                   <div>
                     <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
                       Protocol Step {curStep.num} / 03
                     </span>
-                    <h4 className="font-mono text-sm uppercase tracking-wider text-zinc-200 font-bold">
+                    <h4 className="font-mono text-xs sm:text-sm uppercase tracking-wider text-zinc-200 font-bold">
                       {curStep.tag}
                     </h4>
                   </div>
                 </div>
 
-                <span className="font-serif text-3xl text-zinc-500 font-italic">
+                <span className="font-serif text-2xl sm:text-3xl text-zinc-500 font-italic">
                   #{curStep.num}
                 </span>
               </div>
 
               {/* Title & Description */}
-              <h3 className="display-serif text-3xl sm:text-4xl text-white mb-4 leading-tight">
+              <h3 className="display-serif text-2xl sm:text-3xl text-white mb-3 leading-tight">
                 {curStep.title}
               </h3>
 
-              <p className="text-sm sm:text-base text-zinc-300 leading-relaxed mb-6 font-light">
+              <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-4 font-light line-clamp-3 sm:line-clamp-none">
                 {curStep.description}
               </p>
 
               {/* Bullet Points */}
-              <ul className="space-y-3 mb-6 border-t border-white/5 pt-5">
+              <ul className="space-y-2 mb-4 border-t border-white/5 pt-4">
                 {curStep.bullets.map((b) => (
-                  <li key={b} className="flex items-start gap-3 text-xs sm:text-sm text-zinc-300">
-                    <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${curStep.accent}`} />
+                  <li key={b} className="flex items-start gap-2.5 text-xs text-zinc-300">
+                    <CheckCircle2 className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${curStep.accent}`} />
                     <span>{b}</span>
                   </li>
                 ))}
@@ -751,19 +751,19 @@ export default function OrbitProcessStage() {
             </div>
 
             {/* Bottom Actions */}
-            <div className="pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
+            <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
               <Link
                 href={curStep.ctaLink}
-                className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-[#ffc53d] hover:text-black px-6 py-2.5 font-mono text-xs uppercase tracking-widest text-white transition-all duration-200 font-semibold"
+                className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-[#ffc53d] hover:text-black px-5 py-2 font-mono text-xs uppercase tracking-widest text-white transition-all duration-200 font-semibold"
               >
                 <span>{curStep.ctaText}</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
 
               <div className="flex items-center gap-2 font-mono text-[10px] text-zinc-400">
-                <span>Orbit Scrub</span>
+                <span>Orbit Angle</span>
                 <span className="text-[#ffc53d] font-bold">
-                  {Math.round(scrubK * 100)}%
+                  {Math.round(scrubK * 360)}°
                 </span>
               </div>
             </div>

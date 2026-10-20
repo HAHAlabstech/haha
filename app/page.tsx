@@ -47,7 +47,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen bg-[#070709] text-[#f4f4f7] selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-hidden">
+    <main className="relative min-h-screen bg-[#070709] text-[#f4f4f7] selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-clip">
       {/* =========================================================================
           HERO SECTION: NEURAL ACOUSTIC STAGE + CINEMATIC EDITORIAL HEADLINE
           ========================================================================= */}
