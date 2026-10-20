@@ -22,9 +22,25 @@ const queues = {
 
 async function registerSchedules() {
   await queues.fiveMinuteOps.add("tick", {}, { repeat: { pattern: "*/5 * * * *" }, jobId: "five-min-tick", removeOnComplete: 100 });
-  await queues.dailySettlement.add("settle", {}, { repeat: { pattern: "0 0 * * *" }, jobId: "daily-settle", removeOnComplete: 30 });
-  await queues.weeklyVault.add("snapshot", {}, { repeat: { pattern: "0 1 * * 0" }, jobId: "weekly-vault", removeOnComplete: 12 });
-  await queues.seasonUpgrade.add("upgrade", {}, { repeat: { pattern: "0 2 1,15 * *" }, jobId: "season-upgrade", removeOnComplete: 12 });
+
+  // WORKER_CHAIN_WRITES=off (laptop dev): DO NOT register — and proactively
+  // REMOVE any previously registered — schedules that write to the REAL
+  // chain / prod R2 using operator keys + a laptop's local-DB data:
+  //   daily-settlement (merkle root proposeRoot), weekly-vault (R2 publish),
+  //   season-upgrade (playbook gate). A laptop bootstrapped with seed data
+  //   proposing a live epoch root would corrupt testnet state.
+  const chainWrites = (process.env.WORKER_CHAIN_WRITES ?? "on") !== "off";
+  if (chainWrites) {
+    await queues.dailySettlement.add("settle", {}, { repeat: { pattern: "0 0 * * *" }, jobId: "daily-settle", removeOnComplete: 30 });
+    await queues.weeklyVault.add("snapshot", {}, { repeat: { pattern: "0 1 * * 0" }, jobId: "weekly-vault", removeOnComplete: 12 });
+    await queues.seasonUpgrade.add("upgrade", {}, { repeat: { pattern: "0 2 1,15 * *" }, jobId: "season-upgrade", removeOnComplete: 12 });
+  } else {
+    console.log("[queues] WORKER_CHAIN_WRITES=off — skipping/removing daily-settlement, weekly-vault, season-upgrade schedules");
+    await queues.dailySettlement.removeRepeatable("settle", { pattern: "0 0 * * *" }, "daily-settle").catch(() => {});
+    await queues.weeklyVault.removeRepeatable("snapshot", { pattern: "0 1 * * 0" }, "weekly-vault").catch(() => {});
+    await queues.seasonUpgrade.removeRepeatable("upgrade", { pattern: "0 2 1,15 * *" }, "season-upgrade").catch(() => {});
+  }
+
   await queues.syncChain.add("sync", {}, { repeat: { pattern: "0 * * * *" }, jobId: "sync-chain", removeOnComplete: 100 });
 }
 
