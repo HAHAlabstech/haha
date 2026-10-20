@@ -577,8 +577,8 @@ export default function LandingShowtimeHero() {
       const dt = Math.min(0.05, clock.getDelta());
       const time = clock.getElapsedTime();
 
-      // Smooth scroll interpolation
-      st.scroll += (st.targetScroll - st.scroll) * 0.08;
+      // Smooth scroll interpolation (responsive tracking, Lenis handles wheel easing)
+      st.scroll += (st.targetScroll - st.scroll) * 0.25;
       const scroll = st.scroll;
       const portrait = sizes.width / sizes.height < 0.9;
 

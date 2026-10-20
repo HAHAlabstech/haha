@@ -1366,3 +1366,81 @@ body::before {
 .haha-story-item[aria-hidden="false"] {
   pointer-events: auto;
 }
+
+/* ==========================================================================
+   PINNED PROTOCOL PIPELINE RUNWAY (Dojang FeatureStory Model)
+   ========================================================================== */
+
+.haha-pipe-runway {
+  position: relative;
+  width: 100%;
+}
+.haha-pipe-runway[data-mode="pinned"] {
+  height: 340vh;
+}
+
+.haha-pipe-stage {
+  position: relative;
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 4rem clamp(20px, 4vw, 56px);
+}
+.haha-pipe-runway[data-mode="pinned"] .haha-pipe-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(var(--lp-nav-h, 76px) + 0.5rem) clamp(20px, 4vw, 56px) 1.2rem;
+  overflow: clip;
+}
+
+.haha-pipe-scenes {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+.haha-pipe-runway[data-mode="stacked"] .haha-pipe-scenes {
+  display: grid;
+  gap: 3.5rem;
+}
+
+.haha-pipe-scene {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6.5fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+  height: 100%;
+}
+.haha-pipe-runway[data-mode="pinned"] .haha-pipe-scene {
+  position: absolute;
+  inset: 0;
+  opacity: var(--v, 0);
+  pointer-events: none;
+  transition: opacity 0.15s ease-out;
+  will-change: opacity;
+}
+.haha-pipe-runway[data-mode="pinned"] .haha-pipe-scene[data-active="true"] {
+  pointer-events: auto;
+}
+.haha-pipe-runway[data-mode="pinned"] .haha-pipe-copy {
+  transform: translateY(calc(var(--d, 0) * -36px));
+  filter: blur(calc((1 - var(--v, 0)) * 3px));
+  will-change: transform, filter;
+}
+.haha-pipe-runway[data-mode="pinned"] .haha-pipe-visual {
+  transform: perspective(1200px) translateX(calc(var(--d, 0) * 70px)) rotateY(calc(var(--d, 0) * -16deg)) scale(calc(0.92 + var(--v, 0) * 0.08));
+  filter: blur(calc((1 - var(--v, 0)) * 3px));
+  transform-origin: 40% 50%;
+  will-change: transform, filter;
+}
+
+@media (max-width: 899px) {
+  .haha-pipe-scene {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

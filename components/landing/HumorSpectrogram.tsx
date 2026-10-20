@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Sparkles, Activity, Cpu, ShieldAlert, Info, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
@@ -60,10 +60,33 @@ const SCENARIOS: Record<ScenarioMode, ScenarioData> = {
 
 export default function HumorSpectrogram() {
   const [activeMode, setActiveMode] = useState<ScenarioMode>("irony");
+  const [userOverridden, setUserOverridden] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const data = SCENARIOS[activeMode];
 
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const onScroll = () => {
+      if (userOverridden) return;
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const progress = (vh - rect.top) / (vh + rect.height);
+      if (progress > 0.3 && progress < 0.52) {
+        setActiveMode("irony");
+      } else if (progress >= 0.52 && progress < 0.74) {
+        setActiveMode("innuendo");
+      } else if (progress >= 0.74 && progress < 0.95) {
+        setActiveMode("absurdist");
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [userOverridden]);
+
   return (
-    <section id="waveform" className="relative py-24 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto">
+    <section id="waveform" ref={sectionRef} className="relative py-24 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto">
       {/* Background ambient lighting */}
       <div
         aria-hidden
@@ -94,7 +117,10 @@ export default function HumorSpectrogram() {
                 <button
                   key={mode}
                   type="button"
-                  onClick={() => setActiveMode(mode)}
+                  onClick={() => {
+                    setActiveMode(mode);
+                    setUserOverridden(true);
+                  }}
                   className={`px-3 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                     activeMode === mode
                       ? "bg-[#ffc53d] text-[#070709] font-semibold shadow-[0_0_14px_rgba(255,177,59,0.35)]"

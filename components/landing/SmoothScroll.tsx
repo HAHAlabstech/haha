@@ -76,10 +76,12 @@ export default function SmoothScroll() {
 
         window.addEventListener("wheel", wake, { passive: true });
         window.addEventListener("keydown", wake, { passive: true });
+        window.addEventListener("scroll", wake, { passive: true });
 
         teardown = () => {
           window.removeEventListener("wheel", wake);
           window.removeEventListener("keydown", wake);
+          window.removeEventListener("scroll", wake);
           if (raf) cancelAnimationFrame(raf);
           raf = 0;
           l.destroy();

@@ -17,3 +17,4 @@ Dockerfile
 README.md
 *.md
 !prisma/migrations
+/*.png

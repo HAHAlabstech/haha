@@ -13,3 +13,6 @@ contracts/out/
 pgdata/
 *.tsbuildinfo
 .opencode-ui-*.png
+
+# root-level QA screenshots — maen git add .  gak boleh nurut ini lagi
+/*.png
