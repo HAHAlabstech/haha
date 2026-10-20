@@ -1329,7 +1329,7 @@ body::before {
 .haha-runway {
   position: relative;
   width: 100%;
-  height: 300vh;
+  height: 340vh;
   background: #000000;
 }
 
@@ -1379,54 +1379,215 @@ body::before {
 
 @media (min-width: 1024px) and (min-height: 680px) {
   .haha-spec-runway {
-    --lp-zin: 56vh;
+    --lp-zin: 60vh;
     --zk: 0;
-    --p: 0;
+    --ip: 0;
     margin-top: calc(-100vh - var(--lp-zin));
-    height: calc(300vh + var(--lp-zin));
+    height: calc(340vh + var(--lp-zin));
     pointer-events: none;
   }
 
-  .haha-spec-stage {
+  .haha-spec-pin {
     position: sticky;
     top: 0;
     height: 100vh;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: calc(var(--topbar-height, 68px) + 0.5rem) clamp(20px, 4vw, 56px) 1.5rem;
+    align-items: center;
+    padding-top: calc(var(--topbar-height, 68px) + 0.5rem);
+    padding-bottom: 2rem;
     overflow: clip;
   }
 
-  .haha-spec-content {
-    opacity: clamp(0, calc((var(--zk) - 0.45) * 1.85), 1);
+  .haha-spec-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: center;
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 4vw, 56px);
+  }
+
+  .haha-spec-copy {
+    opacity: clamp(0, calc((var(--zk) - 0.55) * 2.2), 1);
     transform: scale(calc(0.72 + 0.28 * var(--zk)));
     will-change: transform, opacity;
   }
 
+  .haha-spec-stage {
+    opacity: clamp(0, calc((var(--zk) - 0.55) * 2.2), 1);
+    transform: scale(calc(0.35 + 0.65 * var(--zk)));
+    will-change: transform, opacity;
+  }
+
   .haha-spec-runway[data-live="true"],
-  .haha-spec-runway[data-live="true"] .haha-spec-stage,
-  .haha-spec-runway[data-live="true"] .haha-spec-content {
+  .haha-spec-runway[data-live="true"] * {
     pointer-events: auto;
   }
 }
 
 @media (max-width: 1023px), (max-height: 679px) {
   .haha-spec-runway {
+    position: relative;
     margin-top: -30vh;
     height: auto;
   }
 
-  .haha-spec-stage {
+  .haha-spec-pin {
     position: relative;
     height: auto;
-    padding: 3rem clamp(20px, 4vw, 56px);
+    padding: 4rem clamp(20px, 4vw, 56px);
   }
 
-  .haha-spec-content {
+  .haha-spec-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .haha-spec-copy,
+  .haha-spec-stage {
     opacity: 1;
     transform: none;
   }
+}
+
+/* Stepper with vertical golden progress line (Dojang .lp-idea__steps model) */
+.haha-idea-steps {
+  position: relative;
+  margin-top: 2rem;
+  padding-left: 1.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.haha-idea-steps::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.haha-idea-steps::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6rem;
+  width: 2px;
+  border-radius: 2px;
+  height: calc((100% - 1.2rem) * var(--ip, 0));
+  background: linear-gradient(to bottom, #ffc53d, #f59e0b);
+  transition: height 0.1s linear;
+}
+
+.haha-istep {
+  display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr);
+  gap: 0.2rem 0.8rem;
+  width: 100%;
+  padding: 0.75rem 0.5rem 0.75rem 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  opacity: 0.45;
+  transition: opacity 0.35s ease;
+  cursor: pointer;
+}
+
+.haha-istep[data-on="true"] {
+  opacity: 1;
+}
+
+.haha-istep:hover {
+  opacity: 0.85;
+}
+
+.haha-istep-num {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  letter-spacing: 0.1em;
+  color: #71717a;
+  transition: color 0.3s ease;
+}
+
+.haha-istep[data-on="true"] .haha-istep-num {
+  color: #ffc53d;
+  font-weight: 700;
+}
+
+.haha-istep-note {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  color: #a1a1aa;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+}
+
+.haha-istep[data-on="true"] .haha-istep-note {
+  max-height: 4.5em;
+  opacity: 1;
+  margin-top: 0.35rem;
+}
+
+/* Focal Spectrogram Card (Dojang .lp-vcard model) */
+.haha-vcard {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 197, 61, 0.25);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)), #0d0c12;
+  box-shadow: 0 0 80px -30px rgba(255, 197, 61, 0.22), 0 50px 100px -40px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+.haha-vcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.haha-vcard-eye {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffc53d;
+}
+
+.haha-vcard-eye i {
+  position: relative;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #ffc53d;
+}
+
+.haha-vcard-eye i::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid #ffc53d;
+  animation: haha-ring 2.6s ease-out infinite;
+}
+
+@keyframes haha-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  80%, 100% { transform: scale(2.2); opacity: 0; }
 }
 
 /* ==========================================================================

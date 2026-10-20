@@ -11,6 +11,7 @@ import {
 import LandingShowtimeHero from "@/components/landing/LandingShowtimeHero";
 import SmoothScroll from "@/components/landing/SmoothScroll";
 import HumorSpectrogram from "@/components/landing/HumorSpectrogram";
+import ProtocolFacts from "@/components/landing/ProtocolFacts";
 import ProcessPipeline from "@/components/landing/ProcessPipeline";
 import VaultTerminal from "@/components/landing/VaultTerminal";
 import SpotlightFeed from "@/components/landing/SpotlightFeed";
@@ -54,10 +55,15 @@ export default function HomePage() {
       <LandingShowtimeHero />
 
       {/* =========================================================================
-          THE SCIENCE & TELEMETRY: SCROLL-DRIVEN OVERLAPPING SPECTROGRAM RUNWAY
-          (Dojang Overlapping Runway Architecture: seamless dive out of Hero zoom)
+          THE SCIENCE: SCROLL-DRIVEN OVERLAPPING SPECTROGRAM RUNWAY
+          (Dojang IdeaScene 2-Column Pinned Runway Architecture)
           ========================================================================= */}
-      <HumorSpectrogram
+      <HumorSpectrogram />
+
+      {/* =========================================================================
+          LIVE PROTOCOL TELEMETRY (Dojang FactsSection 4-Card Grid)
+          ========================================================================= */}
+      <ProtocolFacts
         dailyPoolUSDG={dailyPoolUSDG}
         bitsTotal={bitsTotal}
         winRate={winRate}

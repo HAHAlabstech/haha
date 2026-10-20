@@ -583,11 +583,11 @@ export default function LandingShowtimeHero() {
       const portrait = sizes.width / sizes.height < 0.9;
 
       // Dojang continuous scroll-driven timeline:
-      // story: 0.000 to 3.000 across the four chapters over scroll in [0, 0.72]
-      const story = Math.min(3, (scroll / 0.72) * 3);
-      // q: 0.000 to 1.000 exit climax push-in zoom over scroll in [0.72, 1.00]
-      // 0.28 fraction of 200vh scrollable travel = exactly 56vh (--lp-zin)
-      const q = Math.max(0, Math.min(1, (scroll - 0.72) / 0.28));
+      // story: 0.000 to 3.000 across the four chapters over scroll in [0, 0.75]
+      const story = Math.min(3, (scroll / 0.75) * 3);
+      // q: 0.000 to 1.000 exit climax push-in zoom over scroll in [0.75, 1.00]
+      // 0.25 fraction of 240vh scrollable travel = exactly 60vh (--lp-zin)
+      const q = Math.max(0, Math.min(1, (scroll - 0.75) / 0.25));
 
       if (stage) {
         stage.style.setProperty("--s", story.toFixed(3));
@@ -641,8 +641,8 @@ export default function LandingShowtimeHero() {
       if (posAttr) posAttr.needsUpdate = true;
       st.boost = Math.max(0, st.boost - dt * 1.2);
 
-      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.72)
-      const orbitT = Math.min(1, scroll / 0.72);
+      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.75)
+      const orbitT = Math.min(1, scroll / 0.75);
       const phi = orbitT * Math.PI * 2;
       const y = 0.35 + Math.sin(orbitT * Math.PI) * 0.8;
       const radius = (4.2 - Math.sin(orbitT * Math.PI) * 0.6) * (portrait ? 1.7 : 1);
