@@ -152,7 +152,7 @@ export default function HumorSpectrogram() {
 
   return (
     <section
-      id="science"
+      id="waveform"
       ref={runRef}
       data-live={live ? "true" : "false"}
       className="lp-idea-run haha-spec-runway text-white font-sans selection:bg-[#ffc53d]/30 selection:text-[#ffc53d]"

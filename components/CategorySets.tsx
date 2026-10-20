@@ -206,8 +206,8 @@ export default function CategorySets() {
               <dt>Action</dt>
               <dd>
                 <Link
-                  href="/stage?category=PUNCHLINE"
-                  className="font-mono text-xs uppercase tracking-widest text-[#ffb13b] underline"
+                  href="/app?tab=stage&category=punchline"
+                  className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] underline"
                 >
                   Try Punchline on Stage →
                 </Link>
@@ -537,8 +537,8 @@ export default function CategorySets() {
               <dt>Action</dt>
               <dd>
                 <Link
-                  href="/stage?category=SUBTEXT"
-                  className="font-mono text-xs uppercase tracking-widest text-[#ffb13b] underline"
+                  href="/app?tab=stage&category=subtext"
+                  className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] underline"
                 >
                   Try Subtext on Stage →
                 </Link>
@@ -679,8 +679,8 @@ export default function CategorySets() {
               <dt>Action</dt>
               <dd>
                 <Link
-                  href="/stage?category=IRL"
-                  className="font-mono text-xs uppercase tracking-widest text-[#ffb13b] underline"
+                  href="/app?tab=stage&category=irl"
+                  className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] underline"
                 >
                   Try IRL on Stage →
                 </Link>
@@ -859,8 +859,8 @@ export default function CategorySets() {
               <dt>Action</dt>
               <dd>
                 <Link
-                  href="/stage?category=DOUBLE_MEANING"
-                  className="font-mono text-xs uppercase tracking-widest text-[#ffb13b] underline"
+                  href="/app?tab=stage&category=double_meaning"
+                  className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] underline"
                 >
                   Try Double Meaning on Stage →
                 </Link>

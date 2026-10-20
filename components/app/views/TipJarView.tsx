@@ -287,7 +287,7 @@ export default function TipJarView() {
           </div>
           <div>
             <dt>Paid to Humans</dt>
-            <dd className="display-serif text-3xl text-emerald-400 tabular-nums">
+            <dd className="display-serif text-3xl text-[#ffc53d] tabular-nums">
               {paidOutUsdg}
             </dd>
           </div>
@@ -395,7 +395,7 @@ export default function TipJarView() {
 
                   {txHash ? (
                     <p
-                      className="font-mono text-xs text-emerald-400 flex items-center gap-1.5"
+                      className="font-mono text-xs text-[#ffc53d] flex items-center gap-1.5"
                       role="status"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />

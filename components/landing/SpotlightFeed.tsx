@@ -148,7 +148,7 @@ export default function SpotlightFeed() {
           </div>
 
           <Link
-            href="/stage"
+            href="/app?tab=stage"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#ffc53d]/40 bg-[#ffc53d]/10 font-mono text-xs uppercase tracking-widest text-[#ffc53d] hover:bg-[#ffc53d] hover:text-[#070709] transition-all shadow-[0_0_20px_rgba(255,197,61,0.2)] font-bold"
           >
             <span>Take The Stage</span>

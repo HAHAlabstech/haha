@@ -154,7 +154,7 @@ export default function LeaderboardView() {
                             {truncateAddress(j.wallet)}
                           </span>
                         </td>
-                        <td className="py-3.5 text-right font-mono text-xs text-emerald-400">
+                        <td className="py-3.5 text-right font-mono text-xs text-[#ffc53d]">
                           {j.crowd_rep} rep · {j.votes_cast} votes
                         </td>
                       </tr>

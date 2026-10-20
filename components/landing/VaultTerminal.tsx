@@ -99,14 +99,14 @@ export default function VaultTerminal() {
 
             <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
               <Link
-                href="/vault"
+                href="/app?tab=vault"
                 className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#ffc53d] hover:text-white transition-colors"
               >
                 <span>Explore Joke Vault</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
               <Link
-                href="/producers"
+                href="/app?tab=vault"
                 className="font-mono text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
               >
                 Enterprise API &rarr;

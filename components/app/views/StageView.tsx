@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, Disclaimer, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
@@ -97,11 +97,19 @@ const RULES = [
 
 export default function StageView() {
   const router = useRouter();
-  const [category, setCategory] = useState<CategoryId>("punchline");
+  const searchParams = useSearchParams();
+  const categoryRaw = searchParams?.get("category")?.toLowerCase() as CategoryId | null;
+  const initialCategory: CategoryId =
+    categoryRaw && ["punchline", "subtext", "irl", "double_meaning"].includes(categoryRaw)
+      ? categoryRaw
+      : "punchline";
+
+  const [category, setCategory] = useState<CategoryId>(initialCategory);
   const [stageKind, setStageKind] = useState<StageKind>("open_mic");
   const [scenario, setScenario] = useState("");
   const [question, setQuestion] = useState(
-    "Why is this funny? / What's the punchline?",
+    CATEGORIES.find((c) => c.id === initialCategory)?.prompt ??
+      "Why is this funny? / What's the punchline?",
   );
   const [ideaIndex, setIdeaIndex] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
@@ -110,6 +118,19 @@ export default function StageView() {
   const [createdBitId, setCreatedBitId] = useState<string | null>(null);
   const [crisisSupport, setCrisisSupport] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (
+      categoryRaw &&
+      ["punchline", "subtext", "irl", "double_meaning"].includes(categoryRaw)
+    ) {
+      setCategory(categoryRaw);
+      const matched = CATEGORIES.find((c) => c.id === categoryRaw);
+      if (matched) {
+        setQuestion(matched.prompt);
+      }
+    }
+  }, [categoryRaw]);
 
   useEffect(() => {
     const st = getSharedWalletState();
@@ -418,7 +439,7 @@ export default function StageView() {
 
             {createdBitId ? (
               <p
-                className="mt-5 rounded-xl border border-[#8fb596]/40 bg-[#8fb596]/10 p-3.5 text-sm text-[#fff6ed]"
+                className="mt-5 rounded-xl border border-[#ffc53d]/40 bg-[#ffc53d]/10 p-3.5 text-sm text-[#fff6ed]"
                 role="status"
               >
                 Bit submitted!{" "}

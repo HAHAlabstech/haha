@@ -189,7 +189,7 @@ export default function CrowdView() {
             <dt>Calibration</dt>
             <dd>
               {stakeInfo?.onboarding_passed ? (
-                <span className="text-emerald-400 flex items-center gap-1 font-mono text-xs">
+                <span className="text-[#ffc53d] flex items-center gap-1 font-mono text-xs">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Passed (8+/10)</span>
                 </span>
@@ -384,7 +384,7 @@ export default function CrowdView() {
           )}
 
           {statusMsg ? (
-            <p className="mt-4 font-mono text-xs text-emerald-400" role="status">
+            <p className="mt-4 font-mono text-xs text-[#ffc53d]" role="status">
               {statusMsg}
             </p>
           ) : null}

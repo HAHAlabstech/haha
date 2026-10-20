@@ -583,7 +583,7 @@ export default function BitPage({
               </span>
             </button>
             {appealStatus ? (
-              <p className="font-mono text-xs text-[#8fb596]">{appealStatus}</p>
+              <p className="font-mono text-xs text-[#ffc53d]">{appealStatus}</p>
             ) : null}
           </Card>
         </section>
@@ -609,7 +609,7 @@ export default function BitPage({
             <span>{submittingReport ? "Reporting…" : "Report Bit"}</span>
           </button>
           {reportStatus ? (
-            <span className="font-mono text-xs text-[#8fb596]">
+            <span className="font-mono text-xs text-[#ffc53d]">
               {reportStatus}
             </span>
           ) : null}
@@ -626,12 +626,12 @@ export default function BitPage({
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <Link href="/stage" className="pill-btn hot flex items-center gap-2">
+        <Link href="/app?tab=stage" className="pill-btn hot flex items-center gap-2">
           <Mic className="w-3.5 h-3.5" />
           <span>Take the stage again</span>
           <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
-        <Link href="/crowd" className="pill-btn flex items-center gap-2">
+        <Link href="/app?tab=crowd" className="pill-btn flex items-center gap-2">
           <Users className="w-3.5 h-3.5 text-zinc-400" />
           <span>Judge in the Crowd</span>
           <ArrowUpRight className="w-3.5 h-3.5" />
