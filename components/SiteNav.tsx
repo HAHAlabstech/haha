@@ -102,7 +102,7 @@ export default function SiteNav() {
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
                   first
-                    ? "bg-emerald-400 shadow-[0_0_8px_#34d399]"
+                    ? "bg-[#ffc53d] shadow-[0_0_8px_rgba(255,197,61,0.6)]"
                     : "bg-zinc-500"
                 }`}
               />

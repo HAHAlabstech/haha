@@ -583,10 +583,10 @@ export default function LandingShowtimeHero() {
       const portrait = sizes.width / sizes.height < 0.9;
 
       // Dojang continuous scroll-driven timeline:
-      // story: 0.000 to 3.000 across the four chapters over scroll in [0, 0.82]
-      const story = Math.min(3, (scroll / 0.82) * 3);
-      // q: 0.000 to 1.000 exit climax push-in zoom over scroll in [0.82, 1.00]
-      const q = Math.max(0, Math.min(1, (scroll - 0.82) / 0.18));
+      // story: 0.000 to 3.000 across the four chapters over scroll in [0, 0.88]
+      const story = Math.min(3, (scroll / 0.88) * 3);
+      // q: 0.000 to 1.000 exit climax push-in zoom over scroll in [0.88, 1.00]
+      const q = Math.max(0, Math.min(1, (scroll - 0.88) / 0.12));
 
       if (stage) {
         stage.style.setProperty("--s", story.toFixed(3));
@@ -639,8 +639,8 @@ export default function LandingShowtimeHero() {
       if (posAttr) posAttr.needsUpdate = true;
       st.boost = Math.max(0, st.boost - dt * 1.2);
 
-      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.82)
-      const orbitT = Math.min(1, scroll / 0.82);
+      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.88)
+      const orbitT = Math.min(1, scroll / 0.88);
       const phi = orbitT * Math.PI * 2;
       const y = 0.35 + Math.sin(orbitT * Math.PI) * 0.8;
       const radius = (4.2 - Math.sin(orbitT * Math.PI) * 0.6) * (portrait ? 1.7 : 1);
@@ -668,9 +668,9 @@ export default function LandingShowtimeHero() {
       camera.position.lerp(targetPos, 0.08);
       camera.lookAt(lookAt);
 
-      // Canvas fade at climax exit
+      // Canvas stays visible until seamless unpin handoff to the next section
       if (canvas) {
-        canvas.style.opacity = String(Math.max(0, 1 - q * q * 1.8));
+        canvas.style.opacity = String(Math.max(0.15, 1 - q * 0.45));
       }
 
       // Head keeps an eye on camera

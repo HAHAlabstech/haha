@@ -158,13 +158,13 @@ export default function SpotlightFeed() {
                     {b.category} · {b.stage}
                   </span>
                   {b.status === "killed_it" ? (
-                    <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
-                      <CheckCircle2 className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#ffc53d] bg-[#ffc53d]/10 px-2 py-0.5 rounded-full border border-[#ffc53d]/30 font-semibold">
+                      <CheckCircle2 className="w-3 h-3 text-[#ffc53d]" />
                       Killed It
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#3b82f6] bg-[#3b82f6]/10 px-2 py-0.5 rounded-full border border-[#3b82f6]/20">
-                      <Bot className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-zinc-300 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                      <Bot className="w-3 h-3 text-zinc-400" />
                       AI Won
                     </span>
                   )}
@@ -187,7 +187,7 @@ export default function SpotlightFeed() {
                 {/* Straight Man Response */}
                 <div className="rounded-xl border border-white/5 bg-[#050507] p-3.5 mb-5 font-mono text-xs text-zinc-400 leading-relaxed">
                   <div className="flex items-center gap-1.5 text-zinc-500 mb-1">
-                    <Bot className="w-3 h-3 text-[#3b82f6]" />
+                    <Bot className="w-3 h-3 text-zinc-400" />
                     <span className="text-[10px] uppercase tracking-wider">The Straight Man:</span>
                   </div>
                   {b.straightManResponse}

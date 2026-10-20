@@ -44,7 +44,7 @@ export default function VaultTerminal() {
       {/* Background Glow */}
       <div
         aria-hidden
-        className="pointer-events-none absolute top-1/3 -right-20 w-[600px] h-[400px] bg-[#3b82f6]/5 blur-[140px] rounded-full"
+        className="pointer-events-none absolute top-1/3 -right-20 w-[600px] h-[400px] bg-[#ffc53d]/5 blur-[140px] rounded-full"
       />
 
       {/* Header with Title & Stats */}
@@ -68,7 +68,7 @@ export default function VaultTerminal() {
             <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
               Live Replacement Cost
             </span>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-emerald-400 font-medium">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-[#ffc53d] font-medium">
               Audited Metric
             </span>
           </div>
@@ -145,11 +145,11 @@ export default function VaultTerminal() {
             <span><b>30%</b> to Daily Tip Jar Pool</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-rose-500" />
+            <span className="h-2 w-2 rounded-full bg-zinc-400" />
             <span><b>20%</b> to $HAHA Permanent Mic Drop Burns</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="h-2 w-2 rounded-full bg-white" />
             <span><b>10%</b> to Contributing Comedian Royalties</span>
           </div>
         </div>

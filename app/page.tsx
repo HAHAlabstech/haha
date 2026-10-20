@@ -80,7 +80,7 @@ export default function HomePage() {
             <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
               Human Win Rate
             </span>
-            <span className="font-display font-bold text-2xl sm:text-3xl text-emerald-400 mt-1 tabular-nums">
+            <span className="font-display font-bold text-2xl sm:text-3xl text-[#ffc53d] mt-1 tabular-nums">
               {winRate}
             </span>
           </div>
@@ -89,8 +89,8 @@ export default function HomePage() {
             <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
               AI Contestant
             </span>
-            <span className="font-display font-bold text-2xl sm:text-3xl text-[#6366f1] mt-1">
-              Straight Man <span className="text-xs font-mono text-zinc-400">S1</span>
+            <span className="font-display font-bold text-2xl sm:text-3xl text-zinc-200 mt-1">
+              Straight Man <span className="text-xs font-mono text-[#ffc53d]">S1</span>
             </span>
           </div>
         </div>

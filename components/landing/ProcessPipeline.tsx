@@ -67,9 +67,9 @@ const STEPS: PipelineStep[] = [
     num: "02",
     tag: "The Blind Jury",
     title: "Blind Crowd Quorum",
-    accent: "text-[#3b82f6]",
-    accentBg: "bg-[#3b82f6]/10",
-    accentBorder: "border-[#3b82f6]/30",
+    accent: "text-[#ffc53d]",
+    accentBg: "bg-[#ffc53d]/10",
+    accentBorder: "border-[#ffc53d]/30",
     description:
       "Your bit enters the Crowd judging queue. Verified human jurors evaluate two anonymous answers side-by-side with zero metadata. A bit earns the 'Killed It' stamp when ≥60% of jurors agree the comedian beat the machine.",
     bullets: [
@@ -86,9 +86,9 @@ const STEPS: PipelineStep[] = [
     num: "03",
     tag: "The Payout Engine",
     title: "On-Chain Settlement",
-    accent: "text-emerald-400",
-    accentBg: "bg-emerald-400/10",
-    accentBorder: "border-emerald-400/30",
+    accent: "text-[#ffc53d]",
+    accentBg: "bg-[#ffc53d]/10",
+    accentBorder: "border-[#ffc53d]/30",
     description:
       "At midnight UTC, the settlement engine compiles verified wins into a Merkle root on Robinhood Chain. Winning comedians claim real USDG directly from the Tip Jar; 20% buys and burns $HAHA via Mic Drop; 10% is locked as perpetual data royalties in the Joke Vault.",
     bullets: [
@@ -137,12 +137,12 @@ function StageConsoleVisual() {
       {/* Straight Man AI Response Box */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
-          <span className="uppercase tracking-wider text-[#6366f1]">
+          <span className="uppercase tracking-wider text-[#ffc53d]">
             Straight Man AI Reasoning:
           </span>
           <span className="text-zinc-500">Literal Confidence: 99.4%</span>
         </div>
-        <div className="rounded-xl border border-[#6366f1]/20 bg-[#0c0c1a]/60 p-4 font-mono text-xs text-zinc-300 space-y-2">
+        <div className="rounded-xl border border-white/10 bg-black/60 p-4 font-mono text-xs text-zinc-300 space-y-2">
           <p className="text-zinc-400 italic">
             “Footwear designed for female ergonomics does not accommodate male
             skeletal widths. Crying is an unoptimized biological reaction to
@@ -150,7 +150,7 @@ function StageConsoleVisual() {
           </p>
           <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] text-zinc-400">
             <span>Semantic Miss: Subtext Inversion</span>
-            <span className="text-emerald-400 font-semibold">
+            <span className="text-[#ffc53d] font-semibold">
               Result: STUMPED
             </span>
           </div>
@@ -162,16 +162,16 @@ function StageConsoleVisual() {
 
 function BlindQuorumVisual() {
   return (
-    <div className="w-full rounded-2xl border border-[#3b82f6]/30 bg-gradient-to-b from-[#0a101d] via-[#0c0c12] to-[#070709] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
+    <div className="w-full rounded-2xl border border-[#ffc53d]/20 bg-gradient-to-b from-[#121218] via-[#0c0c12] to-[#070709] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
       {/* Terminal Title Bar */}
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div className="flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" />
-          <span className="font-mono text-xs uppercase tracking-widest text-[#3b82f6] font-semibold">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#ffc53d]" />
+          <span className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] font-semibold">
             Blind Quorum // Jury Ballot #742
           </span>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+        <span className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-[#ffc53d]/30 text-[#ffc53d] bg-[#ffc53d]/10 font-bold">
           Supermajority: 78%
         </span>
       </div>
@@ -185,8 +185,8 @@ function BlindQuorumVisual() {
           <p className="text-xs text-zinc-300 font-mono leading-relaxed line-clamp-3">
             “Now I&apos;m sitting on the bed crying and my ankles hurt.”
           </p>
-          <div className="mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">
-            <CheckCircle2 className="w-3 h-3" /> 5 Juror Votes
+          <div className="mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#ffc53d]/15 text-[#ffc53d] text-[10px] font-mono font-bold">
+            <CheckCircle2 className="w-3 h-3 text-[#ffc53d]" /> 5 Juror Votes
           </div>
         </div>
 
@@ -231,12 +231,12 @@ function BlindQuorumVisual() {
 
 function SettlementVisual() {
   return (
-    <div className="w-full rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-[#091510] via-[#0c0c12] to-[#070709] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
+    <div className="w-full rounded-2xl border border-[#ffc53d]/20 bg-gradient-to-b from-[#121218] via-[#0c0c12] to-[#070709] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
       {/* Terminal Title Bar */}
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div className="flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-          <span className="font-mono text-xs uppercase tracking-widest text-emerald-400 font-semibold">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#ffc53d]" />
+          <span className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] font-semibold">
             Settlement Engine // Robinhood Chain
           </span>
         </div>
@@ -247,11 +247,11 @@ function SettlementVisual() {
 
       {/* Rewards & Burn Metrics Grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <div className="rounded-xl border border-emerald-500/20 bg-black/50 p-4">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 block mb-1">
+        <div className="rounded-xl border border-[#ffc53d]/30 bg-black/60 p-4">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 block mb-1">
             Comedian Payout
           </span>
-          <span className="font-display text-xl sm:text-2xl font-bold text-emerald-400">
+          <span className="font-display text-xl sm:text-2xl font-bold text-[#ffc53d]">
             $142.50 <span className="text-xs font-mono">USDG</span>
           </span>
           <span className="text-[10px] font-mono text-zinc-400 block mt-1">
@@ -259,12 +259,12 @@ function SettlementVisual() {
           </span>
         </div>
 
-        <div className="rounded-xl border border-[#ef4444]/20 bg-black/50 p-4">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 block mb-1">
+        <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 block mb-1">
             20% Mic Drop Burn
           </span>
-          <span className="font-display text-xl sm:text-2xl font-bold text-[#ef4444]">
-            42,800 <span className="text-xs font-mono">$HAHA</span>
+          <span className="font-display text-xl sm:text-2xl font-bold text-zinc-100">
+            42,800 <span className="text-xs font-mono text-zinc-400">$HAHA</span>
           </span>
           <span className="text-[10px] font-mono text-zinc-400 block mt-1">
             Permanent Buyback & Burn
@@ -287,7 +287,7 @@ function SettlementVisual() {
             </span>
           </div>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-widest text-emerald-400 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d] px-2 py-1 rounded bg-[#ffc53d]/10 border border-[#ffc53d]/20 font-bold">
           Immutable
         </span>
       </div>
