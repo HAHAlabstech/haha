@@ -7,6 +7,13 @@ export const metadata: Metadata = {
   title: "HAHA — Humans Are Hard to Automate",
   description:
     "Tell a joke that fools the AI and get paid. An open comedy club & AI lab where people stump the Straight Man AI, verified by a human crowd.",
+  icons: {
+    icon: [
+      { url: "/images/logo-transparent.png", sizes: "64x64", type: "image/png" },
+      { url: "/images/logo.png", sizes: "1254x1254", type: "image/png" },
+    ],
+    apple: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({

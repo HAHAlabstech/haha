@@ -53,7 +53,27 @@ export default function AppShell({ initialTab = "stage" }: AppShellProps) {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#060606] text-[#f4f4f5]">
+    <div className="relative min-h-screen bg-[#070709] text-[#f4f4f5] overflow-x-clip selection:bg-[#ffc53d]/30 selection:text-[#ffc53d]">
+      {/* Ambient Stage Lighting Glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-radial from-[#ffc53d]/06 via-[#ffc53d]/01 to-transparent blur-[160px] rounded-full z-0"
+      />
+
+      {/* Subtle Ambient Stage Texture */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-25 mix-blend-screen"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/landing/bg-spotlight.jpg"
+          alt=""
+          className="w-full h-full object-cover object-top filter saturate-[1.1] contrast-[1.1]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070709]/80 via-[#070709]/90 to-[#070709]" />
+      </div>
+
       {/* Dedicated Clean App Header with Workspace Switcher */}
       <AppHeader
         activeTab={activeTab}

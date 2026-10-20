@@ -63,8 +63,15 @@ export default function AppHeader({
               className="group flex items-center gap-2.5 font-display text-sm font-bold tracking-[0.2em] text-white transition-colors hover:text-[#ffc53d]"
               aria-label="Back to landing"
             >
-              <span className="h-2 w-2 rounded-full bg-[#ffc53d] shadow-[0_0_12px_#ffc53d] animate-pulse" />
-              <span>HAHA</span>
+              <div className="relative w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center p-0.5 bg-[#121218] border border-white/10 group-hover:border-[#ffc53d]/50 group-hover:scale-105 transition-all shadow-[0_0_12px_rgba(255,197,61,0.25)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/logo-transparent.png"
+                  alt="HAHA Logo"
+                  className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(255,197,61,0.4)]"
+                />
+              </div>
+              <span className="font-display font-bold text-base tracking-[0.2em]">HAHA</span>
             </Link>
 
             <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-zinc-400">
@@ -116,8 +123,8 @@ export default function AppHeader({
             </div>
 
             {/* Network Pill */}
-            <div className="hidden xl:flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+            <div className="hidden xl:flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-zinc-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#ffc53d] shadow-[0_0_8px_rgba(255,197,61,0.6)]" />
               <span>Robinhood Chain</span>
             </div>
 
@@ -130,7 +137,7 @@ export default function AppHeader({
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
                   account
-                    ? "bg-emerald-400 shadow-[0_0_8px_#34d399]"
+                    ? "bg-[#ffc53d] shadow-[0_0_8px_rgba(255,197,61,0.6)]"
                     : "bg-zinc-500"
                 }`}
               />

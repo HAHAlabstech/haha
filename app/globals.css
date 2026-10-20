@@ -1260,11 +1260,12 @@ body::before {
 /* Editorial Cards & Panels across inner pages */
 .editorial-card {
   position: relative;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(24, 19, 15, 0.9), rgba(13, 11, 9, 0.92));
-  backdrop-filter: blur(12px);
+  background: linear-gradient(180deg, rgba(18, 18, 24, 0.75), rgba(10, 10, 14, 0.85));
+  backdrop-filter: blur(16px);
   padding: clamp(22px, 3vw, 34px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition:
     border-color 0.3s var(--ease-out),
     transform 0.3s var(--ease-out),
@@ -1272,14 +1273,16 @@ body::before {
 }
 
 .editorial-card:hover {
-  border-color: rgba(255, 177, 59, 0.32);
+  border-color: rgba(255, 197, 61, 0.35);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 197, 61, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .editorial-card.hot {
-  border-color: rgba(255, 177, 59, 0.45);
+  border-color: rgba(255, 197, 61, 0.45);
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 177, 59, 0.12), transparent 65%),
-    linear-gradient(180deg, #1b150f, #0f0c09);
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 197, 61, 0.12), transparent 65%),
+    linear-gradient(180deg, #14141c, #09090d);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 197, 61, 0.15), inset 0 1px 0 rgba(255, 197, 61, 0.2);
 }
 
 /* Responsive adjustments */

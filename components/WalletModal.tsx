@@ -203,15 +203,25 @@ export default function WalletModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-[#efe8dc]/20 bg-[#14100d] p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)]"
+        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-2 flex items-center justify-between">
-          <div>
-            <span className="eyebrow">Box Office · EIP-6963</span>
-            <h2 className="display-serif mt-2 text-3xl text-[#fff6ed]">
-              Connect <em>wallet.</em>
-            </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center p-1 bg-[#121218] border border-white/10 shadow-[0_0_15px_rgba(255,197,61,0.2)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo-transparent.png"
+                alt="HAHA Logo"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,197,61,0.5)]"
+              />
+            </div>
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">Box Office · EIP-6963</span>
+              <h2 className="display-serif text-2xl text-white font-bold">
+                Connect <em className="text-[#ffc53d]">wallet.</em>
+              </h2>
+            </div>
           </div>
           <button
             type="button"
@@ -223,7 +233,7 @@ export default function WalletModal({
             <X className="w-4 h-4" />
           </button>
         </div>
-        <p className="mb-5 text-sm leading-relaxed text-[#a49b8e]">
+        <p className="mb-5 text-sm leading-relaxed text-zinc-400">
           {runtime
             ? `HAHA runs on ${runtime.chainName} (Chain ${runtime.chainId}).`
             : "Loading network info…"}{" "}
@@ -232,20 +242,20 @@ export default function WalletModal({
         </p>
 
         {firstAccount && activeLabel ? (
-          <div className="mb-4 rounded-xl border border-[#8fb596]/35 bg-[#8fb596]/10 p-3.5 text-sm">
+          <div className="mb-4 rounded-xl border border-[#ffc53d]/30 bg-[#ffc53d]/10 p-3.5 text-sm">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[11px] uppercase tracking-widest text-[#8fb596]">
+              <span className="font-mono text-[11px] uppercase tracking-widest text-[#ffc53d] font-bold">
                 Connected · {activeLabel}
               </span>
               <button
                 type="button"
                 onClick={() => void refreshAccounts()}
-                className="font-mono text-[10px] uppercase tracking-wider text-[#a49b8e] underline hover:text-[#efe8dc]"
+                className="font-mono text-[10px] uppercase tracking-wider text-zinc-400 underline hover:text-white"
               >
                 Refresh
               </button>
             </div>
-            <p className="mt-1 font-mono text-sm text-[#fff6ed]">
+            <p className="mt-1 font-mono text-sm text-white">
               {truncateAddress(firstAccount)}
             </p>
           </div>
