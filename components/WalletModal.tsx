@@ -206,7 +206,7 @@ export default function WalletModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl"
+        className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
