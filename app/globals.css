@@ -1321,3 +1321,48 @@ body::before {
     display: none;
   }
 }
+
+/* ==========================================================================
+   SCROLL-DRIVEN RUNWAY & STORY STAGE (Dojang Model)
+   ========================================================================== */
+
+.haha-runway {
+  position: relative;
+  width: 100%;
+  height: 450vh;
+  background: #000000;
+}
+
+.haha-stage {
+  --s: 0;
+  --q: 0;
+  --scroll: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: clip;
+}
+
+.haha-story-col {
+  transform-origin: 15% 75%;
+  transform: scale(calc(1 + var(--q, 0) * var(--q, 0) * 4.4));
+  opacity: calc(1 - clamp(0, (var(--q, 0) - 0.22) * 2.4, 1));
+  will-change: transform, opacity;
+}
+
+.haha-story-item {
+  --fi: clamp(0, calc((var(--s, 0) - var(--n, 0) + 1 - 0.46) / 0.34), 1);
+  --fo: clamp(0, calc(1 - (var(--s, 0) - var(--n, 0) - 0.04) / 0.34), 1);
+  opacity: calc(var(--fi) * var(--fo));
+  transform: translateY(calc((1 - var(--fi)) * 24px - (1 - var(--fo)) * 18px));
+  will-change: transform, opacity;
+}
+
+.haha-story-item[aria-hidden="true"] {
+  pointer-events: none;
+}
+
+.haha-story-item[aria-hidden="false"] {
+  pointer-events: auto;
+}

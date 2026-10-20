@@ -92,14 +92,17 @@ const DEADPAN_REMARKS = [
 
 export default function LandingShowtimeHero() {
   const runwayRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const lastStoryRef = useRef<number>(0);
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const [toastText, setToastText] = useState<string | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const runway = runwayRef.current;
-    if (!canvas || !runway) return;
+    const stage = stageRef.current;
+    if (!canvas || !runway || !stage) return;
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -510,12 +513,7 @@ export default function LandingShowtimeHero() {
       const rect = runway.getBoundingClientRect();
       const scrollable = rect.height - window.innerHeight;
       if (scrollable <= 0) return;
-      const s = Math.max(0, Math.min(1, -rect.top / scrollable));
-      st.targetScroll = s;
-      if (s < 0.25) setActiveSlide(0);
-      else if (s < 0.5) setActiveSlide(1);
-      else if (s < 0.75) setActiveSlide(2);
-      else setActiveSlide(3);
+      st.targetScroll = Math.max(0, Math.min(1, -rect.top / scrollable));
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -580,18 +578,37 @@ export default function LandingShowtimeHero() {
       const time = clock.getElapsedTime();
 
       // Smooth scroll interpolation
-      st.scroll += (st.targetScroll - st.scroll) * 0.05;
+      st.scroll += (st.targetScroll - st.scroll) * 0.08;
       const scroll = st.scroll;
       const portrait = sizes.width / sizes.height < 0.9;
+
+      // Dojang continuous scroll-driven timeline:
+      // story: 0.000 to 3.000 across the four chapters over scroll in [0, 0.82]
+      const story = Math.min(3, (scroll / 0.82) * 3);
+      // q: 0.000 to 1.000 exit climax push-in zoom over scroll in [0.82, 1.00]
+      const q = Math.max(0, Math.min(1, (scroll - 0.82) / 0.18));
+
+      if (stage) {
+        stage.style.setProperty("--s", story.toFixed(3));
+        stage.style.setProperty("--q", q.toFixed(4));
+        stage.style.setProperty("--scroll", scroll.toFixed(4));
+      }
+
+      // Discrete chapter indicator update (only fires on index boundary changes)
+      const storyNow = Math.min(3, Math.max(0, Math.round(story)));
+      if (storyNow !== lastStoryRef.current) {
+        lastStoryRef.current = storyNow;
+        setActiveSlide(storyNow);
+      }
 
       // Gentle mouse tilt
       modelPivot.rotation.y = st.mouseX * 0.25;
       modelPivot.rotation.x = st.mouseY * 0.15;
 
-      // Sparks motion
+      // Sparks motion (accelerates into hyperspace during q climax exit)
       const vel = Math.abs(st.targetScroll - scroll);
-      const mult = 1 + vel * 9 + st.boost * 3;
-      const turb = vel * 0.8 + st.boost * 0.4;
+      const mult = 1 + vel * 9 + st.boost * 3 + q * q * 18;
+      const turb = vel * 0.8 + st.boost * 0.4 + q * 1.5;
       for (let i = 0; i < sparkCount; i++) {
         const k = i * 3;
         const d = sparkData[i];
@@ -622,22 +639,39 @@ export default function LandingShowtimeHero() {
       if (posAttr) posAttr.needsUpdate = true;
       st.boost = Math.max(0, st.boost - dt * 1.2);
 
-      // Camera 360 degree orbit around the bronze statue
-      const phi = scroll * Math.PI * 2;
-      const y = 0.35 + Math.sin(scroll * Math.PI) * 0.8;
-      const radius = (4.2 - Math.sin(scroll * Math.PI) * 0.6) * (portrait ? 1.7 : 1);
+      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.82)
+      const orbitT = Math.min(1, scroll / 0.82);
+      const phi = orbitT * Math.PI * 2;
+      const y = 0.35 + Math.sin(orbitT * Math.PI) * 0.8;
+      const radius = (4.2 - Math.sin(orbitT * Math.PI) * 0.6) * (portrait ? 1.7 : 1);
       targetPos.set(radius * Math.sin(phi), y, radius * Math.cos(phi));
-      const tp = Math.min(1, scroll / 0.28);
+      const tp = Math.min(1, orbitT / 0.28);
       const ease = (Math.cos(tp * Math.PI) + 1) * 0.5;
 
-      const g = (c: number, w = 0.1) => Math.exp(-Math.pow((scroll - c) / w, 2));
+      const g = (c: number, w = 0.1) => Math.exp(-Math.pow((orbitT - c) / w, 2));
       const shift = portrait
         ? 0
         : Math.max(-0.28, Math.min(0.28, 0.17 * ease + 0.27 * g(0.34) - 0.2 * g(0.62) + 0.2 * g(0.95, 0.12)));
       camera.setViewOffset(sizes.width, sizes.height, -shift * sizes.width, 0, sizes.width, sizes.height);
       lookAt.set(0, portrait ? -1.75 : -0.15, 0);
-      camera.position.lerp(targetPos, 0.05);
+
+      // Dojang Exit: Camera pushes through towards/past the statue into the dark stage light
+      if (q > 0) {
+        const forward = new THREE.Vector3().subVectors(lookAt, targetPos).normalize();
+        const pushDist = q * q * 4.6;
+        targetPos.addScaledVector(forward, pushDist);
+        bulbLight.intensity = 1 + q * 6 + st.boost * 4;
+      } else {
+        bulbLight.intensity = 1 + st.boost * 4;
+      }
+
+      camera.position.lerp(targetPos, 0.08);
       camera.lookAt(lookAt);
+
+      // Canvas fade at climax exit
+      if (canvas) {
+        canvas.style.opacity = String(Math.max(0, 1 - q * q * 1.8));
+      }
 
       // Head keeps an eye on camera
       camLocal.copy(camera.position);
@@ -652,8 +686,8 @@ export default function LandingShowtimeHero() {
       // Squash spring on poke
       st.sqV += (-170 * st.sq - 11 * st.sqV) * dt;
       st.sq += st.sqV * dt;
-      const q = Math.max(-0.6, Math.min(0.6, st.sq * 0.16));
-      head.scale.set(1 - q * 0.55, 1 + q, 1 - q * 0.55);
+      const squash = Math.max(-0.6, Math.min(0.6, st.sq * 0.16));
+      head.scale.set(1 - squash * 0.55, 1 + squash, 1 - squash * 0.55);
 
       // Blinking & slight smile
       st.nextBlink -= dt;
@@ -691,19 +725,17 @@ export default function LandingShowtimeHero() {
     };
   }, []);
 
-  const currentChapter = CHAPTERS[activeSlide] ?? CHAPTERS[0]!;
-
   return (
     <div
       ref={runwayRef}
-      className="relative w-full h-[450vh] bg-black text-white font-sans selection:bg-[#ffc53d]/30 selection:text-[#ffc53d]"
+      className="haha-runway text-white font-sans selection:bg-[#ffc53d]/30 selection:text-[#ffc53d]"
     >
-      {/* STICKY 100VH FULL-BLEED STAGE (Pins while scrolling 450vh runway) */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      {/* STICKY 100VH FULL-BLEED STAGE (Dojang Runway Architecture) */}
+      <div ref={stageRef} className="haha-stage">
         {/* Fullscreen 3D WebGL Canvas */}
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full z-0 block cursor-crosshair outline-none"
+          className="absolute inset-0 w-full h-full z-0 block cursor-crosshair outline-none transition-opacity duration-150"
           aria-label="The Straight Man 3D bronze statue on stage"
         />
 
@@ -718,7 +750,7 @@ export default function LandingShowtimeHero() {
           </div>
         )}
 
-        {/* Minimalist Editorial Chapter Stepper on Right (NO pulsing dots) */}
+        {/* Minimalist Editorial Chapter Stepper on Right */}
         <div className="absolute right-8 top-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col gap-6 select-none pointer-events-none">
           {CHAPTERS.map((ch, i) => (
             <div
@@ -745,60 +777,70 @@ export default function LandingShowtimeHero() {
 
         {/* Editorial Text Overlay: Left Half */}
         <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-end p-[clamp(24px,5vw,72px)] pb-16 max-w-[1440px] mx-auto">
-          <div className="max-w-xl pointer-events-auto space-y-4">
-            {/* Clean Monospace Category Kicker (NO pills, NO dots) */}
-            <div className="font-mono text-xs uppercase tracking-[0.28em] text-[#ffc53d] font-semibold">
-              {currentChapter.num} / {currentChapter.tag}
+          <div className="haha-story-col max-w-xl pointer-events-auto">
+            <div className="relative w-full min-h-[320px]">
+              {CHAPTERS.map((ch, i) => {
+                const isCurrent = activeSlide === i;
+                return (
+                  <div
+                    key={i}
+                    data-story-step={i}
+                    className={`haha-story-item ${i === 0 ? "relative" : "absolute inset-0"}`}
+                    style={{ "--n": i } as React.CSSProperties}
+                    aria-hidden={!isCurrent}
+                  >
+                    {/* Clean Monospace Category Kicker */}
+                    <div className="font-mono text-xs uppercase tracking-[0.28em] text-[#ffc53d] font-semibold mb-3">
+                      {ch.num} / {ch.tag}
+                    </div>
+
+                    {/* Editorial Display Headline */}
+                    <h2 className="display-serif text-5xl sm:text-7xl lg:text-8xl text-white font-bold tracking-tight leading-[0.95] mb-4">
+                      {ch.titleLead}
+                      <em className="italic text-[#ffc53d]">{ch.titleEm}</em>
+                    </h2>
+
+                    {/* Narrative Paragraph */}
+                    <p className="text-base sm:text-lg text-zinc-300 leading-relaxed font-light mb-6">
+                      {ch.desc}
+                    </p>
+
+                    {/* Launch App CTAs (Chapter 04 and Chapter 01) */}
+                    {i === 3 ? (
+                      <div className="flex flex-wrap items-center gap-4 pt-2">
+                        <Link
+                          href="/app?tab=stage"
+                          className="inline-flex items-center justify-center rounded-full bg-[#ffc53d] hover:bg-[#ffd875] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)]"
+                        >
+                          Take The Stage
+                        </Link>
+                        <Link
+                          href="/app?tab=vault"
+                          className="inline-flex items-center justify-center rounded-full border border-white/20 hover:border-white/50 bg-[#12121a]/80 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-200 backdrop-blur-md transition-all duration-200 hover:text-white"
+                        >
+                          Explore Joke Vault
+                        </Link>
+                      </div>
+                    ) : i === 0 ? (
+                      <div className="flex flex-wrap items-center gap-4 pt-2">
+                        <Link
+                          href="/app?tab=stage"
+                          className="inline-flex items-center justify-center rounded-full bg-[#ffc53d] hover:bg-[#ffd875] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)]"
+                        >
+                          Launch App · Take The Stage
+                        </Link>
+                        <Link
+                          href="/app?tab=vault"
+                          className="inline-flex items-center justify-center rounded-full border border-white/20 hover:border-white/50 bg-[#12121a]/80 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-300 backdrop-blur-md transition-all duration-200 hover:text-white"
+                        >
+                          Explore Vault
+                        </Link>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Editorial Display Headline */}
-            <h1 className="display-serif text-5xl sm:text-7xl lg:text-8xl text-white font-bold tracking-tight leading-[0.95]">
-              <SplitChars
-                parts={[
-                  { text: currentChapter.titleLead },
-                  { text: currentChapter.titleEm, em: true },
-                ]}
-                active={true}
-              />
-            </h1>
-
-            {/* Narrative Paragraph */}
-            <p className="text-base sm:text-lg text-zinc-300 leading-relaxed font-light pt-1">
-              {currentChapter.desc}
-            </p>
-
-            {/* Launch App CTAs (Chapter 04 and Chapter 01) */}
-            {activeSlide === 3 ? (
-              <div className="flex flex-wrap items-center gap-4 pt-4">
-                <Link
-                  href="/app?tab=stage"
-                  className="inline-flex items-center justify-center rounded-full bg-[#ffc53d] hover:bg-[#ffd875] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)]"
-                >
-                  Take The Stage
-                </Link>
-                <Link
-                  href="/app?tab=vault"
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 hover:border-white/50 bg-[#12121a]/80 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-200 backdrop-blur-md transition-all duration-200 hover:text-white"
-                >
-                  Explore Joke Vault
-                </Link>
-              </div>
-            ) : activeSlide === 0 ? (
-              <div className="flex flex-wrap items-center gap-4 pt-4">
-                <Link
-                  href="/app?tab=stage"
-                  className="inline-flex items-center justify-center rounded-full bg-[#ffc53d] hover:bg-[#ffd875] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)]"
-                >
-                  Launch App · Take The Stage
-                </Link>
-                <Link
-                  href="/app?tab=vault"
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 hover:border-white/50 bg-[#12121a]/80 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-300 backdrop-blur-md transition-all duration-200 hover:text-white"
-                >
-                  Explore Vault
-                </Link>
-              </div>
-            ) : null}
           </div>
         </div>
       </div>
