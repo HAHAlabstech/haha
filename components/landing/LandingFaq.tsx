@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { HelpCircle, ChevronDown, ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 
 interface FaqItem {
   q: string;
@@ -11,24 +10,44 @@ interface FaqItem {
 
 const FAQS: FaqItem[] = [
   {
+    q: "What is HAHA and how does it work?",
+    a: "HAHA is an open comedy club and adversarial AI alignment lab. Comedians walk up to the mic and deliver jokes, deadpan observations, and double entendres designed to stump the Straight Man AI. When a bit passes the AI's literal filter, it enters a blind human crowd quorum. Verified wins earn real USDG rewards daily from the Tip Jar.",
+  },
+  {
     q: "How does a comedian get paid?",
     a: "When your bit beats the Straight Man and gets verified by the blind Crowd jury (≥60% consensus), it qualifies for that day's Tip Jar distribution. At midnight UTC, rewards are compiled into a Merkle root on Robinhood Chain, allowing you to claim real USDG tokens directly to your wallet.",
   },
   {
+    q: "What does it cost to play (Open Mic vs Pro Stage)?",
+    a: "Open Mic is 100% free: every creator receives 5 free bits recharged every 24 hours against the baseline Straight Man model (1.0× reward weight). Pro Stage lets you stake for 2.5× reward weight against the full Straight Man reasoning engine with retrieval from previous seasons.",
+  },
+  {
+    q: "Who are the Crowd and how is jury judging kept fair?",
+    a: "Verified human jurors judge blind: two answers are displayed side-by-side with zero author or AI labels. Jurors must pass a 10-case blind calibration quiz (8/10 pass requirement) and maintain a minimum stake in $HAHA. Random honeypots and consensus checks prevent bot collusion, and dishonest accounts forfeit their stake.",
+  },
+  {
     q: "Why is human humor valuable enough for AI labs to license?",
-    a: "Current frontier models are trained on internet scrapes where obvious patterns predominate. They frequently fail at irony, deadpan subtext, and cultural nuance. The Joke Vault provides high-signal, human-verified adversarial data that helps AI labs benchmark and align complex reasoning models.",
+    a: "Current frontier LLMs are trained on internet scrapes where obvious patterns predominate. They frequently fail at irony, deadpan subtext, cultural nuance, and comedic timing. The Joke Vault provides high-signal, human-verified adversarial data that AI labs license to benchmark and align complex reasoning models.",
   },
   {
-    q: "What is the difference between Open Mic and Pro Stage?",
-    a: "Open Mic gives every creator 5 free bits per day against a weakened Straight Man baseline model (1.0× reward weight). Pro Stage lets you stake for 2.5× reward weight against the full Straight Man reasoning engine with retrieval from previous seasons.",
+    q: "What is the Joke Vault & lifetime royalties?",
+    a: "Every verified bit becomes provenance-signed, immutable data in the Joke Vault. When frontier AI labs license datasets from the Vault, revenue flows directly back: 30% to replenish the Tip Jar pool, 20% to Mic Drop burns, and 10% perpetual royalties to the original contributing comedians forever.",
   },
   {
-    q: "How does HAHA prevent bots and sybil attacks on the Crowd jury?",
-    a: "Jurors must complete a 10-case blind onboarding quiz (8/10 pass requirement) and maintain a minimum stake in $HAHA. Voting is strictly blind: two answers are displayed side-by-side with zero author or AI labels. Honeypot bits are randomly inserted into the queue, and dishonest or automated accounts forfeit their stake.",
+    q: "What is a Mic Drop ($HAHA buyback & burn)?",
+    a: "The 20% protocol fee that automatically buys $HAHA on Robinhood Chain and burns it permanently — verifiable on-chain in the Tip Jar and contract telemetry.",
+  },
+  {
+    q: "Can I appeal a verdict?",
+    a: "Yes, once per bit, for bombed or heckled-off bits only. A fresh jury of 7 retries it; winning restores reputation, while losing costs a point to prevent spam.",
   },
   {
     q: "Which blockchain and wallet do I need?",
     a: "HAHA operates natively on Robinhood Chain (Testnet 46630 now, Mainnet 4663 at launch). Any EIP-6963 browser wallet (MetaMask, Coinbase Wallet, Rabby, etc.) connects seamlessly with zero seed phrases leaving your device.",
+  },
+  {
+    q: "Is this financial advice or guaranteed income?",
+    a: "No. Rewards vary and depend entirely on the daily Tip Jar pool and consensus results. Nothing on this platform promises any guaranteed amount, and nothing here is financial advice.",
   },
 ];
 
@@ -45,7 +64,7 @@ export default function LandingFaq() {
         <h2 className="display-serif text-3xl sm:text-5xl text-[#f4f4f5] tracking-tight">
           Common Questions from <em>the Crowd.</em>
         </h2>
-        <p className="mt-4 text-base sm:text-lg text-zinc-400 leading-relaxed">
+        <p className="mt-4 text-base sm:text-lg text-zinc-400 leading-relaxed font-light">
           Everything you need to know about taking the stage, judging blind, and claiming USDG rewards.
         </p>
       </div>
@@ -88,28 +107,6 @@ export default function LandingFaq() {
             </div>
           );
         })}
-      </div>
-
-      {/* Box Office Link Card */}
-      <div className="mt-12 max-w-4xl rounded-xl border border-white/10 bg-[#0c0c12] p-6 flex flex-wrap items-center justify-between gap-4 text-sm text-zinc-400">
-        <span>Looking for detailed protocol specs and edge cases?</span>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/faq"
-            className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wider text-[#ffc53d] hover:text-white transition-colors"
-          >
-            <span>Full FAQ Archive</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
-          <span className="text-zinc-600">|</span>
-          <Link
-            href="/rules"
-            className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wider text-zinc-300 hover:text-white transition-colors"
-          >
-            <span>House Rules</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
       </div>
     </section>
   );

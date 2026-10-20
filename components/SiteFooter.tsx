@@ -45,20 +45,20 @@ export default function SiteFooter() {
         <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.08] pt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-zinc-400">
           <span>&copy; HAHA &middot; Season 01 &middot; The Straight Man &amp; The Joke Vault</span>
           <nav className="flex flex-wrap gap-5" aria-label="Footer">
-            <Link href="/rules" className="hover:text-[#ffc53d] transition-colors">
-              Rules
+            <Link href="/#how-it-works" className="hover:text-[#ffc53d] transition-colors">
+              How It Works
             </Link>
-            <Link href="/faq" className="hover:text-[#ffc53d] transition-colors">
+            <Link href="/#waveform" className="hover:text-[#ffc53d] transition-colors">
+              The Science
+            </Link>
+            <Link href="/#vault" className="hover:text-[#ffc53d] transition-colors">
+              Joke Vault
+            </Link>
+            <Link href="/#faq" className="hover:text-[#ffc53d] transition-colors">
               FAQ
             </Link>
-            <Link href="/vault/method" className="hover:text-[#ffc53d] transition-colors">
-              Methodology
-            </Link>
-            <Link href="/seasons" className="hover:text-[#ffc53d] transition-colors">
-              Seasons
-            </Link>
-            <Link href="/producers" className="hover:text-[#ffc53d] transition-colors">
-              Producers
+            <Link href="/app?tab=stage" className="hover:text-[#ffc53d] transition-colors">
+              App Console
             </Link>
           </nav>
           <span className="text-zinc-500">Good night &middot; Drive safe &middot; Tip your waitstaff</span>

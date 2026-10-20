@@ -21,7 +21,7 @@ const NAV_LINKS = [
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/#waveform", label: "The Science" },
   { href: "/#vault", label: "Joke Vault" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 export default function SiteNav() {
