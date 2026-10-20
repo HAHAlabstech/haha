@@ -44,14 +44,14 @@ export default function VaultTerminal() {
       {/* Ambient Luxury Vault Background Texture */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20 mix-blend-screen"
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-35 mix-blend-screen"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/landing/bg-vault.jpg"
           alt=""
           loading="lazy"
-          className="w-full h-full object-cover object-center filter saturate-[0.8] brightness-[0.65]"
+          className="w-full h-full object-cover object-center filter saturate-[1.05] contrast-[1.1]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#070709] via-transparent to-[#070709]" />
       </div>

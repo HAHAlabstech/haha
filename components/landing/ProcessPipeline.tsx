@@ -385,16 +385,16 @@ export default function ProcessPipeline() {
         {/* Ambient Computational Monolith Background Texture */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20 mix-blend-screen"
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-45 mix-blend-screen"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/landing/bg-pipeline.jpg"
             alt=""
             loading="lazy"
-            className="w-full h-full object-cover object-center filter saturate-[0.8] brightness-[0.7]"
+            className="w-full h-full object-cover object-center filter saturate-[1.1] contrast-[1.15]"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050508] via-transparent to-[#050508]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050508] via-transparent via-transparent to-[#050508]" />
         </div>
 
         {/* Pinned Top Navigation Header */}

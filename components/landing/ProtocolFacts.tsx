@@ -49,16 +49,16 @@ export default function ProtocolFacts({
       {/* Ambient Spectrogram Acoustic Waves Texture */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20 mix-blend-screen"
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-50 mix-blend-screen"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/landing/bg-spectrogram.jpg"
           alt=""
           loading="lazy"
-          className="w-full h-full object-cover object-center filter saturate-[0.85] brightness-[0.7]"
+          className="w-full h-full object-cover object-center filter saturate-[1.2] brightness-[1.2] contrast-[1.2]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070709] via-transparent to-[#070709]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070709] via-transparent via-transparent to-[#070709]" />
       </div>
 
       {/* Ambient Stage Spotlight */}
