@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Wallet } from "lucide-react";
+import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
+import { KNOWN_WALLETS } from "@/lib/known-wallets";
 import type {
   Eip1193Provider,
   Eip6963ProviderDetail,
@@ -150,6 +152,7 @@ export default function WalletModal({
           account: accs[0] ?? null,
           provider: entry.provider,
           label: entry.label,
+          icon: entry.detail?.info?.icon ?? null,
         });
         if (accs[0]) {
           await ensureSiweSession(entry.provider, accs[0]).catch(() => {});
@@ -206,7 +209,7 @@ export default function WalletModal({
         className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center p-1 bg-[#121218] border border-white/10 shadow-[0_0_15px_rgba(255,197,61,0.2)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -217,7 +220,14 @@ export default function WalletModal({
               />
             </div>
             <div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">Box Office · EIP-6963</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">Box Office</span>
+                <span className="text-zinc-600">·</span>
+                <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-zinc-300">
+                  <RobinhoodLogoMark size={12} color="#ffc53d" />
+                  <span>Robinhood Chain</span>
+                </span>
+              </div>
               <h2 className="display-serif text-2xl text-white font-bold">
                 Connect <em className="text-[#ffc53d]">wallet.</em>
               </h2>
@@ -227,18 +237,15 @@ export default function WalletModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="pill-btn"
+            className="pill-btn cursor-pointer"
             style={{ padding: "6px 12px" }}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
         <p className="mb-5 text-sm leading-relaxed text-zinc-400">
-          {runtime
-            ? `HAHA runs on ${runtime.chainName} (Chain ${runtime.chainId}).`
-            : "Loading network info…"}{" "}
-          Sign in with your wallet to take the stage, judge in the Crowd, or
-          claim Tip Jar payouts.
+          Sign in with your Web3 wallet on Robinhood Chain to take the stage,
+          cast blind verdicts in the Crowd, or claim Tip Jar USDG rewards.
         </p>
 
         {firstAccount && activeLabel ? (
@@ -278,20 +285,111 @@ export default function WalletModal({
         ) : null}
 
         <div className="space-y-2.5">
-          {entries.map((entry) => (
-            <button
-              key={entry.label}
-              type="button"
-              disabled={busy !== null}
-              onClick={() => void connectEntry(entry)}
-              className="flex w-full items-center justify-between rounded-xl border border-[#efe8dc]/12 bg-[#1c1611] px-4 py-3.5 text-left text-sm text-[#efe8dc] transition hover:border-[#ffb13b] hover:bg-[#ffb13b]/10 disabled:opacity-50"
-            >
-              <span className="font-medium">{entry.label}</span>
-              <span className="font-mono text-[11px] uppercase tracking-widest text-[#ffb13b]">
-                {busy === entry.label ? "Signing…" : "Connect →"}
-              </span>
-            </button>
-          ))}
+          {((): React.ReactNode => {
+            // Veil-style catalog: well-known wallets with logos — detected
+            // ones are active connect rows, the rest are install links.
+            const catalogRows = KNOWN_WALLETS.map((w) => {
+              const entry =
+                entries.find((e) => {
+                  const slug = (
+                    (e.detail?.info.rdns ?? "") +
+                    " " +
+                    (e.detail?.info.name ?? "") +
+                    " " +
+                    e.label
+                  ).toLowerCase();
+                  return w.match.some((m) => slug.includes(m));
+                }) ?? null;
+              return { wallet: w, entry };
+            });
+            const claimed = new Set(
+              catalogRows
+                .filter((r) => r.entry)
+                .map((r) => entries.indexOf(r.entry as ProviderEntry)),
+            );
+            const extraEntries = entries.filter((_, i) => !claimed.has(i));
+            const hasAny = entries.length > 0;
+            return (
+              <>
+                {catalogRows.map(({ wallet: w, entry }) =>
+                  entry ? (
+                    <button
+                      key={w.id}
+                      type="button"
+                      disabled={busy !== null}
+                      onClick={() => void connectEntry(entry)}
+                      className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#12121a] px-4 py-3 text-left text-sm text-[#f4f4f7] transition hover:border-[#ffc53d]/50 hover:bg-[#ffc53d]/5 disabled:opacity-50 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[#070709] border border-white/10 flex items-center justify-center p-1.5 overflow-hidden shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={entry.detail?.info.icon || w.icon}
+                            alt={w.name}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <span className="font-medium text-white">{entry.label}</span>
+                      </div>
+                      <span
+                        className={`font-mono text-[11px] uppercase tracking-widest font-semibold ${
+                          busy === entry.label
+                            ? "text-[#ffc53d]"
+                            : "text-[#ffc53d]"
+                        }`}
+                      >
+                        {busy === entry.label ? "Signing…" : "Detected"}
+                      </span>
+                    </button>
+                  ) : (
+                    <a
+                      key={w.id}
+                      href={w.installUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-between rounded-xl border border-dashed border-white/10 bg-transparent px-4 py-3 text-left text-sm transition hover:border-white/25"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 flex items-center justify-center shrink-0 opacity-50 grayscale">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={w.icon} alt={w.name} className="w-6 h-6 object-contain" />
+                        </div>
+                        <span className="font-medium text-zinc-500">{w.name}</span>
+                      </div>
+                      <span className="font-mono text-[11px] uppercase tracking-widest text-zinc-500">
+                        Install ↗
+                      </span>
+                    </a>
+                  )
+                )}
+                {/* Raw EIP-6963 providers not covered by the catalog */}
+                {extraEntries.map((entry) => (
+                  <button
+                    key={`extra-${entry.label}`}
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={() => void connectEntry(entry)}
+                    className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#12121a] px-4 py-3 text-left text-sm text-[#f4f4f7] transition hover:border-[#ffc53d]/50 hover:bg-[#ffc53d]/5 disabled:opacity-50 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-[#070709] border border-white/10 flex items-center justify-center p-1.5 overflow-hidden shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        {entry.detail?.info.icon ? (
+                          <img src={entry.detail.info.icon} alt="" className="w-full h-full object-contain" />
+                        ) : (
+                          <Wallet className="w-4 h-4 text-[#ffc53d]" />
+                        )}
+                      </div>
+                      <span className="font-medium text-white">{entry.label}</span>
+                    </div>
+                    <span className="font-mono text-[11px] uppercase tracking-widest text-[#ffc53d] font-semibold">
+                      {busy === entry.label ? "Signing…" : hasAny ? "Detected" : "Connect →"}
+                    </span>
+                  </button>
+                ))}
+              </>
+            );
+          })()}
         </div>
 
         <div className="mt-4 flex items-center justify-between">

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import { truncateAddress } from "@/lib/wallets";
+import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
 
 interface VaultSummary {
   verified: number;
@@ -279,8 +280,9 @@ export default function VaultView() {
               <p className="display-serif mt-3 text-4xl text-[#fff6ed]">
                 {snapshots.length} Published Epochs
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Dataset releases are cryptographically anchored on Robinhood Chain Testnet every Sunday.
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400 flex items-center gap-2">
+                <RobinhoodLogoMark size={14} color="#ffc53d" />
+                <span>Dataset releases are cryptographically anchored on Robinhood Chain Testnet every Sunday.</span>
               </p>
             </div>
             <div className="mt-6 border-t border-white/10 pt-4 font-mono text-xs text-[#ffc53d]">

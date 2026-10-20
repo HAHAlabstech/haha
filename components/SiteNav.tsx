@@ -3,19 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  Mic,
-  ArrowUpRight,
-  Menu,
-  X,
-  Wallet,
-} from "lucide-react";
-import WalletModal from "./WalletModal";
-import {
-  getSharedWalletState,
-  subscribeWalletState,
-  truncateAddress,
-} from "@/lib/wallets";
+import { Mic, ArrowUpRight, Menu, X } from "lucide-react";
+import WalletMenu from "./WalletMenu";
 
 const NAV_LINKS = [
   { href: "/#how-it-works", label: "How It Works" },
@@ -26,19 +15,8 @@ const NAV_LINKS = [
 
 export default function SiteNav() {
   const pathname = usePathname();
-  const [modalOpen, setModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [accounts, setAccounts] = useState<string[]>([]);
-  const first = accounts[0] ?? null;
-
-  useEffect(() => {
-    const initial = getSharedWalletState();
-    if (initial.account) setAccounts([initial.account]);
-    return subscribeWalletState((st) => {
-      setAccounts(st.account ? [st.account] : []);
-    });
-  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -100,21 +78,8 @@ export default function SiteNav() {
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-3">
-            {/* Connect Wallet Button */}
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-[#12121a]/80 hover:bg-white/10 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-300 hover:text-white transition-all backdrop-blur-md shadow-sm"
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  first
-                    ? "bg-[#ffc53d] shadow-[0_0_8px_rgba(255,197,61,0.6)]"
-                    : "bg-zinc-500"
-                }`}
-              />
-              <span>{first ? truncateAddress(first) : "Connect"}</span>
-            </button>
+            {/* Wallet Menu (logo + address + balances + disconnect) */}
+            <WalletMenu />
 
             {/* Launch App Primary CTA */}
             <Link
@@ -167,13 +132,6 @@ export default function SiteNav() {
           </div>
         )}
       </header>
-
-      {/* Wallet Connection Modal */}
-      <WalletModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onConnected={(accs) => setAccounts(accs)}
-      />
     </>
   );
 }

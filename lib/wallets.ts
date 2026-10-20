@@ -222,11 +222,14 @@ export interface SharedWalletState {
   account: string | null;
   provider: Eip1193Provider | null;
   label: string | null;
+  /** EIP-6963 wallet icon (data URL) captured at connect time. */
+  icon: string | null;
   sessionToken: string | null;
 }
 
 const STORAGE_ACCOUNT_KEY = "haha_wallet_account";
 const STORAGE_LABEL_KEY = "haha_wallet_label";
+const STORAGE_ICON_KEY = "haha_wallet_icon";
 const STORAGE_SESSION_KEY = "haha_session_token";
 const WALLET_EVENT = "haha:wallet-changed";
 
@@ -234,6 +237,7 @@ const sharedState: SharedWalletState = {
   account: null,
   provider: null,
   label: null,
+  icon: null,
   sessionToken: null,
 };
 
@@ -251,6 +255,12 @@ function hydrateFromStorage() {
     }
     if (lbl) sharedState.label = lbl;
     if (tok) sharedState.sessionToken = tok;
+    try {
+      const icon = window.localStorage.getItem(STORAGE_ICON_KEY);
+      if (icon) sharedState.icon = icon;
+    } catch {
+      // ignore storage errors
+    }
   } catch {
     // ignore storage errors
   }
@@ -276,6 +286,9 @@ export function setSharedWalletState(
   if ("label" in partial) {
     sharedState.label = partial.label ?? null;
   }
+  if ("icon" in partial) {
+    sharedState.icon = partial.icon ?? null;
+  }
   if ("sessionToken" in partial) {
     sharedState.sessionToken = partial.sessionToken ?? null;
   }
@@ -290,6 +303,11 @@ export function setSharedWalletState(
         window.localStorage.setItem(STORAGE_LABEL_KEY, sharedState.label);
       } else {
         window.localStorage.removeItem(STORAGE_LABEL_KEY);
+      }
+      if (sharedState.icon) {
+        window.localStorage.setItem(STORAGE_ICON_KEY, sharedState.icon);
+      } else {
+        window.localStorage.removeItem(STORAGE_ICON_KEY);
       }
       if (sharedState.sessionToken) {
         window.localStorage.setItem(
@@ -466,5 +484,21 @@ export function authHeaders(
 ): Record<string, string> {
   const t = token ?? getSharedWalletState().sessionToken;
   return t ? { "x-haha-session": t } : {};
+}
+
+/**
+ * Disconnect locally: clear the shared wallet state, SIWE session token,
+ * and any stored icon, then broadcast the change. The wallet extension
+ * itself stays connected (mirrors the veil-style `clearWallet` flow) —
+ * this only makes the app forget the session.
+ */
+export function disconnectWallet(): void {
+  setSharedWalletState({
+    account: null,
+    provider: null,
+    label: null,
+    icon: null,
+    sessionToken: null,
+  });
 }
 

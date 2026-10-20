@@ -1,6 +1,7 @@
 "use client";
 
 import { Activity, ShieldCheck, Database, Award } from "lucide-react";
+import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
 
 interface ProtocolFactsProps {
   dailyPoolUSDG?: string;
@@ -76,8 +77,13 @@ export default function ProtocolFacts({
           <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
             Live on-chain metrics. <em className="italic text-[#ffc53d]">Audited in real-time.</em>
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-zinc-400 font-light leading-relaxed">
-            Every submission, blind jury quorum, and settlement pool is recorded on Robinhood Chain testnet with verifiable state transitions.
+          <p className="mt-4 text-base sm:text-lg text-zinc-400 font-light leading-relaxed flex items-center gap-2 flex-wrap">
+            <span>Every submission, blind jury quorum, and settlement pool is recorded on</span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-white/10 bg-white/5 font-mono text-xs text-white">
+              <RobinhoodLogoMark size={13} color="#ffc53d" />
+              <span>Robinhood Chain</span>
+            </span>
+            <span>testnet with verifiable state transitions.</span>
           </p>
         </div>
 

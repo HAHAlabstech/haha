@@ -23,7 +23,7 @@ export function scrollToId(id: string): boolean {
   const el = document.getElementById(id);
   if (!el) return false;
   if (lenis) {
-    lenis.scrollTo(el, { duration: 1.4, easing: easeOutQuart });
+    lenis.scrollTo(el, { duration: 1.2, offset: -88, easing: easeOutQuart });
     wake();
     return true;
   }
@@ -78,10 +78,40 @@ export default function SmoothScroll() {
         window.addEventListener("keydown", wake, { passive: true });
         window.addEventListener("scroll", wake, { passive: true });
 
+        const onAnchorClick = (e: MouseEvent) => {
+          const target = (e.target as HTMLElement)?.closest("a");
+          if (!target) return;
+          const href = target.getAttribute("href");
+          if (!href) return;
+          const hashIndex = href.indexOf("#");
+          if (hashIndex === -1) return;
+          const path = href.slice(0, hashIndex);
+          const hash = href.slice(hashIndex + 1);
+          if (!hash) return;
+          if (path === "" || path === "/" || (typeof window !== "undefined" && path === window.location.pathname)) {
+            const el = document.getElementById(hash);
+            if (el) {
+              e.preventDefault();
+              window.history.pushState(null, "", `#${hash}`);
+              scrollToId(hash);
+            }
+          }
+        };
+
+        document.addEventListener("click", onAnchorClick, { capture: true });
+
+        if (typeof window !== "undefined" && window.location.hash) {
+          const initialHash = window.location.hash.slice(1);
+          setTimeout(() => {
+            scrollToId(initialHash);
+          }, 350);
+        }
+
         teardown = () => {
           window.removeEventListener("wheel", wake);
           window.removeEventListener("keydown", wake);
           window.removeEventListener("scroll", wake);
+          document.removeEventListener("click", onAnchorClick, { capture: true });
           if (raf) cancelAnimationFrame(raf);
           raf = 0;
           l.destroy();

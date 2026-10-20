@@ -1648,6 +1648,19 @@ body::before {
   box-shadow: 0 0 45px -15px rgba(255, 197, 61, 0.18), 0 30px 60px -25px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
+/* Section scroll margins for smooth navigation under fixed frosted navbar */
+#how-it-works,
+#waveform,
+#vault,
+#faq,
+#telemetry,
+#punchline,
+#subtext,
+#irl,
+#double-meaning {
+  scroll-margin-top: 88px;
+}
+
 /* ==========================================================================
    PINNED PROTOCOL PIPELINE RUNWAY (Dojang FeatureStory Model)
    ========================================================================== */

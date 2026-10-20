@@ -1,6 +1,6 @@
 "use client";
 
-import { Database, Sparkles, Layers, Orbit, Scale, ArrowUpRight, Shield, Coins } from "lucide-react";
+import { Database, Sparkles, Layers, Orbit, Scale, ArrowUpRight, Shield, ShieldCheck, Coins } from "lucide-react";
 import Link from "next/link";
 
 const CATEGORIES = [
@@ -85,7 +85,7 @@ export default function VaultTerminal() {
                 Live Replacement Cost
               </span>
               <span className="font-mono text-[11px] uppercase tracking-wider text-[#ffc53d] font-semibold flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#ffc53d] animate-pulse" />
+                <ShieldCheck className="w-3.5 h-3.5 text-[#ffc53d]" />
                 Audited Metric
               </span>
             </div>
@@ -158,15 +158,15 @@ export default function VaultTerminal() {
           </div>
           <div className="flex flex-wrap items-center gap-6 text-zinc-400">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#ffc53d]" />
+              <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
               <span><b className="text-white">30%</b> to Daily Tip Jar Pool</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-zinc-400" />
+              <span className="w-1.5 h-1.5 rotate-45 bg-zinc-400 inline-block" />
               <span><b className="text-white">20%</b> to $HAHA Permanent Mic Drop Burns</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-white" />
+              <span className="w-1.5 h-1.5 rotate-45 bg-white inline-block" />
               <span><b className="text-white">10%</b> to Contributing Comedian Royalties</span>
             </div>
           </div>

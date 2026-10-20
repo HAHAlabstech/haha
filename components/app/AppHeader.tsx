@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import {
   Mic,
   Users,
@@ -10,14 +9,9 @@ import {
   Trophy,
   ArrowLeft,
   Flame,
-  CheckCircle2,
 } from "lucide-react";
-import WalletModal from "@/components/WalletModal";
-import {
-  getSharedWalletState,
-  subscribeWalletState,
-  truncateAddress,
-} from "@/lib/wallets";
+import WalletMenu from "@/components/WalletMenu";
+import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
 
 export type AppTab = "stage" | "crowd" | "vault" | "tipjar" | "leaderboard";
 
@@ -40,18 +34,6 @@ export default function AppHeader({
   onTabChange,
   dailyPoolUSDG = "2,840",
 }: AppHeaderProps) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [accounts, setAccounts] = useState<string[]>([]);
-  const account = accounts[0] ?? null;
-
-  useEffect(() => {
-    const initial = getSharedWalletState();
-    if (initial.account) setAccounts([initial.account]);
-    return subscribeWalletState((st) => {
-      setAccounts(st.account ? [st.account] : []);
-    });
-  }, []);
-
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-[#070709]/90 backdrop-blur-xl transition-all">
@@ -114,7 +96,7 @@ export default function AppHeader({
             })}
           </nav>
 
-          {/* Right: Network info + Pool + Connect Wallet */}
+          {/* Right: Network info + Pool + Wallet Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Live Pool Pill */}
             <div className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#ffc53d]/25 bg-[#ffc53d]/10 px-3 py-1 font-mono text-[10px] text-[#ffc53d]">
@@ -123,37 +105,16 @@ export default function AppHeader({
             </div>
 
             {/* Network Pill */}
-            <div className="hidden xl:flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-zinc-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#ffc53d] shadow-[0_0_8px_rgba(255,197,61,0.6)]" />
-              <span>Robinhood Chain</span>
+            <div className="hidden xl:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[10px] text-zinc-300">
+              <RobinhoodLogoMark size={14} color="#ffc53d" />
+              <span className="font-semibold tracking-wide text-zinc-200">Robinhood Chain</span>
             </div>
 
-            {/* Wallet Button */}
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="pill-btn cursor-pointer"
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  account
-                    ? "bg-[#ffc53d] shadow-[0_0_8px_rgba(255,197,61,0.6)]"
-                    : "bg-zinc-500"
-                }`}
-              />
-              <span className="text-[11px]">
-                {account ? truncateAddress(account) : "Connect"}
-              </span>
-            </button>
+            {/* Wallet Menu (logo + address + balances + disconnect) */}
+            <WalletMenu />
           </div>
         </div>
       </header>
-
-      <WalletModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onConnected={(accs) => setAccounts(accs)}
-      />
     </>
   );
 }

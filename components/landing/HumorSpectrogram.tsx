@@ -319,7 +319,7 @@ export default function HumorSpectrogram() {
                 {/* Status Chip & Diagnostics */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                   <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#ffc53d]/35 bg-[#ffc53d]/10 font-mono text-xs text-[#ffc53d] font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#ffc53d] shadow-[0_0_6px_#ffc53d]" />
+                    <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] shadow-[0_0_6px_#ffc53d] inline-block" />
                     {curr.chip}
                   </span>
 

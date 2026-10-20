@@ -14,6 +14,7 @@ import {
   Binary,
   Layers,
 } from "lucide-react";
+import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
 
 /* 02 · The Protocol Workflow (How It Works).
    Dojang Pinned Feature Runway Architecture:
@@ -110,7 +111,7 @@ function StageConsoleVisual() {
       {/* Terminal Title Bar */}
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div className="flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#ffc53d] animate-pulse" />
+          <Mic className="w-4 h-4 text-[#ffc53d]" />
           <span className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] font-semibold">
             Stage Console // Performance Terminal
           </span>
@@ -166,7 +167,7 @@ function BlindQuorumVisual() {
       {/* Terminal Title Bar */}
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div className="flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#ffc53d]" />
+          <Users className="w-4 h-4 text-[#ffc53d]" />
           <span className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] font-semibold">
             Blind Quorum // Jury Ballot #742
           </span>
@@ -235,7 +236,7 @@ function SettlementVisual() {
       {/* Terminal Title Bar */}
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div className="flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#ffc53d]" />
+          <RobinhoodLogoMark size={16} color="#ffc53d" />
           <span className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] font-semibold">
             Settlement Engine // Robinhood Chain
           </span>
