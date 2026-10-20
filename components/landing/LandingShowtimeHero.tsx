@@ -583,15 +583,17 @@ export default function LandingShowtimeHero() {
       const portrait = sizes.width / sizes.height < 0.9;
 
       // Dojang continuous scroll-driven timeline:
-      // story: 0.000 to 3.000 across the four chapters over scroll in [0, 0.88]
-      const story = Math.min(3, (scroll / 0.88) * 3);
-      // q: 0.000 to 1.000 exit climax push-in zoom over scroll in [0.88, 1.00]
-      const q = Math.max(0, Math.min(1, (scroll - 0.88) / 0.12));
+      // story: 0.000 to 3.000 across the four chapters over scroll in [0, 0.72]
+      const story = Math.min(3, (scroll / 0.72) * 3);
+      // q: 0.000 to 1.000 exit climax push-in zoom over scroll in [0.72, 1.00]
+      // 0.28 fraction of 200vh scrollable travel = exactly 56vh (--lp-zin)
+      const q = Math.max(0, Math.min(1, (scroll - 0.72) / 0.28));
 
       if (stage) {
         stage.style.setProperty("--s", story.toFixed(3));
         stage.style.setProperty("--q", q.toFixed(4));
         stage.style.setProperty("--scroll", scroll.toFixed(4));
+        stage.style.pointerEvents = q > 0.45 ? "none" : "auto";
       }
 
       // Discrete chapter indicator update (only fires on index boundary changes)
@@ -639,8 +641,8 @@ export default function LandingShowtimeHero() {
       if (posAttr) posAttr.needsUpdate = true;
       st.boost = Math.max(0, st.boost - dt * 1.2);
 
-      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.88)
-      const orbitT = Math.min(1, scroll / 0.88);
+      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.72)
+      const orbitT = Math.min(1, scroll / 0.72);
       const phi = orbitT * Math.PI * 2;
       const y = 0.35 + Math.sin(orbitT * Math.PI) * 0.8;
       const radius = (4.2 - Math.sin(orbitT * Math.PI) * 0.6) * (portrait ? 1.7 : 1);
@@ -658,9 +660,9 @@ export default function LandingShowtimeHero() {
       // Dojang Exit: Camera pushes through towards/past the statue into the dark stage light
       if (q > 0) {
         const forward = new THREE.Vector3().subVectors(lookAt, targetPos).normalize();
-        const pushDist = q * q * 4.6;
+        const pushDist = q * q * 5.4;
         targetPos.addScaledVector(forward, pushDist);
-        bulbLight.intensity = 1 + q * 6 + st.boost * 4;
+        bulbLight.intensity = 1 + q * 8 + st.boost * 4;
       } else {
         bulbLight.intensity = 1 + st.boost * 4;
       }
@@ -668,9 +670,10 @@ export default function LandingShowtimeHero() {
       camera.position.lerp(targetPos, 0.08);
       camera.lookAt(lookAt);
 
-      // Canvas stays visible until seamless unpin handoff to the next section
+      // Canvas fades smoothly as camera dives into stage light, handing off to the overlapping next section
       if (canvas) {
-        canvas.style.opacity = String(Math.max(0.15, 1 - q * 0.45));
+        const alpha = 1 - Math.max(0, (q - 0.4) * 1.7);
+        canvas.style.opacity = String(Math.max(0, Math.min(1, alpha)));
       }
 
       // Head keeps an eye on camera

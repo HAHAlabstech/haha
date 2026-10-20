@@ -1329,7 +1329,7 @@ body::before {
 .haha-runway {
   position: relative;
   width: 100%;
-  height: 280vh;
+  height: 300vh;
   background: #000000;
 }
 
@@ -1346,8 +1346,8 @@ body::before {
 
 .haha-story-col {
   transform-origin: 15% 75%;
-  transform: scale(calc(1 + var(--q, 0) * var(--q, 0) * 3.8));
-  opacity: calc(1 - clamp(0, (var(--q, 0) - 0.35) * 1.8, 1));
+  transform: scale(calc(1 + var(--q, 0) * var(--q, 0) * 4.4));
+  opacity: calc(1 - clamp(0, (var(--q, 0) - 0.22) * 1.9, 1));
   will-change: transform, opacity;
 }
 
@@ -1365,6 +1365,68 @@ body::before {
 
 .haha-story-item[aria-hidden="false"] {
   pointer-events: auto;
+}
+
+/* ==========================================================================
+   THE SCIENCE: SCROLL-DRIVEN OVERLAPPING SPECTROGRAM (Dojang Architecture)
+   ========================================================================== */
+
+.haha-spec-runway {
+  position: relative;
+  width: 100%;
+  z-index: 2;
+}
+
+@media (min-width: 1024px) and (min-height: 680px) {
+  .haha-spec-runway {
+    --lp-zin: 56vh;
+    --zk: 0;
+    --p: 0;
+    margin-top: calc(-100vh - var(--lp-zin));
+    height: calc(300vh + var(--lp-zin));
+    pointer-events: none;
+  }
+
+  .haha-spec-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(var(--topbar-height, 68px) + 0.5rem) clamp(20px, 4vw, 56px) 1.5rem;
+    overflow: clip;
+  }
+
+  .haha-spec-content {
+    opacity: clamp(0, calc((var(--zk) - 0.45) * 1.85), 1);
+    transform: scale(calc(0.72 + 0.28 * var(--zk)));
+    will-change: transform, opacity;
+  }
+
+  .haha-spec-runway[data-live="true"],
+  .haha-spec-runway[data-live="true"] .haha-spec-stage,
+  .haha-spec-runway[data-live="true"] .haha-spec-content {
+    pointer-events: auto;
+  }
+}
+
+@media (max-width: 1023px), (max-height: 679px) {
+  .haha-spec-runway {
+    margin-top: -30vh;
+    height: auto;
+  }
+
+  .haha-spec-stage {
+    position: relative;
+    height: auto;
+    padding: 3rem clamp(20px, 4vw, 56px);
+  }
+
+  .haha-spec-content {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ==========================================================================

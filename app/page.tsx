@@ -54,52 +54,14 @@ export default function HomePage() {
       <LandingShowtimeHero />
 
       {/* =========================================================================
-          TELEMETRY TICKER STRIP
+          THE SCIENCE & TELEMETRY: SCROLL-DRIVEN OVERLAPPING SPECTROGRAM RUNWAY
+          (Dojang Overlapping Runway Architecture: seamless dive out of Hero zoom)
           ========================================================================= */}
-      <section className="relative z-10 border-y border-white/[0.08] bg-[#0c0c12]/90 backdrop-blur-xl py-6 px-[clamp(20px,4vw,56px)]">
-        <div className="max-w-[1440px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="flex flex-col">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-              24h Tip Jar Pool
-            </span>
-            <span className="font-display font-bold text-2xl sm:text-3xl text-white mt-1 tabular-nums">
-              ${dailyPoolUSDG} <span className="text-sm font-mono text-[#ffc53d]">USDG</span>
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-              Verified Performances
-            </span>
-            <span className="font-display font-bold text-2xl sm:text-3xl text-white mt-1 tabular-nums">
-              {bitsTotal} <span className="text-sm font-mono text-zinc-400">Bits</span>
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-              Human Win Rate
-            </span>
-            <span className="font-display font-bold text-2xl sm:text-3xl text-[#ffc53d] mt-1 tabular-nums">
-              {winRate}
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-              AI Contestant
-            </span>
-            <span className="font-display font-bold text-2xl sm:text-3xl text-zinc-200 mt-1">
-              Straight Man <span className="text-xs font-mono text-[#ffc53d]">S1</span>
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          THE SCIENCE: INTERACTIVE HUMOR SPECTROGRAM CURVE
-          ========================================================================= */}
-      <HumorSpectrogram />
+      <HumorSpectrogram
+        dailyPoolUSDG={dailyPoolUSDG}
+        bitsTotal={bitsTotal}
+        winRate={winRate}
+      />
 
       {/* =========================================================================
           THE PROTOCOL: 3-STEP PROCESS PIPELINE

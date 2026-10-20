@@ -72,7 +72,8 @@ jobs:
           script: |
             set -euo pipefail
             cd /srv/haha
-            git pull --ff-only
+            git fetch origin main
+            git reset --hard origin/main
             echo "${{ github.sha }}" > .tag
             export REGISTRY_IMAGE="ghcr.io/hahalabstech/haha-app"
             TAG=${{ github.sha }} docker compose pull app worker
