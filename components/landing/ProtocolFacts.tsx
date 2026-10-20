@@ -70,8 +70,7 @@ export default function ProtocolFacts({
       <div className="max-w-[1440px] mx-auto relative z-10">
         {/* Section Eyebrow & Title */}
         <div className="mb-14 max-w-2xl">
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center gap-2 mb-3">
-            <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
             02 — Protocol Telemetry
           </p>
           <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">

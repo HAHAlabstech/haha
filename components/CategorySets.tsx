@@ -158,7 +158,6 @@ export default function CategorySets() {
         >
           <div className="flex justify-between items-center font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] shadow-[0_0_8px_#ffc53d] inline-block" />
               {hoveredCat?.toUpperCase() ?? "SET"}
             </span>
             <span className="text-zinc-500">SM-01 Telemetry</span>

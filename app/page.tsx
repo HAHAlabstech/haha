@@ -115,8 +115,7 @@ export default function HomePage() {
         />
 
         <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center justify-center gap-2">
-            <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold text-center">
             07 — Open Mic Is Live
           </p>
 

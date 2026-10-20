@@ -66,8 +66,7 @@ export default function VaultTerminal() {
         {/* Header with Title & Stats */}
         <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-end mb-16">
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center gap-2 mb-3">
-              <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
               04 — The Data Engine
             </p>
             <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
@@ -158,15 +157,12 @@ export default function VaultTerminal() {
           </div>
           <div className="flex flex-wrap items-center gap-6 text-zinc-400">
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
               <span><b className="text-white">30%</b> to Daily Tip Jar Pool</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rotate-45 bg-zinc-400 inline-block" />
               <span><b className="text-white">20%</b> to $HAHA Permanent Mic Drop Burns</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rotate-45 bg-white inline-block" />
               <span><b className="text-white">10%</b> to Contributing Comedian Royalties</span>
             </div>
           </div>

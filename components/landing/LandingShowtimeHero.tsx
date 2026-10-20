@@ -793,8 +793,7 @@ export default function LandingShowtimeHero() {
                     aria-hidden={!isCurrent}
                   >
                     {/* Clean Monospace Category Kicker */}
-                    <div className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-2.5 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
+                    <div className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-2.5">
                       {ch.num} / {ch.tag}
                     </div>
 

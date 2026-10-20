@@ -163,8 +163,7 @@ export default function HumorSpectrogram() {
               LEFT COLUMN: EDITORIAL NARRATIVE & STEPPER
               ========================================================================= */}
           <div className="haha-spec-copy">
-            <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold flex items-center gap-2 mb-3">
-              <span className="w-2 h-2 rotate-45 bg-[#ffc53d] inline-block" />
+            <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold mb-3">
               01 — The Science
             </p>
 
@@ -318,8 +317,7 @@ export default function HumorSpectrogram() {
 
                 {/* Status Chip & Diagnostics */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#ffc53d]/35 bg-[#ffc53d]/10 font-mono text-xs text-[#ffc53d] font-semibold">
-                    <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] shadow-[0_0_6px_#ffc53d] inline-block" />
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-[#ffc53d]/35 bg-[#ffc53d]/10 font-mono text-xs text-[#ffc53d] font-semibold">
                     {curr.chip}
                   </span>
 

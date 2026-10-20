@@ -401,8 +401,7 @@ export default function ProcessPipeline() {
         {/* Pinned Top Navigation Header */}
         <div className="relative z-10 flex items-center justify-between w-full border-b border-white/10 pb-3 sm:pb-4 mb-3 sm:mb-6">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
+            <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold">
               03 — The Protocol Workflow
             </span>
             <span className="text-zinc-600 hidden sm:inline">/</span>
