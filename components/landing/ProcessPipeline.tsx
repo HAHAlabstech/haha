@@ -379,14 +379,15 @@ export default function ProcessPipeline() {
       id="how-it-works"
       ref={runwayRef}
       data-mode={mode}
-      className="haha-pipe-runway relative border-t border-white/[0.08] bg-[#070709] text-white"
+      className="haha-pipe-runway relative haha-sec-divider bg-[#050508] text-white"
     >
       <div className="haha-pipe-stage">
         {/* Pinned Top Navigation Header */}
         <div className="flex items-center justify-between w-full border-b border-white/10 pb-3 sm:pb-4 mb-3 sm:mb-6">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold">
-              The Protocol Workflow
+            <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
+              03 — The Protocol Workflow
             </span>
             <span className="text-zinc-600 hidden sm:inline">/</span>
             <span className="font-mono text-xs uppercase tracking-wider text-zinc-400 hidden sm:inline">

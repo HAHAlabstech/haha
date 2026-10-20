@@ -1412,6 +1412,7 @@ body::before {
     padding-top: calc(var(--topbar-height, 68px) + 0.5rem);
     padding-bottom: 2rem;
     overflow: clip;
+    background: radial-gradient(circle 850px at 72% 50%, rgba(255, 197, 61, 0.04), transparent 70%), #070709;
   }
 
   .haha-spec-layout {
@@ -1613,12 +1614,46 @@ body::before {
 }
 
 /* ==========================================================================
+   CONSISTENT STAGE LUXURY DESIGN SYSTEM (Continuity with 3D Showtime Hero)
+   ========================================================================== */
+
+.haha-sec-divider {
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.haha-sec-divider::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 197, 61, 0.35), transparent);
+  pointer-events: none;
+}
+
+.haha-glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)), #0c0c12;
+  box-shadow: 0 30px 60px -25px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+}
+
+.haha-glass-panel:hover {
+  border-color: rgba(255, 197, 61, 0.38);
+  box-shadow: 0 0 45px -15px rgba(255, 197, 61, 0.18), 0 30px 60px -25px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* ==========================================================================
    PINNED PROTOCOL PIPELINE RUNWAY (Dojang FeatureStory Model)
    ========================================================================== */
 
 .haha-pipe-runway {
   position: relative;
   width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: radial-gradient(circle 900px at 70% 50%, rgba(255, 197, 61, 0.035), transparent 75%), #050508;
 }
 .haha-pipe-runway[data-mode="pinned"] {
   height: 340vh;

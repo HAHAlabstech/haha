@@ -55,58 +55,67 @@ export default function LandingFaq() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="relative py-24 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto">
-      {/* Header */}
-      <div className="max-w-3xl mb-16">
-        <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold block mb-3">
-          Box Office FAQ
-        </span>
-        <h2 className="display-serif text-3xl sm:text-5xl text-[#f4f4f5] tracking-tight">
-          Common Questions from <em>the Crowd.</em>
-        </h2>
-        <p className="mt-4 text-base sm:text-lg text-zinc-400 leading-relaxed font-light">
-          Everything you need to know about taking the stage, judging blind, and claiming USDG rewards.
-        </p>
-      </div>
+    <section id="faq" className="relative haha-sec-divider bg-[#070709] py-28 px-[clamp(20px,4vw,56px)] text-white overflow-hidden">
+      {/* Ambient Stage Spotlight */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-1/4 right-1/4 w-[750px] h-[450px] bg-radial from-[#ffc53d]/05 via-transparent to-transparent blur-[140px]"
+      />
 
-      {/* Accordion List */}
-      <div className="max-w-4xl space-y-4">
-        {FAQS.map((faq, idx) => {
-          const isOpen = openIdx === idx;
-          return (
-            <div
-              key={faq.q}
-              className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
-                isOpen
-                  ? "border-[#ffc53d]/30 bg-[#0c0c10]"
-                  : "border-white/10 bg-[#0c0c12]/70 hover:border-white/20"
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => setOpenIdx(isOpen ? null : idx)}
-                className="w-full p-6 text-left flex items-center justify-between gap-4 cursor-pointer"
+      <div className="max-w-[1440px] mx-auto relative z-10">
+        {/* Header */}
+        <div className="max-w-3xl mb-16">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center gap-2 mb-3">
+            <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
+            06 — Box Office FAQ
+          </p>
+          <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
+            Common Questions from <em className="italic text-[#ffc53d]">the Crowd.</em>
+          </h2>
+          <p className="mt-4 text-base sm:text-lg text-zinc-400 leading-relaxed font-light">
+            Everything you need to know about taking the stage, judging blind, and claiming USDG rewards.
+          </p>
+        </div>
+
+        {/* Accordion List */}
+        <div className="max-w-4xl space-y-4">
+          {FAQS.map((faq, idx) => {
+            const isOpen = openIdx === idx;
+            return (
+              <div
+                key={faq.q}
+                className={`haha-glass-panel rounded-2xl transition-all duration-300 overflow-hidden ${
+                  isOpen
+                    ? "border-[#ffc53d]/45 shadow-[0_0_35px_rgba(255,197,61,0.12)]"
+                    : "hover:border-white/20"
+                }`}
               >
-                <span className="font-serif text-xl sm:text-2xl text-[#f4f4f5]">
-                  {faq.q}
-                </span>
-                <span
-                  className={`p-2 rounded-full border border-white/10 bg-white/5 text-zinc-400 transition-transform duration-300 shrink-0 ${
-                    isOpen ? "rotate-180 text-[#ffc53d] border-[#ffc53d]/30" : ""
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => setOpenIdx(isOpen ? null : idx)}
+                  className="w-full p-6 text-left flex items-center justify-between gap-4 cursor-pointer"
                 >
-                  <ChevronDown className="w-4 h-4" />
-                </span>
-              </button>
+                  <span className="font-serif text-xl sm:text-2xl text-white font-normal">
+                    {faq.q}
+                  </span>
+                  <span
+                    className={`p-2.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 transition-transform duration-300 shrink-0 ${
+                      isOpen ? "rotate-180 text-[#ffc53d] border-[#ffc53d]/40 bg-[#ffc53d]/10" : ""
+                    }`}
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </span>
+                </button>
 
-              {isOpen ? (
-                <div className="px-6 pb-6 pt-0 border-t border-white/5 text-sm sm:text-base text-zinc-400 leading-relaxed">
-                  <p className="pt-4">{faq.a}</p>
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
+                {isOpen ? (
+                  <div className="px-6 pb-6 pt-0 border-t border-white/5 text-sm sm:text-base text-zinc-300 leading-relaxed font-light">
+                    <p className="pt-4">{faq.a}</p>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -90,20 +90,22 @@ export default function HomePage() {
       <LandingFaq />
 
       {/* =========================================================================
-          CLIMAX CTA SECTION
+          07 · CLIMAX CTA SECTION
           ========================================================================= */}
-      <section className="relative py-28 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto text-center overflow-hidden">
+      <section className="relative haha-sec-divider bg-[#050508] py-36 px-[clamp(20px,4vw,56px)] text-center overflow-hidden">
+        {/* Ambient Stage Spotlight */}
         <div
           aria-hidden
-          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#ffc53d]/10 blur-[140px] rounded-full"
+          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-radial from-[#ffc53d]/15 via-[#ffc53d]/03 to-transparent blur-[160px] rounded-full"
         />
 
-        <div className="relative z-1 max-w-3xl mx-auto space-y-6">
-          <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold block">
-            Open Mic Is Live
-          </span>
+        <div className="relative z-10 max-w-3xl mx-auto space-y-6">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center justify-center gap-2">
+            <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
+            07 — Open Mic Is Live
+          </p>
 
-          <h2 className="display-serif text-4xl sm:text-6xl text-white tracking-tight leading-[1.05]">
+          <h2 className="display-serif text-4xl sm:text-6xl lg:text-7xl text-white font-bold tracking-tight leading-[1.04]">
             The stage is set. <em className="italic text-[#ffc53d]">Take the mic.</em>
           </h2>
 
@@ -114,7 +116,7 @@ export default function HomePage() {
           <div className="pt-4 flex flex-wrap justify-center gap-4">
             <Link
               href="/app?tab=stage"
-              className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffc53d] to-[#f59e0b] hover:from-[#ffd875] hover:to-[#ffc53d] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_32px_rgba(255,197,61,0.4)]"
+              className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffc53d] to-[#f59e0b] hover:from-[#ffd875] hover:to-[#ffc53d] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_35px_rgba(255,197,61,0.4)]"
             >
               <Mic className="w-4 h-4" />
               <span>Launch App Now</span>
@@ -123,7 +125,7 @@ export default function HomePage() {
 
             <Link
               href="/app?tab=crowd"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#12121a]/80 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-300 backdrop-blur-md transition-all duration-200 hover:bg-white/10 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#12121a]/80 px-7 py-4 font-mono text-xs uppercase tracking-widest text-zinc-300 backdrop-blur-md transition-all duration-200 hover:bg-white/10 hover:text-white"
             >
               <Users className="w-4 h-4" />
               <span>Join As Juror</span>

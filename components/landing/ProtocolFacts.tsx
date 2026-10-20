@@ -45,18 +45,23 @@ export default function ProtocolFacts({
   ];
 
   return (
-    <section className="relative border-t border-white/[0.08] bg-[#070709] py-24 px-[clamp(20px,4vw,56px)] text-white">
-      <div className="max-w-[1440px] mx-auto">
+    <section className="relative haha-sec-divider bg-[#070709] py-28 px-[clamp(20px,4vw,56px)] text-white overflow-hidden">
+      {/* Ambient Stage Spotlight */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-radial from-[#ffc53d]/06 via-transparent to-transparent blur-[120px]"
+      />
+      <div className="max-w-[1440px] mx-auto relative z-10">
         {/* Section Eyebrow & Title */}
-        <div className="mb-12 max-w-2xl">
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold flex items-center gap-2 mb-3">
-            <span className="w-2 h-2 rotate-45 bg-[#ffc53d] inline-block" />
+        <div className="mb-14 max-w-2xl">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center gap-2 mb-3">
+            <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
             02 — Protocol Telemetry
           </p>
-          <h2 className="display-serif text-3xl sm:text-5xl text-white font-bold tracking-tight leading-[1.05]">
+          <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
             Live on-chain metrics. <em className="italic text-[#ffc53d]">Audited in real-time.</em>
           </h2>
-          <p className="mt-3 text-base text-zinc-400 font-light leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg text-zinc-400 font-light leading-relaxed">
             Every submission, blind jury quorum, and settlement pool is recorded on Robinhood Chain testnet with verifiable state transitions.
           </p>
         </div>
@@ -68,16 +73,18 @@ export default function ProtocolFacts({
             return (
               <div
                 key={f.label}
-                className="relative rounded-2xl border border-white/10 bg-gradient-to-b from-[#111116] to-[#0c0c12] p-6 shadow-xl transition-all duration-300 hover:border-[#ffc53d]/40 hover:-translate-y-1"
+                className="haha-glass-panel relative rounded-2xl p-7 flex flex-col justify-between group hover:-translate-y-1"
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-5">
                   <span className="font-mono text-[11px] uppercase tracking-widest text-zinc-400">
                     {`0${i + 1}`} // {f.label}
                   </span>
-                  <Icon className="w-4 h-4 text-[#ffc53d]" />
+                  <span className="p-2 rounded-xl bg-white/5 border border-white/10 text-[#ffc53d] group-hover:bg-[#ffc53d]/10 transition-colors">
+                    <Icon className="w-4 h-4" />
+                  </span>
                 </div>
 
-                <div className="flex items-baseline gap-2 mb-2">
+                <div className="flex items-baseline gap-2 mb-3">
                   <span className="font-display font-bold text-3xl sm:text-4xl text-white tabular-nums tracking-tight">
                     {f.value}
                   </span>
