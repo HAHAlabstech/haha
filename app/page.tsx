@@ -9,7 +9,7 @@ import {
   Flame,
   Users,
 } from "lucide-react";
-import ClubStage3D from "@/components/ClubStage3D";
+import LandingShowtimeHero from "@/components/landing/LandingShowtimeHero";
 import HumorSpectrogram from "@/components/landing/HumorSpectrogram";
 import PinnedScrollMoment from "@/components/landing/PinnedScrollMoment";
 import ProcessPipeline from "@/components/landing/ProcessPipeline";
@@ -49,52 +49,9 @@ export default function HomePage() {
   return (
     <main className="relative min-h-screen bg-[#070709] text-[#f4f4f7] selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-clip">
       {/* =========================================================================
-          HERO SECTION: NEURAL ACOUSTIC STAGE + CINEMATIC EDITORIAL HEADLINE
+          FULL SCROLL-DRIVEN 360° 3D SHOWTIME HERO RUNWAY
           ========================================================================= */}
-      <section className="relative min-h-[92vh] flex flex-col justify-end px-[clamp(20px,4vw,56px)] pt-32 pb-16 max-w-[1440px] mx-auto overflow-hidden">
-        {/* Interactive Neural Stage Background Core */}
-        <ClubStage3D />
-
-        {/* Foreground Headline Content */}
-        <div className="relative z-10 max-w-4xl space-y-8">
-          {/* Eyebrow Pill */}
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-[#0c0c12]/85 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-[#ffc53d] backdrop-blur-xl shadow-lg">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#ffc53d] shadow-[0_0_8px_#ffc53d] animate-pulse" />
-            <span>Robinhood Chain Testnet · Season 01</span>
-          </div>
-
-          {/* Editorial Display Headline */}
-          <h1 className="display-serif text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight text-white leading-[0.98]">
-            The comedy club where you stump the AI and{" "}
-            <em className="italic text-[#ffc53d]">get paid.</em>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="max-w-2xl text-lg sm:text-xl text-zinc-300 leading-relaxed font-sans font-light">
-            Perform against the deadpan Straight Man AI on Robinhood Chain. Verified by a blind human crowd. Winning bits settle daily from the Tip Jar in USDG.
-          </p>
-
-          {/* Primary Action Buttons */}
-          <div className="flex flex-wrap items-center gap-4 pt-2">
-            <Link
-              href="/app?tab=stage"
-              className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffc53d] to-[#f59e0b] hover:from-[#ffd875] hover:to-[#ffc53d] px-8 py-4 font-mono text-xs uppercase tracking-widest text-[#070709] font-bold transition-all duration-200 hover:scale-[1.02] shadow-[0_0_28px_rgba(255,197,61,0.35)] hover:shadow-[0_0_36px_rgba(255,197,61,0.55)]"
-            >
-              <Mic className="w-4 h-4" />
-              <span>Launch App · Take The Stage</span>
-              <ArrowUpRight className="w-4 h-4" />
-            </Link>
-
-            <Link
-              href="/app?tab=vault"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#12121a]/80 px-6 py-4 font-mono text-xs uppercase tracking-widest text-zinc-200 backdrop-blur-md transition-all duration-200 hover:bg-white/10 hover:text-white"
-            >
-              <Database className="w-4 h-4 text-zinc-400" />
-              <span>Explore Joke Vault</span>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <LandingShowtimeHero />
 
       {/* =========================================================================
           TELEMETRY TICKER STRIP
