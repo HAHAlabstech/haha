@@ -2,6 +2,7 @@
 
 import { Database, Sparkles, Layers, Orbit, Scale, ArrowUpRight, Shield, Coins } from "lucide-react";
 import Link from "next/link";
+import VaultStage3D from "./VaultStage3D";
 
 const CATEGORIES = [
   {
@@ -113,6 +114,11 @@ export default function VaultTerminal() {
               </Link>
             </div>
           </div>
+        </div>
+
+        {/* Interactive 3D Mechanical Vault Stage (Qevra-Inspired Architecture) */}
+        <div className="mb-14">
+          <VaultStage3D />
         </div>
 
         {/* 4 Category Taxonomy Cards */}
