@@ -206,11 +206,11 @@ export default function WalletModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:p-6"
+        className="w-full max-w-xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/logo-transparent.png"
@@ -282,7 +282,7 @@ export default function WalletModal({
           </div>
         ) : null}
 
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           {((): React.ReactNode => {
             // Veil-style catalog: well-known wallets with logos — detected
             // ones are active connect rows, the rest are install links.
@@ -316,9 +316,9 @@ export default function WalletModal({
                       type="button"
                       disabled={busy !== null}
                       onClick={() => void connectEntry(entry)}
-                      className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#12121a] px-4 py-3 text-left text-sm text-[#f4f4f7] transition hover:border-[#ffc53d]/50 hover:bg-[#ffc53d]/5 disabled:opacity-50 cursor-pointer"
+                      className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#12121a] px-3.5 py-2.5 text-left text-sm text-[#f4f4f7] transition hover:border-[#ffc53d]/50 hover:bg-[#ffc53d]/5 disabled:opacity-50 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-[#070709] border border-white/10 flex items-center justify-center p-1.5 overflow-hidden shrink-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -327,7 +327,7 @@ export default function WalletModal({
                             className="w-full h-full object-contain"
                           />
                         </div>
-                        <span className="font-medium text-white">{entry.label}</span>
+                        <span className="font-medium text-white truncate">{entry.label}</span>
                       </div>
                       <span
                         className={`font-mono text-[11px] uppercase tracking-widest font-semibold ${
@@ -345,9 +345,9 @@ export default function WalletModal({
                       href={w.installUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex w-full items-center justify-between rounded-xl border border-dashed border-white/10 bg-transparent px-4 py-3 text-left text-sm transition hover:border-white/25"
+                      className="flex w-full items-center justify-between rounded-xl border border-dashed border-white/10 bg-transparent px-3.5 py-2.5 text-left text-sm transition hover:border-white/25"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
                         <div className="w-8 h-8 flex items-center justify-center shrink-0 opacity-50 grayscale">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={w.icon} alt={w.name} className="w-6 h-6 object-contain" />
@@ -367,9 +367,9 @@ export default function WalletModal({
                     type="button"
                     disabled={busy !== null}
                     onClick={() => void connectEntry(entry)}
-                    className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#12121a] px-4 py-3 text-left text-sm text-[#f4f4f7] transition hover:border-[#ffc53d]/50 hover:bg-[#ffc53d]/5 disabled:opacity-50 cursor-pointer"
+                    className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#12121a] px-3.5 py-2.5 text-left text-sm text-[#f4f4f7] transition hover:border-[#ffc53d]/50 hover:bg-[#ffc53d]/5 disabled:opacity-50 cursor-pointer"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-[#070709] border border-white/10 flex items-center justify-center p-1.5 overflow-hidden shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         {entry.detail?.info.icon ? (
@@ -378,7 +378,7 @@ export default function WalletModal({
                           <Wallet className="w-4 h-4 text-[#ffc53d]" />
                         )}
                       </div>
-                      <span className="font-medium text-white">{entry.label}</span>
+                      <span className="font-medium text-white truncate">{entry.label}</span>
                     </div>
                     <span className="font-mono text-[11px] uppercase tracking-widest text-[#ffc53d] font-semibold">
                       {busy === entry.label ? "Signing…" : hasAny ? "Detected" : "Connect →"}
