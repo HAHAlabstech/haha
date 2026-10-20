@@ -41,6 +41,21 @@ const CATEGORIES = [
 export default function VaultTerminal() {
   return (
     <section id="vault" className="relative haha-sec-divider bg-[#070709] py-28 px-[clamp(20px,4vw,56px)] text-white overflow-hidden">
+      {/* Ambient Luxury Vault Background Texture */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20 mix-blend-screen"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/landing/bg-vault.jpg"
+          alt=""
+          loading="lazy"
+          className="w-full h-full object-cover object-center filter saturate-[0.8] brightness-[0.65]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070709] via-transparent to-[#070709]" />
+      </div>
+
       {/* Ambient Stage Spotlight */}
       <div
         aria-hidden

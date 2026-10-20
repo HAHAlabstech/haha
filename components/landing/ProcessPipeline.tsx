@@ -382,8 +382,23 @@ export default function ProcessPipeline() {
       className="haha-pipe-runway relative haha-sec-divider bg-[#050508] text-white"
     >
       <div className="haha-pipe-stage">
+        {/* Ambient Computational Monolith Background Texture */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20 mix-blend-screen"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/landing/bg-pipeline.jpg"
+            alt=""
+            loading="lazy"
+            className="w-full h-full object-cover object-center filter saturate-[0.8] brightness-[0.7]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050508] via-transparent to-[#050508]" />
+        </div>
+
         {/* Pinned Top Navigation Header */}
-        <div className="flex items-center justify-between w-full border-b border-white/10 pb-3 sm:pb-4 mb-3 sm:mb-6">
+        <div className="relative z-10 flex items-center justify-between w-full border-b border-white/10 pb-3 sm:pb-4 mb-3 sm:mb-6">
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold flex items-center gap-2">
               <span className="w-1.5 h-1.5 rotate-45 bg-[#ffc53d] inline-block" />
