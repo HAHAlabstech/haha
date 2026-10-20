@@ -39,10 +39,9 @@ export default function LandingFaq() {
     <section id="faq" className="relative py-24 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto">
       {/* Header */}
       <div className="max-w-3xl mb-16">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] mb-4">
-          <HelpCircle className="w-3 h-3" />
-          <span>Box Office FAQ</span>
-        </div>
+        <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold block mb-3">
+          Box Office FAQ
+        </span>
         <h2 className="display-serif text-3xl sm:text-5xl text-[#f4f4f5] tracking-tight">
           Common Questions from <em>the Crowd.</em>
         </h2>

@@ -72,10 +72,9 @@ export default function HumorSpectrogram() {
 
       {/* Section Header */}
       <div className="relative z-1 max-w-3xl mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] mb-4">
-          <Activity className="w-3 h-3" />
-          <span>The Science of Stumped AI</span>
-        </div>
+        <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold block mb-3">
+          The Science of Stumped AI
+        </span>
         <h2 className="display-serif text-3xl sm:text-5xl text-[#f4f4f5] tracking-tight">
           Why LLMs choke on <em>human nuance.</em>
         </h2>
@@ -110,11 +109,11 @@ export default function HumorSpectrogram() {
 
           <div className="flex items-center gap-6 font-mono text-xs text-zinc-400">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#ffc53d] shadow-[0_0_8px_#ffc53d]" />
+              <span className="w-3 h-1 rounded-sm bg-[#ffc53d]" />
               <span className="text-zinc-200">Human Resonance</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#3b82f6] shadow-[0_0_8px_#3b82f6]" />
+              <span className="w-3 h-1 rounded-sm bg-[#3b82f6]" />
               <span className="text-zinc-200">Straight Man Linear</span>
             </div>
           </div>

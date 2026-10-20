@@ -6,12 +6,10 @@ import {
   Mic,
   ArrowUpRight,
   Database,
-  Flame,
   Users,
 } from "lucide-react";
 import LandingShowtimeHero from "@/components/landing/LandingShowtimeHero";
 import HumorSpectrogram from "@/components/landing/HumorSpectrogram";
-import PinnedScrollMoment from "@/components/landing/PinnedScrollMoment";
 import ProcessPipeline from "@/components/landing/ProcessPipeline";
 import VaultTerminal from "@/components/landing/VaultTerminal";
 import SpotlightFeed from "@/components/landing/SpotlightFeed";
@@ -102,11 +100,6 @@ export default function HomePage() {
       <HumorSpectrogram />
 
       {/* =========================================================================
-          PINNED SCROLL & SCRUB: SIGNATURE MOMENTS (320vh Track with Sticky Viewport)
-          ========================================================================= */}
-      <PinnedScrollMoment />
-
-      {/* =========================================================================
           THE PROTOCOL: 3-STEP PROCESS PIPELINE
           ========================================================================= */}
       <ProcessPipeline />
@@ -136,10 +129,9 @@ export default function HomePage() {
         />
 
         <div className="relative z-1 max-w-3xl mx-auto space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d]">
-            <Flame className="w-3.5 h-3.5" />
-            <span>Open Mic Is Live</span>
-          </div>
+          <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold block">
+            Open Mic Is Live
+          </span>
 
           <h2 className="display-serif text-4xl sm:text-6xl text-white tracking-tight leading-[1.05]">
             The stage is set. <em className="italic text-[#ffc53d]">Take the mic.</em>

@@ -65,10 +65,9 @@ export default function ProcessPipeline() {
     <section id="how-it-works" className="relative py-28 px-[clamp(20px,4vw,56px)] max-w-[1440px] mx-auto">
       {/* Section Header */}
       <div className="max-w-3xl mb-16">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] mb-4">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>The Protocol Workflow</span>
-        </div>
+        <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold block mb-3">
+          The Protocol Workflow
+        </span>
         <h2 className="display-serif text-3xl sm:text-5xl text-[#f4f4f5] tracking-tight">
           How the comedy club <em>actually works.</em>
         </h2>
@@ -135,9 +134,8 @@ export default function ProcessPipeline() {
                   <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
                 {idx === 2 ? (
-                  <span className="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-400 bg-emerald-400/10 px-2.5 py-0.5 rounded-full border border-emerald-400/20">
-                    <Flame className="w-3 h-3 text-[#ffc53d]" />
-                    <span>Daily Burns</span>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400 font-medium">
+                    Daily Burns
                   </span>
                 ) : null}
               </div>

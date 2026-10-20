@@ -113,10 +113,9 @@ export default function SpotlightFeed() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-6 mb-16">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] mb-4">
-            <Flame className="w-3 h-3" />
-            <span>Live Stage Feed</span>
-          </div>
+          <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold block mb-3">
+            Live Stage Feed
+          </span>
           <h2 className="display-serif text-3xl sm:text-5xl text-[#f4f4f5] tracking-tight">
             Recent Battles in <em>the Room.</em>
           </h2>

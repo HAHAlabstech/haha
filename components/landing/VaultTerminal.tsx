@@ -68,8 +68,7 @@ export default function VaultTerminal() {
             <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
               Live Replacement Cost
             </span>
-            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-mono text-[11px] uppercase tracking-wider text-emerald-400 font-medium">
               Audited Metric
             </span>
           </div>
