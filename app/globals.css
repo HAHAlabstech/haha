@@ -1412,7 +1412,7 @@ body::before {
     padding-top: calc(var(--topbar-height, 68px) + 0.5rem);
     padding-bottom: 2rem;
     overflow: clip;
-    background: radial-gradient(circle 850px at 72% 50%, rgba(255, 197, 61, 0.04), transparent 70%), #070709;
+    background: transparent;
   }
 
   .haha-spec-layout {
@@ -1427,14 +1427,14 @@ body::before {
   }
 
   .haha-spec-copy {
-    opacity: clamp(0, calc((var(--zk) - 0.6) * 2.5), 1);
-    transform: scale(calc(0.7 + 0.3 * var(--zk)));
+    opacity: clamp(0, calc((var(--zk) - 0.2) * 1.4), 1);
+    transform: scale(calc(0.78 + 0.22 * var(--zk)));
     will-change: transform, opacity;
   }
 
   .haha-spec-stage {
-    opacity: clamp(0, calc((var(--zk) - 0.6) * 2.5), 1);
-    transform: scale(calc(0.35 + 0.65 * var(--zk)));
+    opacity: clamp(0, calc((var(--zk) - 0.2) * 1.4), 1);
+    transform: scale(calc(0.48 + 0.52 * var(--zk)));
     will-change: transform, opacity;
   }
 
