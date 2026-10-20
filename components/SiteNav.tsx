@@ -41,17 +41,15 @@ export default function SiteNav() {
           {/* Brand Logo */}
           <Link
             href="/"
-            className="flex items-center gap-3 group focus:outline-none"
+            className="flex items-center gap-2.5 group focus:outline-none"
             aria-label="HAHA Home"
           >
-            <div className="relative w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center p-0.5 bg-[#121218] border border-white/10 group-hover:border-[#ffc53d]/50 group-hover:scale-105 transition-all shadow-[0_0_15px_rgba(255,197,61,0.2)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/logo-transparent.png"
-                alt="HAHA Logo"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,197,61,0.4)]"
-              />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo-transparent.png"
+              alt="HAHA Logo"
+              className="h-8 w-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow-[0_0_12px_rgba(255,197,61,0.35)]"
+            />
             <span className="font-display font-bold text-xl tracking-[0.2em] text-white group-hover:text-[#ffc53d] transition-colors">
               HAHA
             </span>

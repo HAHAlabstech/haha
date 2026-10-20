@@ -45,14 +45,12 @@ export default function AppHeader({
               className="group flex items-center gap-2.5 font-display text-sm font-bold tracking-[0.2em] text-white transition-colors hover:text-[#ffc53d]"
               aria-label="Back to landing"
             >
-              <div className="relative w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center p-0.5 bg-[#121218] border border-white/10 group-hover:border-[#ffc53d]/50 group-hover:scale-105 transition-all shadow-[0_0_12px_rgba(255,197,61,0.25)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/logo-transparent.png"
-                  alt="HAHA Logo"
-                  className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(255,197,61,0.4)]"
-                />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo-transparent.png"
+                alt="HAHA Logo"
+                className="h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow-[0_0_8px_rgba(255,197,61,0.35)]"
+              />
               <span className="font-display font-bold text-base tracking-[0.2em]">HAHA</span>
             </Link>
 

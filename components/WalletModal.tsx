@@ -211,14 +211,12 @@ export default function WalletModal({
       >
         <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center p-1 bg-[#121218] border border-white/10 shadow-[0_0_15px_rgba(255,197,61,0.2)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/logo-transparent.png"
-                alt="HAHA Logo"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,197,61,0.5)]"
-              />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo-transparent.png"
+              alt="HAHA Logo"
+              className="h-10 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(255,197,61,0.4)]"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">Box Office</span>

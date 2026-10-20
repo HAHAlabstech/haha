@@ -44,14 +44,12 @@ export default function SiteFooter() {
 
         <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.08] pt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-zinc-400">
           <div className="flex items-center gap-2.5">
-            <div className="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center p-0.5 bg-[#121218] border border-white/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/logo-transparent.png"
-                alt="HAHA Logo"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_4px_rgba(255,197,61,0.5)]"
-              />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo-transparent.png"
+              alt="HAHA Logo"
+              className="h-5 w-auto object-contain filter drop-shadow-[0_0_4px_rgba(255,197,61,0.5)]"
+            />
             <span>&copy; HAHA &middot; Season 01 &middot; The Straight Man &amp; The Joke Vault</span>
           </div>
           <nav className="flex flex-wrap gap-5" aria-label="Footer">
