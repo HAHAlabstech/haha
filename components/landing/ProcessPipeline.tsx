@@ -148,8 +148,8 @@ function BlindQuorumVisual() {
 
       <div className="rounded-xl border border-white/[0.08] bg-[#070709] px-5 py-4 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em]">
         <span className="text-zinc-400">6/7 Jurors Consensus · 100% Fair</span>
-        <span className="rounded-full border border-[#ffc53d]/40 bg-[#ffc53d]/15 px-3.5 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#ffc53d]">
-          ● KILLED IT
+        <span className="rounded-md border border-[#ffc53d]/30 bg-gradient-to-r from-[#ffc53d]/15 to-[#ffc53d]/05 px-3 py-1 font-mono text-[10px] font-semibold tracking-[0.2em] text-[#ffc53d] uppercase shadow-[inset_0_1px_0_rgba(255,197,61,0.2)]">
+          KILLED IT
         </span>
       </div>
     </div>
@@ -370,7 +370,7 @@ export default function ProcessPipeline() {
                           key={b}
                           className="flex items-baseline gap-3 text-xs sm:text-[13px] text-zinc-400 font-light"
                         >
-                          <span className="h-1 w-1 rounded-full bg-[#ffc53d] shrink-0" />
+                          <span className="text-zinc-600 font-mono text-[11px] shrink-0 select-none">—</span>
                           <span>{b}</span>
                         </li>
                       ))}

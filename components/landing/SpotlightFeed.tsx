@@ -191,8 +191,8 @@ export default function SpotlightFeed() {
                   <span className="text-zinc-400">
                     {b.category} · {b.stage}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ffc53d]/35 bg-[#ffc53d]/10 px-3 py-1 text-[10px] font-semibold tracking-[0.16em] text-[#ffc53d]">
-                    ● Killed It
+                  <span className="inline-flex items-center rounded-md border border-[#ffc53d]/30 bg-gradient-to-r from-[#ffc53d]/15 via-[#ffc53d]/08 to-[#ffc53d]/02 px-2.5 py-1 text-[10px] font-semibold tracking-[0.2em] text-[#ffc53d] uppercase shadow-[inset_0_1px_0_rgba(255,197,61,0.25)]">
+                    Killed It
                   </span>
                 </div>
 

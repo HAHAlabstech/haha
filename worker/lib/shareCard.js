@@ -6,9 +6,9 @@
 const sharp = require("sharp");
 
 const MAINNET_BADGES = {
-  killed_it: { label: "● KILLED IT", bg: "#1c1608", border: "#ffc53d", textColor: "#ffc53d" },
-  bombed: { label: "● BOMBED", bg: "#18181b", border: "#3f3f46", textColor: "#e4e4e7" },
-  heckled_off: { label: "● HECKLED OFF", bg: "#1c1208", border: "#d97706", textColor: "#fbbf24" },
+  killed_it: { label: "KILLED IT", bg: "#16130a", border: "#ffc53d", textColor: "#ffc53d" },
+  bombed: { label: "BOMBED", bg: "#18181b", border: "#3f3f46", textColor: "#e4e4e7" },
+  heckled_off: { label: "HECKLED OFF", bg: "#181208", border: "#d97706", textColor: "#fbbf24" },
 };
 
 function esc(s) {
@@ -63,11 +63,11 @@ async function renderShareCard(data) {
   <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#27272a" stroke-width="2"/>
   <text x="96" y="104" font-size="36" font-weight="bold" fill="#ffc53d">HAHA</text>
   <text x="230" y="100" font-size="20" fill="#a1a1aa">THE CROWD JUDGES</text>
-  <rect x="896" y="70" width="208" height="44" rx="22" fill="#121218" stroke="#27272a" stroke-width="1"/>
-  <text x="1000" y="99" font-size="20" fill="#ffc53d" text-anchor="middle">${esc(String(data.category ?? "").toUpperCase())}</text>
-  <rect x="96" y="176" width="${badgeW}" height="52" rx="26" fill="${badge.bg}" stroke="${badge.border}" stroke-width="1.5"/>
-  <text x="${badgeCenterX}" y="210" font-size="22" font-weight="bold" fill="${badge.textColor}" text-anchor="middle">${esc(badge.label)}</text>
-  <rect x="96" y="256" width="220" height="48" rx="24" fill="#121218" stroke="#27272a" stroke-width="1"/>
+  <rect x="896" y="70" width="208" height="44" rx="8" fill="#121218" stroke="#27272a" stroke-width="1"/>
+  <text x="1000" y="99" font-size="18" font-weight="bold" letter-spacing="1.5" fill="#ffc53d" text-anchor="middle">${esc(String(data.category ?? "").toUpperCase())}</text>
+  <rect x="96" y="176" width="${badgeW}" height="46" rx="8" fill="${badge.bg}" stroke="${badge.border}" stroke-width="1.5"/>
+  <text x="${badgeCenterX}" y="206" font-size="20" font-weight="bold" letter-spacing="2" fill="${badge.textColor}" text-anchor="middle">${esc(badge.label)}</text>
+  <rect x="96" y="256" width="220" height="48" rx="8" fill="#121218" stroke="#27272a" stroke-width="1"/>
   <text x="206" y="288" font-size="20" fill="#e4e4e7" text-anchor="middle">${seasonChip}</text>
   <text x="96" y="396" font-size="32" font-weight="bold" fill="#f4f4f5">CONTENT SEALED</text>
   <text x="96" y="444" font-size="24" fill="#a1a1aa">This bit is reserved for the holdout training set.</text>
@@ -111,14 +111,14 @@ async function renderShareCard(data) {
   <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#27272a" stroke-width="2"/>
   <text x="96" y="104" font-size="36" font-weight="bold" fill="#ffc53d">HAHA</text>
   <text x="230" y="100" font-size="20" fill="#a1a1aa">THE CROWD JUDGES</text>
-  <rect x="896" y="70" width="208" height="44" rx="22" fill="#121218" stroke="#27272a" stroke-width="1"/>
-  <text x="1000" y="99" font-size="20" fill="#ffc53d" text-anchor="middle">${esc(String(data.category ?? "").toUpperCase())}</text>
-  <rect x="96" y="152" width="${badgeW}" height="52" rx="26" fill="${badge.bg}" stroke="${badge.border}" stroke-width="1.5"/>
-  <text x="${badgeCenterX}" y="186" font-size="22" font-weight="bold" fill="${badge.textColor}" text-anchor="middle">${esc(badge.label)}</text>
+  <rect x="896" y="70" width="208" height="44" rx="8" fill="#121218" stroke="#27272a" stroke-width="1"/>
+  <text x="1000" y="98" font-size="18" font-weight="bold" letter-spacing="1.5" fill="#ffc53d" text-anchor="middle">${esc(String(data.category ?? "").toUpperCase())}</text>
+  <rect x="96" y="152" width="${badgeW}" height="46" rx="8" fill="${badge.bg}" stroke="${badge.border}" stroke-width="1.5"/>
+  <text x="${badgeCenterX}" y="182" font-size="20" font-weight="bold" letter-spacing="2" fill="${badge.textColor}" text-anchor="middle">${esc(badge.label)}</text>
   ${body}
   ${moreWords ? `<text x="96" y="572" font-size="24" fill="#a1a1aa">… +${moreWords} more words</text>` : ""}
   <line x1="96" y1="584" x2="1104" y2="584" stroke="#27272a" stroke-width="1.5"/>
-  <text x="96" y="622" font-size="24" fill="#ffc53d">${esc(stats)}</text>
+  <text x="96" y="622" font-size="22" font-weight="bold" letter-spacing="1" fill="#ffc53d">${esc(stats)}</text>
   <text x="1104" y="622" font-size="20" fill="#71717a" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
 </svg>`;
 
@@ -137,8 +137,8 @@ async function renderShareCard(data) {
 function cardKey(bitId, opts) {
   const id = String(bitId).toLowerCase();
   return opts?.holdout
-    ? `public/share/v3/sealed-bit-${id}.png`
-    : `public/share/v3/bit-${id}.png`;
+    ? `public/share/v4/sealed-bit-${id}.png`
+    : `public/share/v4/bit-${id}.png`;
 }
 function cardUrl(bitId, opts) {
   const base = (process.env.R2_PUBLIC_URL ?? "").replace(/\/+$/, "");

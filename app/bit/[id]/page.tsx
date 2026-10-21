@@ -415,7 +415,6 @@ export default function BitPage({
                     : "amber"
               }
             >
-              ●{" "}
               {loading
                 ? "Loading…"
                 : (bit?.status ?? "screening").replace(/_/g, " ")}
@@ -853,8 +852,8 @@ export default function BitPage({
                 </div>
                 <p className="display-serif mt-2 text-xl text-white">{s}</p>
                 {i === currentStage ? (
-                  <span className="mt-2 inline-block font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
-                    ● Active Now
+                  <span className="mt-2 inline-block font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">
+                    Current Stage
                   </span>
                 ) : null}
               </Card>
