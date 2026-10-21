@@ -235,7 +235,7 @@ export default function StageView() {
           </div>
           <div>
             <dt>Pro Stage</dt>
-            <dd>$0.10 credit · 2.5× reward</dd>
+            <dd>Free in beta · 2.5× reward · full playbook</dd>
           </div>
           <div>
             <dt>Quorum</dt>
@@ -410,7 +410,7 @@ export default function StageView() {
                 href="/producers"
                 className="font-mono text-[11px] uppercase tracking-[0.15em] text-zinc-400 underline hover:text-[#ffc53d] flex items-center gap-1"
               >
-                <span>Need Pro Stage credits?</span>
+                <span>Why is Pro free? Beta economics explained →</span>
                 <ArrowUpRight className="w-3 h-3" />
               </Link>
             </div>

@@ -9,6 +9,7 @@ import {
   Trophy,
   ArrowLeft,
   Flame,
+  HelpCircle,
 } from "lucide-react";
 import WalletMenu from "@/components/WalletMenu";
 import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
@@ -65,6 +66,14 @@ export default function AppHeader({
             >
               <ArrowLeft className="h-3 w-3" />
               <span className="hidden md:inline">Website</span>
+            </Link>
+            <Link
+              href="/#how-it-works"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-zinc-400 transition hover:bg-white/5 hover:text-white"
+              title="How the Stage → Straight Man → Crowd loop works"
+            >
+              <HelpCircle className="h-3 w-3" />
+              <span className="hidden md:inline">Flow</span>
             </Link>
           </div>
 
