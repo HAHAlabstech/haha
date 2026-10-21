@@ -192,9 +192,9 @@ export default function LandingShowtimeHero() {
     camera.add(bg);
 
     // 2. CHIAROSCURO LIGHTING RIG
-    scene.add(new THREE.AmbientLight("#ffffff", 0.1));
+    scene.add(new THREE.AmbientLight("#ffffff", 0.12));
 
-    const keyLight = new THREE.SpotLight("#ffffff", 18);
+    const keyLight = new THREE.SpotLight("#ffffff", 22);
     keyLight.position.set(4, 6, 3);
     keyLight.angle = Math.PI / 4;
     keyLight.penumbra = 0.9;
@@ -205,13 +205,19 @@ export default function LandingShowtimeHero() {
     keyLight.shadow.bias = -0.001;
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight("#ffc53d", 10);
+    const rimLight = new THREE.DirectionalLight("#ffc53d", 14);
     rimLight.position.set(-5, 3, -4);
     scene.add(rimLight);
 
-    const fillLight = new THREE.DirectionalLight("#fff3e6", 0.8);
+    const fillLight = new THREE.DirectionalLight("#fff3e6", 0.9);
     fillLight.position.set(-2, -4, 2);
     scene.add(fillLight);
+
+    const topSpot = new THREE.SpotLight("#ffc53d", 9, 8, Math.PI / 5, 0.7);
+    topSpot.position.set(0, 5, 0.5);
+    topSpot.target.position.set(0, 0.8, 0);
+    scene.add(topSpot);
+    scene.add(topSpot.target);
 
     // 3. APPLAUSE SPARKS (450 particles)
     const sparkCount = 450;
@@ -272,27 +278,46 @@ export default function LandingShowtimeHero() {
     );
     scene.add(sparks);
 
-    // 4. THE STRAIGHT MAN, CAST IN BRONZE (ORIGINAL SCULPTURAL STATUE FROM SHOWTIME)
-    const bronze = new THREE.MeshStandardMaterial({
-      color: 0xc08a52,
-      roughness: 0.42,
-      metalness: 0.92,
+    // 4. THE STRAIGHT MAN, CAST IN LUXURY PHYSICAL BRONZE (ELEVATED ORIGINAL STATUE)
+    const bronze = new THREE.MeshPhysicalMaterial({
+      color: 0xc48c54,
+      roughness: 0.35,
+      metalness: 0.88,
+      clearcoat: 0.38,
+      clearcoatRoughness: 0.22,
+      reflectivity: 0.9,
       envMap: envTex,
-      envMapIntensity: 0.55,
+      envMapIntensity: 0.75,
     });
-    const darkMetal = new THREE.MeshStandardMaterial({
-      color: 0x3a2a1c,
-      roughness: 0.38,
+    const darkMetal = new THREE.MeshPhysicalMaterial({
+      color: 0x221a14,
+      roughness: 0.3,
       metalness: 0.95,
+      clearcoat: 0.25,
+      clearcoatRoughness: 0.28,
+      reflectivity: 0.85,
       envMap: envTex,
-      envMapIntensity: 0.4,
+      envMapIntensity: 0.6,
     });
-    const glass = new THREE.MeshStandardMaterial({
-      color: 0x020202,
-      roughness: 0.06,
-      metalness: 0.2,
+    const goldTrim = new THREE.MeshPhysicalMaterial({
+      color: 0xffc53d,
+      roughness: 0.16,
+      metalness: 0.96,
+      clearcoat: 0.55,
+      clearcoatRoughness: 0.1,
+      reflectivity: 1.0,
       envMap: envTex,
-      envMapIntensity: 1.0,
+      envMapIntensity: 1.3,
+    });
+    const glass = new THREE.MeshPhysicalMaterial({
+      color: 0x050508,
+      roughness: 0.05,
+      metalness: 0.15,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.04,
+      reflectivity: 0.98,
+      envMap: envTex,
+      envMapIntensity: 1.4,
     });
     const lamp = new THREE.MeshBasicMaterial({ color: 0xfff2dc, toneMapped: false });
     const amber = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
@@ -335,25 +360,33 @@ export default function LandingShowtimeHero() {
     }
 
     const statue = new THREE.Group();
-    // Plinth stage with an amber lip
+    // Plinth stage with amber neon lip + gold engraved inlay
     mesh(new THREE.CylinderGeometry(1.35, 1.42, 0.16, 96), darkMetal, statue, 0, 0.08, 0);
     const lip = new THREE.Mesh(new THREE.TorusGeometry(1.36, 0.01, 6, 160), amber);
     lip.rotation.x = Math.PI / 2;
     lip.position.y = 0.16;
     statue.add(lip);
 
+    const plinthInlay = mesh(new THREE.TorusGeometry(1.24, 0.006, 8, 120), goldTrim, statue, 0, 0.161, 0);
+    plinthInlay.rotation.x = Math.PI / 2;
+
     const rig = new THREE.Group();
     rig.position.y = 0.16;
     statue.add(rig);
 
-    // Stool
+    // Stool with gold bezels
     mesh(new THREE.CylinderGeometry(0.52, 0.5, 0.09, 48), darkMetal, rig, 0, 1.0, 0);
+    const seatRim = mesh(new THREE.TorusGeometry(0.515, 0.007, 8, 64), goldTrim, rig, 0, 1.045, 0);
+    seatRim.rotation.x = Math.PI / 2;
+
     for (let i = 0; i < 3; i++) {
       const a = i * 2.094 + 0.5;
       limb([Math.cos(a) * 0.36, 0.97, Math.sin(a) * 0.36], [Math.cos(a) * 0.5, 0, Math.sin(a) * 0.5], 0.025, darkMetal, rig);
     }
     const ring = mesh(new THREE.TorusGeometry(0.43, 0.018, 8, 64), darkMetal, rig, 0, 0.38, 0);
     ring.rotation.x = Math.PI / 2;
+    const footringTrim = mesh(new THREE.TorusGeometry(0.43, 0.005, 8, 64), goldTrim, rig, 0, 0.38, 0);
+    footringTrim.rotation.x = Math.PI / 2;
 
     // Body
     const bot = new THREE.Group();
@@ -362,7 +395,12 @@ export default function LandingShowtimeHero() {
     for (const s of [-1, 1]) {
       limb([s * 0.22, 1.12, 0.02], [s * 0.28, 1.1, 0.66], 0.12, bronze, bot);
       mesh(new THREE.SphereGeometry(0.135, 24, 16), darkMetal, bot, s * 0.28, 1.1, 0.68);
+      const kr = mesh(new THREE.TorusGeometry(0.138, 0.006, 8, 32), goldTrim, bot, s * 0.28, 1.1, 0.68);
+      kr.rotation.y = Math.PI / 2;
+
       limb([s * 0.29, 1.08, 0.7], [s * 0.31, 0.16, 0.8], 0.095, bronze, bot);
+      const ar = mesh(new THREE.TorusGeometry(0.098, 0.006, 8, 28), goldTrim, bot, s * 0.31, 0.14, 0.82);
+      ar.rotation.x = Math.PI / 2;
       mesh(new THREE.BoxGeometry(0.24, 0.11, 0.4), darkMetal, bot, s * 0.31, 0.07, 0.9);
     }
 
@@ -373,16 +411,29 @@ export default function LandingShowtimeHero() {
     mesh(new THREE.CylinderGeometry(0.6, 0.45, 1.0, 64), bronze, torso, 0, 0.5, 0);
     const collar = mesh(new THREE.TorusGeometry(0.33, 0.055, 12, 48), darkMetal, torso, 0, 1.0, 0);
     collar.rotation.x = Math.PI / 2;
+    const colTrim = mesh(new THREE.TorusGeometry(0.34, 0.006, 8, 48), goldTrim, torso, 0, 1.01, 0);
+    colTrim.rotation.x = Math.PI / 2;
+
     const chest = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
     const cl = mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.03, 24), chest, torso, 0, 0.62, 0.565);
     cl.rotation.x = Math.PI / 2 - 0.13;
+    const cBezel = mesh(new THREE.TorusGeometry(0.063, 0.007, 8, 32), goldTrim, torso, 0, 0.62, 0.57);
+    cBezel.rotation.x = Math.PI / 2 - 0.13;
 
     for (const s of [-1, 1]) {
       mesh(new THREE.SphereGeometry(0.17, 24, 16), bronze, torso, s * 0.64, 0.88, 0);
+      const sr = mesh(new THREE.TorusGeometry(0.173, 0.006, 8, 32), goldTrim, torso, s * 0.64, 0.88, 0);
+      sr.rotation.y = Math.PI / 2;
+
       limb([s * 0.7, 0.85, 0], [s * 0.74, 0.32, 0.28], 0.085, darkMetal, torso);
       mesh(new THREE.SphereGeometry(0.1, 16, 12), bronze, torso, s * 0.74, 0.32, 0.28);
+      const erRing = mesh(new THREE.TorusGeometry(0.103, 0.005, 8, 24), goldTrim, torso, s * 0.74, 0.32, 0.28);
+      erRing.rotation.x = Math.PI / 4;
+
       limb([s * 0.74, 0.32, 0.28], [s * 0.38, -0.02, 0.62], 0.075, darkMetal, torso);
       mesh(new THREE.SphereGeometry(0.115, 20, 14), bronze, torso, s * 0.36, -0.04, 0.64);
+      const wr = mesh(new THREE.TorusGeometry(0.082, 0.006, 8, 24), goldTrim, torso, s * 0.41, 0.01, 0.58);
+      wr.rotation.x = Math.PI / 3;
     }
     mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.26, 20), darkMetal, torso, 0, 1.12, 0);
 
@@ -420,6 +471,10 @@ export default function LandingShowtimeHero() {
       e.scale.set(1, 1.3, 0.3);
       e.castShadow = false;
     });
+    const eyeTrimL = mesh(new THREE.TorusGeometry(0.089, 0.006, 8, 32), goldTrim, eyes, -0.26, 0, 0.008);
+    eyeTrimL.scale.set(1, 1.3, 1);
+    const eyeTrimR = mesh(new THREE.TorusGeometry(0.089, 0.006, 8, 32), goldTrim, eyes, 0.26, 0, 0.008);
+    eyeTrimR.scale.set(1, 1.3, 1);
 
     const mouth = new THREE.Group();
     mouth.position.set(0, -0.18, faceZ + 0.01);
@@ -439,19 +494,25 @@ export default function LandingShowtimeHero() {
       head.add(er);
     }
 
+    mesh(new THREE.CylinderGeometry(0.04, 0.055, 0.04, 16), goldTrim, head, 0, 0.62, 0);
     mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.4, 10), darkMetal, head, 0, 0.82, 0);
+    mesh(new THREE.TorusGeometry(0.035, 0.005, 8, 20), goldTrim, head, 0, 0.98, 0);
     const bulbMat = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
     mesh(new THREE.SphereGeometry(0.075, 20, 14), bulbMat, head, 0, 1.05, 0).castShadow = false;
     const bulbLight = new THREE.PointLight(0xffb13b, 1.2, 3, 2);
     bulbLight.position.set(0, 1.05, 0);
     head.add(bulbLight);
 
-    // Mic Stand on Stage
+    // Mic Stand on Stage with Shockmount & Gold Accents
     const mic = new THREE.Group();
     mic.position.set(1.0, 0, 0.75);
     rig.add(mic);
     mesh(new THREE.CylinderGeometry(0.2, 0.24, 0.04, 40), darkMetal, mic, 0, 0.02, 0);
+    const micBaseRim = mesh(new THREE.TorusGeometry(0.22, 0.006, 8, 36), goldTrim, mic, 0, 0.04, 0);
+    micBaseRim.rotation.x = Math.PI / 2;
+
     limb([0, 0, 0], [0, 2.0, 0], 0.022, darkMetal, mic);
+    mesh(new THREE.SphereGeometry(0.035, 14, 10), goldTrim, mic, 0, 1.95, 0);
     limb([0, 1.95, 0], [-0.42, 2.32, 0.05], 0.016, darkMetal, mic);
     limb([-0.42, 2.32, 0.05], [-0.52, 2.4, 0.1], 0.045, darkMetal, mic);
     mesh(new THREE.SphereGeometry(0.085, 18, 12), bronze, mic, -0.56, 2.44, 0.12);
@@ -461,6 +522,9 @@ export default function LandingShowtimeHero() {
     );
     gw.position.set(-0.56, 2.44, 0.12);
     mic.add(gw);
+
+    const shockmount = mesh(new THREE.TorusGeometry(0.12, 0.007, 8, 32), goldTrim, mic, -0.56, 2.44, 0.12);
+    shockmount.rotation.y = Math.PI / 4;
 
     // Centering contract: scale to 2.5 units tall and center at (0, 0, 0)
     const modelPivot = new THREE.Group();
