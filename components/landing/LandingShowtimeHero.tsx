@@ -944,76 +944,78 @@ export default function LandingShowtimeHero() {
       st.boost = Math.max(0, st.boost - dt * 1.2);
 
       // =========================================================================
-      // SCROLL-DRIVEN BIPEDAL CHOREOGRAPHY (STAND UP & WALK FORWARD ON STAGE)
+      // SCROLL-DRIVEN BIPEDAL CHOREOGRAPHY (STAND UP & PACE SIDEWAYS ACROSS STAGE)
       // Phase 1 (scroll: 0.00 -> 0.06): Poised Seated on Throne
-      // Phase 2 (scroll: 0.06 -> 0.34): Rising & Standing Up tall
-      // Phase 3 (scroll: 0.34 -> 0.72): Melangkah / Walking forward commanding stage
+      // Phase 2 (scroll: 0.06 -> 0.32): Rising & Standing Up tall
+      // Phase 3 (scroll: 0.32 -> 0.72): Melangkah ke Samping (Pacing across stage)
       // =========================================================================
 
       // Stand interpolation (0 -> 1)
-      const standT = Math.max(0, Math.min(1, (scroll - 0.06) / 0.28));
+      const standT = Math.max(0, Math.min(1, (scroll - 0.06) / 0.26));
       const standEase = standT * standT * (3 - 2 * standT);
 
       // Walk step interpolation (0 -> 1)
-      const walkT = Math.max(0, Math.min(1, (scroll - 0.34) / 0.36));
-      const walkEase = walkT * walkT * (3 - 2 * walkT);
-      const walkCycle = walkT * Math.PI * 2.2;
+      const walkT = Math.max(0, Math.min(1, (scroll - 0.32) / 0.40));
+      const walkCycle = walkT * Math.PI * 3.5;
 
       // Robot Base Translation
       // Y: Rises from seated 0 to standing +0.48, with walking vertical bob
-      const walkBob = walkT > 0 ? Math.abs(Math.sin(walkCycle * 2)) * 0.04 : 0;
+      const walkBob = walkT > 0 ? Math.abs(Math.sin(walkCycle * 2)) * 0.035 : 0;
       bot.position.y = standEase * 0.48 + walkBob;
 
-      // Z: Pushes forward off the throne (+0.52), then strides forward (+0.85) to the apron of the stage!
-      bot.position.z = standEase * 0.52 + walkEase * 0.85;
+      // Z: Pushes slightly forward off the throne (+0.42)
+      bot.position.z = standEase * 0.42;
 
-      // X: Natural lateral weight transfer during step
-      bot.position.x = walkT > 0 ? Math.sin(walkCycle) * 0.06 : 0;
+      // X: Melangkah ke samping (Pacing across stage to stage right/left like a comedian)
+      bot.position.x = walkT > 0 ? Math.sin(walkT * Math.PI * 1.5) * 1.15 : 0;
 
-      // LEGS KINEMATICS
-      // Seated: Thighs horizontal forward (-1.44), Calves downward (+1.44), Feet flat (0)
-      // Standing: Thighs straight (0), Calves straight (0), Feet flat (0)
-      // Walking: Decisive, heavy cybernetic strides with foot planting
+      // LEGS KINEMATICS (SIDEWAYS PACING)
       const stride = walkT > 0 ? Math.sin(walkCycle) : 0;
       const leftStride = stride;
       const rightStride = -stride;
+      const lateralRoll = walkT > 0 ? Math.cos(walkCycle) * 0.12 : 0;
 
-      leftThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - leftStride * 0.45;
-      leftCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (leftStride < 0 ? -leftStride * 0.55 : 0.05);
-      leftFoot.rotation.x = leftStride > 0 ? -leftStride * 0.2 : leftStride * 0.15;
+      leftThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - leftStride * 0.32;
+      leftThigh.rotation.z = lateralRoll * 0.5;
+      leftCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (leftStride < 0 ? -leftStride * 0.45 : 0.04);
+      leftFoot.rotation.x = leftStride > 0 ? -leftStride * 0.18 : leftStride * 0.12;
 
-      rightThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - rightStride * 0.45;
-      rightCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (rightStride < 0 ? -rightStride * 0.55 : 0.05);
-      rightFoot.rotation.x = rightStride > 0 ? -rightStride * 0.2 : rightStride * 0.15;
+      rightThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - rightStride * 0.32;
+      rightThigh.rotation.z = -lateralRoll * 0.5;
+      rightCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (rightStride < 0 ? -rightStride * 0.45 : 0.04);
+      rightFoot.rotation.x = rightStride > 0 ? -rightStride * 0.18 : rightStride * 0.12;
 
-      // Torso commanding lean and pelvic sway
-      torso.rotation.x = -standEase * 0.12 + Math.abs(stride) * 0.03;
-      torso.rotation.y = (walkT > 0 ? Math.sin(walkCycle) * 0.12 : 0) + st.mouseX * 0.1;
-      torso.rotation.z = walkT > 0 ? -Math.sin(walkCycle) * 0.03 : 0;
+      // Torso commanding orientation toward pacing direction
+      const facingAngle = walkT > 0 ? Math.cos(walkT * Math.PI * 1.5) * 0.22 : 0;
+      torso.rotation.x = -standEase * 0.08 + Math.abs(stride) * 0.02;
+      torso.rotation.y = facingAngle + st.mouseX * 0.1;
+      torso.rotation.z = walkT > 0 ? Math.sin(walkCycle) * 0.03 : 0;
 
-      // ARMS & HANDS CHOREOGRAPHY
+      // ARMS & HANDS CHOREOGRAPHY (RELAXED, NATURAL, ZERO CRAMPED BENDS)
       // Left Arm:
-      // Seated: Resting on knee (shoulder forward 0.48, elbow 0.68)
-      // Standing/Walking: Lifts off knee into dynamic orator stage gesture!
-      leftShoulder.rotation.x = THREE.MathUtils.lerp(0.48, -0.32, standEase) - leftStride * 0.18;
-      leftShoulder.rotation.y = THREE.MathUtils.lerp(0.12, 0.35, standEase);
-      leftShoulder.rotation.z = THREE.MathUtils.lerp(-0.22, -0.52, standEase);
-      leftUpperArm.rotation.x = THREE.MathUtils.lerp(0.15, 0.42, standEase);
-      leftForearm.rotation.x = THREE.MathUtils.lerp(0.68, 0.28, standEase);
-      leftHand.rotation.x = THREE.MathUtils.lerp(-0.35, 0.12, standEase);
+      // Seated: Resting calmly on knee
+      // Standing/Pacing: Swings naturally with the stride and gestures comfortably
+      const armSwing = walkT > 0 ? Math.sin(walkCycle) * 0.18 : 0;
+      leftShoulder.rotation.x = THREE.MathUtils.lerp(0.38, -0.15, standEase) - armSwing;
+      leftShoulder.rotation.y = THREE.MathUtils.lerp(0.10, 0.25, standEase);
+      leftShoulder.rotation.z = THREE.MathUtils.lerp(-0.18, -0.32, standEase);
+      leftUpperArm.rotation.x = THREE.MathUtils.lerp(0.10, 0.18, standEase);
+      leftForearm.rotation.x = THREE.MathUtils.lerp(0.55, 0.35, standEase);
+      leftHand.rotation.x = THREE.MathUtils.lerp(-0.25, 0.05, standEase);
 
       // Right Arm (Microphone Arm):
-      // Holds microphone stem, brings capsule closer to chest/head as it advances
-      rightShoulder.rotation.x = THREE.MathUtils.lerp(0.62, 0.38, standEase) + rightStride * 0.12;
-      rightShoulder.rotation.y = THREE.MathUtils.lerp(-0.25, -0.15, standEase);
-      rightShoulder.rotation.z = THREE.MathUtils.lerp(0.22, 0.18, standEase);
-      rightUpperArm.rotation.x = THREE.MathUtils.lerp(0.2, 0.35, standEase);
-      rightForearm.rotation.x = THREE.MathUtils.lerp(0.85, 0.65, standEase);
-      rightHand.rotation.x = THREE.MathUtils.lerp(0.18, 0.12, standEase);
+      // Holds microphone stem comfortably; as robot paces sideways, arm holds mic gracefully
+      rightShoulder.rotation.x = THREE.MathUtils.lerp(0.48, 0.28, standEase) + armSwing * 0.5;
+      rightShoulder.rotation.y = THREE.MathUtils.lerp(-0.18, -0.10, standEase);
+      rightShoulder.rotation.z = THREE.MathUtils.lerp(0.18, 0.15, standEase);
+      rightUpperArm.rotation.x = THREE.MathUtils.lerp(0.12, 0.20, standEase);
+      rightForearm.rotation.x = THREE.MathUtils.lerp(0.70, 0.58, standEase);
+      rightHand.rotation.x = THREE.MathUtils.lerp(0.12, 0.08, standEase);
 
-      // Dynamic Microphone follow (tilts slightly forward with the performer's advance)
-      mic.position.z = 0.85 + standEase * 0.35 + walkEase * 0.65;
-      mic.rotation.x = -standEase * 0.08 - walkEase * 0.05;
+      // Dynamic Microphone follow (paces with the performer across the stage)
+      mic.position.x = 0.68 + (walkT > 0 ? Math.sin(walkT * Math.PI * 1.5) * 0.85 : 0);
+      mic.position.z = 0.78 + standEase * 0.25;
+      mic.rotation.x = -standEase * 0.06;
 
       // =========================================================================
       // CINEMATIC FRONT PROSCENIUM CAMERA (NO 360 SPIN!)

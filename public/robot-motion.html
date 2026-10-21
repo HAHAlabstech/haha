@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAHA Protocol • Frontier Apex Motion Studio</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html {
+      width: 100%; height: 100%;
+      background: #070709;
+      color: #e5e5eb;
+      font-family: 'Space Grotesk', sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+    #canvas-container {
+      width: 100%; height: 100%;
+      position: absolute; inset: 0;
+      z-index: 1;
+    }
+
+    /* Top Control Header */
+    .top-bar {
+      position: absolute;
+      top: 20px; left: 24px; right: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .brand-group {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-title {
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: 0.22em;
+      color: #ffc53d;
+      text-transform: uppercase;
+    }
+    .badge-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(255, 197, 61, 0.12);
+      border: 1px solid rgba(255, 197, 61, 0.35);
+      color: #ffc53d;
+    }
+
+    /* Interactive Motion Scrubber Card (Bottom Center) */
+    .scrubber-card {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(880px, 92vw);
+      background: rgba(14, 14, 18, 0.92);
+      border: 1px solid rgba(255, 197, 61, 0.35);
+      border-radius: 20px;
+      padding: 20px 24px;
+      backdrop-filter: blur(28px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.85);
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .scrubber-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .motion-phase-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffc53d;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .motion-phase-badge .pulse-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ffc53d;
+      box-shadow: 0 0 10px #ffc53d;
+    }
+    .timeline-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #a1a1aa;
+    }
+    .timeline-val strong {
+      color: #ffffff;
+      font-size: 15px;
+    }
+
+    /* Slider track */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .timeline-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+      cursor: pointer;
+      position: relative;
+    }
+    .timeline-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #ffc53d;
+      border: 3px solid #070709;
+      box-shadow: 0 0 14px rgba(255,197,61,0.85);
+      cursor: grab;
+      transition: transform 0.15s ease;
+    }
+    .timeline-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    /* Controls button row */
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #e5e5eb;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,197,61,0.4);
+      color: #ffffff;
+    }
+    .btn.active {
+      background: #ffc53d;
+      color: #070709;
+      font-weight: 700;
+      border-color: #ffe082;
+      box-shadow: 0 0 16px rgba(255,197,61,0.4);
+    }
+
+    /* Side floating inspector */
+    .motion-guide {
+      position: absolute;
+      top: 86px;
+      right: 28px;
+      width: 320px;
+      background: rgba(14,14,18,0.88);
+      border: 1px solid rgba(255,197,61,0.25);
+      border-radius: 16px;
+      padding: 18px;
+      backdrop-filter: blur(20px);
+      z-index: 15;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .motion-guide h4 {
+      font-family: 'JetBrains Mono', monospace;
+      color: #ffc53d;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .motion-guide ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      color: #a1a1aa;
+    }
+    .motion-guide li strong {
+      color: #ffffff;
+    }
+    .motion-guide li span.bullet {
+      color: #ffc53d;
+      margin-right: 6px;
+    }
+
+    .hint-bar {
+      position: absolute;
+      top: 86px;
+      left: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #71717a;
+      background: rgba(14,14,18,0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 6px 12px;
+      border-radius: 8px;
+      z-index: 15;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+
+  <div class="top-bar">
+    <div class="brand-group">
+      <span class="brand-title">FRONTIER APEX</span>
+      <span class="badge-pill">MOTION STUDIO LAB</span>
+    </div>
+  </div>
+
+  <div class="hint-bar">
+    MOUSE DRAG: ORBIT 360° • SCROLL: ZOOM • RIGHT CLICK: PAN
+  </div>
+
+  <!-- Motion Guide Card -->
+  <div class="motion-guide">
+    <h4><span style="color:#ffc53d">✦</span> Stand-Up Motion Logic</h4>
+    <ul>
+      <li><span class="bullet">▸</span><strong>Duduk (0%):</strong> Paha mendatar, betis tegak lurus, sepatu menapak rata di footrest.</li>
+      <li><span class="bullet">▸</span><strong>Berdiri (0% - 30%):</strong> Pinggul bangkit terangkat, sendi melurus, tangan tidak tertekuk ngawur.</li>
+      <li><span class="bullet">▸</span><strong>Melangkah ke Samping (30% - 100%):</strong> Robot melangkah ke samping (pacing across stage) seperti komika panggung yang menguasai panggung.</li>
+    </ul>
+  </div>
+
+  <!-- Interactive Timeline Scrubber Card -->
+  <div class="scrubber-card">
+    <div class="scrubber-header">
+      <div class="motion-phase-badge">
+        <span class="pulse-dot"></span>
+        <span id="phase-label">Phase: Seated on Throne</span>
+      </div>
+      <div class="timeline-val">
+        Progress: <strong id="progress-val">0%</strong> (t = <span id="t-val">0.00</span>)
+      </div>
+    </div>
+
+    <div class="slider-row">
+      <input type="range" class="timeline-slider" id="scrubber" min="0" max="1000" value="0">
+    </div>
+
+    <div class="controls-row">
+      <!-- Play / Pause Controls -->
+      <div class="btn-group">
+        <button class="btn" id="btn-play">▶ Play Animation</button>
+        <button class="btn" id="btn-reset">↺ Reset (Sit)</button>
+        <button class="btn" id="btn-stand-pose">▲ Stand</button>
+      </div>
+
+      <!-- Movement Style Toggles -->
+      <div class="btn-group">
+        <span style="font-size: 11px; color: #a1a1aa; font-family: 'JetBrains Mono', monospace; margin-right: 4px;">Walk:</span>
+        <button class="btn active" id="btn-mode-side">Pace Sideways (Ke Samping)</button>
+        <button class="btn" id="btn-mode-fwd">Step Forward (Maju)</button>
+      </div>
+
+      <!-- Camera Preset Toggles -->
+      <div class="btn-group">
+        <span style="font-size: 11px; color: #a1a1aa; font-family: 'JetBrains Mono', monospace; margin-right: 4px;">Camera:</span>
+        <button class="btn active" id="btn-cam-front">Front Stage</button>
+        <button class="btn" id="btn-cam-side">Side Profile</button>
+        <button class="btn" id="btn-cam-free">Free Orbit</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       THREE.JS SCENE SETUP
+       ========================================================================= */
+    const container = document.getElementById("canvas-container");
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x070709, 10, 26);
+
+    const camera = new THREE.PerspectiveCamera(36, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.8, 6.2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.target.set(0, 1.3, 0);
+    controls.maxPolarAngle = Math.PI / 2 + 0.05;
+    controls.minDistance = 2.0;
+    controls.maxDistance = 14;
+
+    /* Lighting */
+    const amb = new THREE.AmbientLight(0xffeedd, 0.55);
+    scene.add(amb);
+
+    const key = new THREE.SpotLight(0xfff4db, 4.5, 20, Math.PI / 5, 0.45, 1.2);
+    key.position.set(3, 7.5, 4.5);
+    key.castShadow = true;
+    key.shadow.mapSize.width = 2048;
+    key.shadow.mapSize.height = 2048;
+    key.shadow.bias = -0.0001;
+    scene.add(key);
+
+    const goldFill = new THREE.PointLight(0xffb83b, 2.5, 12, 1.8);
+    goldFill.position.set(-3.5, 3.2, 2.5);
+    scene.add(goldFill);
+
+    const rim = new THREE.DirectionalLight(0xffc53d, 2.8);
+    rim.position.set(-2, 4.5, -4.5);
+    scene.add(rim);
+
+    /* Stage Floor */
+    const stage = new THREE.Mesh(
+      new THREE.CylinderGeometry(4.5, 4.6, 0.2, 64),
+      new THREE.MeshStandardMaterial({ color: 0x0c0c10, roughness: 0.38, metalness: 0.65 })
+    );
+    stage.position.y = -0.1;
+    stage.receiveShadow = true;
+    scene.add(stage);
+
+    const neonRing = new THREE.Mesh(
+      new THREE.TorusGeometry(4.52, 0.015, 12, 96),
+      new THREE.MeshBasicMaterial({ color: 0xffb83b })
+    );
+    neonRing.rotation.x = Math.PI / 2;
+    scene.add(neonRing);
+
+    /* Materials */
+    const armorMat = new THREE.MeshStandardMaterial({ color: 0x141418, roughness: 0.28, metalness: 0.72 });
+    const chassisMat = new THREE.MeshStandardMaterial({ color: 0x09090c, roughness: 0.45, metalness: 0.85 });
+    const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe5e5eb, roughness: 0.12, metalness: 0.96 });
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffc53d, roughness: 0.24, metalness: 0.88 });
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0xffb83b });
+
+    function addMesh(geo, mat, parent, x=0, y=0, z=0) {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      parent.add(m);
+      return m;
+    }
+
+    function addLimb(a, b, r, mat, parent) {
+      const A = new THREE.Vector3(...a);
+      const B = new THREE.Vector3(...b);
+      const d = B.clone().sub(A);
+      const len = d.length();
+      const m = addMesh(new THREE.CylinderGeometry(r, r, len, 20), mat, parent);
+      m.position.copy(A).add(B).multiplyScalar(0.5);
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+      return m;
+    }
+
+    /* =========================================================================
+       CYBERNETIC THRONE
+       ========================================================================= */
+    const throne = new THREE.Group();
+    scene.add(throne);
+
+    // Heavy Base
+    const hexBase = addMesh(new THREE.CylinderGeometry(0.72, 0.76, 0.08, 6), chassisMat, throne, 0, 0.04, 0);
+    hexBase.rotation.y = Math.PI / 6;
+    const hexRim = addMesh(new THREE.TorusGeometry(0.73, 0.015, 6, 6), goldMat, throne, 0, 0.08, 0);
+    hexRim.rotation.x = Math.PI / 2;
+    hexRim.rotation.z = Math.PI / 6;
+
+    // Hydraulic Column
+    addMesh(new THREE.CylinderGeometry(0.14, 0.15, 0.85, 24), chassisMat, throne, 0, 0.5, 0);
+    addMesh(new THREE.CylinderGeometry(0.09, 0.09, 0.6, 24), chromeMat, throne, 0, 0.7, 0);
+    addMesh(new THREE.TorusGeometry(0.16, 0.02, 12, 32), goldMat, throne, 0, 0.65, 0).rotation.x = Math.PI / 2;
+
+    // Footrest Ring (where boots rest flat!)
+    const footRing = addMesh(new THREE.TorusGeometry(0.50, 0.022, 12, 64), goldMat, throne, 0, 0.38, 0);
+    footRing.rotation.x = Math.PI / 2;
+
+    // Seat pan
+    addMesh(new THREE.CylinderGeometry(0.55, 0.52, 0.1, 32), chassisMat, throne, 0, 1.0, 0);
+    addMesh(new THREE.CylinderGeometry(0.49, 0.49, 0.04, 32), armorMat, throne, 0, 1.055, 0);
+    addMesh(new THREE.TorusGeometry(0.52, 0.012, 8, 48), glowMat, throne, 0, 0.96, 0).rotation.x = Math.PI / 2;
+
+    // Spine Backrest
+    const spineColumn = new THREE.Group();
+    spineColumn.position.set(0, 1.05, -0.42);
+    throne.add(spineColumn);
+    for (let i = 0; i < 4; i++) {
+      const sY = 0.2 + i * 0.24;
+      addMesh(new THREE.BoxGeometry(0.16, 0.12, 0.12), chassisMat, spineColumn, 0, sY, 0);
+      const brace = addMesh(new THREE.BoxGeometry(0.68 - i * 0.08, 0.03, 0.08), armorMat, spineColumn, 0, sY, 0.04);
+      [-1, 1].forEach((sg) => {
+        addMesh(new THREE.SphereGeometry(0.024, 10, 8), goldMat, brace, sg * (0.34 - i * 0.04), 0, 0);
+      });
+    }
+    [-0.18, 0.18].forEach((bx) => {
+      addLimb([bx, 0.1, -0.06], [bx, 0.9, -0.02], 0.02, chromeMat, spineColumn);
+    });
+
+    /* =========================================================================
+       VINTAGE RIBBON HOLO-MIC
+       ========================================================================= */
+    const mic = new THREE.Group();
+    mic.position.set(0.68, 0, 0.78);
+    scene.add(mic);
+
+    const micBase = addMesh(new THREE.CylinderGeometry(0.28, 0.32, 0.06, 8), chassisMat, mic, 0, 0.03, 0);
+    micBase.rotation.y = Math.PI / 8;
+    addLimb([0, 0.06, 0], [0, 1.88, 0], 0.024, chromeMat, mic);
+    addMesh(new THREE.CylinderGeometry(0.045, 0.045, 0.09, 20), goldMat, mic, 0, 1.88, 0);
+    for (let c = 0; c < 7; c++) {
+      const cRing = addMesh(new THREE.TorusGeometry(0.035, 0.007, 6, 20), goldMat, mic, 0, 0.4 + c * 0.2, 0);
+      cRing.rotation.x = 0.3;
+      cRing.rotation.y = c * 0.8;
+    }
+    const boomEnd = [-0.18, 2.36, -0.06];
+    addLimb([0, 1.88, 0], boomEnd, 0.018, chromeMat, mic);
+    addMesh(new THREE.TorusGeometry(0.14, 0.014, 10, 32), goldMat, mic, boomEnd[0], boomEnd[1], boomEnd[2]).rotation.y = Math.PI / 4;
+    addMesh(new THREE.TorusGeometry(0.11, 0.01, 8, 24), chromeMat, mic, boomEnd[0], boomEnd[1], boomEnd[2]).rotation.x = Math.PI / 4;
+    const capsule = addMesh(new THREE.CylinderGeometry(0.07, 0.07, 0.18, 24), chassisMat, mic, boomEnd[0], boomEnd[1] + 0.02, boomEnd[2]);
+    const tubeGlow = addMesh(new THREE.CylinderGeometry(0.035, 0.035, 0.12, 16), glowMat, mic, boomEnd[0], boomEnd[1] + 0.02, boomEnd[2]);
+    tubeGlow.castShadow = false;
+    const micGrille = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.075, 0.075, 0.185, 16, 4, true),
+      new THREE.MeshBasicMaterial({ color: 0xffc53d, wireframe: true, transparent: true, opacity: 0.75 })
+    );
+    micGrille.position.copy(capsule.position);
+    mic.add(micGrille);
+
+    /* =========================================================================
+       FRONTIER APEX CYBER-MECHA
+       ========================================================================= */
+    const bot = new THREE.Group();
+    scene.add(bot);
+
+    // Pelvis
+    const pelvis = new THREE.Group();
+    pelvis.position.set(0, 1.15, -0.06);
+    bot.add(pelvis);
+    addMesh(new THREE.CylinderGeometry(0.38, 0.42, 0.22, 32), chassisMat, pelvis, 0, 0, 0);
+    const pelvisPlate = addMesh(new THREE.BoxGeometry(0.34, 0.18, 0.08), armorMat, pelvis, 0, -0.02, 0.22);
+    pelvisPlate.rotation.x = 0.2;
+    addMesh(new THREE.TorusGeometry(0.39, 0.015, 8, 32), goldMat, pelvis, 0, 0.08, 0).rotation.x = Math.PI / 2;
+
+    // ARTICULATED BIPEDAL LEGS (-Y Standard Bones)
+    // Left Leg
+    const leftHip = new THREE.Group();
+    leftHip.position.set(-0.30, -0.02, 0.02);
+    pelvis.add(leftHip);
+    addMesh(new THREE.SphereGeometry(0.13, 20, 16), chassisMat, leftHip);
+    addMesh(new THREE.TorusGeometry(0.13, 0.015, 10, 24), goldMat, leftHip).rotation.y = Math.PI / 2;
+
+    const leftThigh = new THREE.Group();
+    leftHip.add(leftThigh);
+    addMesh(new THREE.BoxGeometry(0.24, 0.52, 0.22), armorMat, leftThigh, 0, -0.26, 0.01);
+    addMesh(new THREE.BoxGeometry(0.03, 0.48, 0.04), goldMat, leftThigh, -0.11, -0.26, 0.01);
+    addLimb([0.08, -0.05, -0.06], [0.08, -0.48, -0.06], 0.03, chromeMat, leftThigh);
+    const leftKnee = addMesh(new THREE.CylinderGeometry(0.12, 0.12, 0.18, 24), goldMat, leftThigh, 0, -0.54, 0);
+    leftKnee.rotation.z = Math.PI / 2;
+
+    const leftCalf = new THREE.Group();
+    leftCalf.position.set(0, -0.54, 0);
+    leftThigh.add(leftCalf);
+    addMesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), armorMat, leftCalf, 0, -0.28, 0.03);
+    const leftShinProw = addMesh(new THREE.BoxGeometry(0.08, 0.48, 0.1), chassisMat, leftCalf, 0, -0.26, 0.14);
+    leftShinProw.rotation.x = -0.1;
+    addLimb([0, -0.06, -0.08], [0, -0.50, -0.08], 0.035, chromeMat, leftCalf);
+    addMesh(new THREE.SphereGeometry(0.10, 16, 12), chassisMat, leftCalf, 0, -0.58, 0);
+
+    const leftFoot = new THREE.Group();
+    leftFoot.position.set(0, -0.58, 0);
+    leftCalf.add(leftFoot);
+    addMesh(new THREE.BoxGeometry(0.22, 0.10, 0.32), armorMat, leftFoot, 0, -0.05, 0.11);
+    addMesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), goldMat, leftFoot, 0, -0.06, 0.27);
+    addMesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), chassisMat, leftFoot, 0, -0.04, -0.06);
+    addMesh(new THREE.BoxGeometry(0.24, 0.025, 0.46), chassisMat, leftFoot, 0, -0.10, 0.10);
+
+    // Right Leg
+    const rightHip = new THREE.Group();
+    rightHip.position.set(0.30, -0.02, 0.02);
+    pelvis.add(rightHip);
+    addMesh(new THREE.SphereGeometry(0.13, 20, 16), chassisMat, rightHip);
+    addMesh(new THREE.TorusGeometry(0.13, 0.015, 10, 24), goldMat, rightHip).rotation.y = Math.PI / 2;
+
+    const rightThigh = new THREE.Group();
+    rightHip.add(rightThigh);
+    addMesh(new THREE.BoxGeometry(0.24, 0.52, 0.22), armorMat, rightThigh, 0, -0.26, 0.01);
+    addMesh(new THREE.BoxGeometry(0.03, 0.48, 0.04), goldMat, rightThigh, 0.11, -0.26, 0.01);
+    addLimb([-0.08, -0.05, -0.06], [-0.08, -0.48, -0.06], 0.03, chromeMat, rightThigh);
+    const rightKnee = addMesh(new THREE.CylinderGeometry(0.12, 0.12, 0.18, 24), goldMat, rightThigh, 0, -0.54, 0);
+    rightKnee.rotation.z = Math.PI / 2;
+
+    const rightCalf = new THREE.Group();
+    rightCalf.position.set(0, -0.54, 0);
+    rightThigh.add(rightCalf);
+    addMesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), armorMat, rightCalf, 0, -0.28, 0.03);
+    const rightShinProw = addMesh(new THREE.BoxGeometry(0.08, 0.48, 0.1), chassisMat, rightCalf, 0, -0.26, 0.14);
+    rightShinProw.rotation.x = -0.1;
+    addLimb([0, -0.06, -0.08], [0, -0.50, -0.08], 0.035, chromeMat, rightCalf);
+    addMesh(new THREE.SphereGeometry(0.10, 16, 12), chassisMat, rightCalf, 0, -0.58, 0);
+
+    const rightFoot = new THREE.Group();
+    rightFoot.position.set(0, -0.58, 0);
+    rightCalf.add(rightFoot);
+    addMesh(new THREE.BoxGeometry(0.22, 0.10, 0.32), armorMat, rightFoot, 0, -0.05, 0.11);
+    addMesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), goldMat, rightFoot, 0, -0.06, 0.27);
+    addMesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), chassisMat, rightFoot, 0, -0.04, -0.06);
+    addMesh(new THREE.BoxGeometry(0.24, 0.025, 0.46), chassisMat, rightFoot, 0, -0.10, 0.10);
+
+    // Initial seated pose: Thigh horizontal forward, calf down to footrest
+    leftThigh.rotation.x = -1.44;
+    leftCalf.rotation.x = 1.44;
+    rightThigh.rotation.x = -1.44;
+    rightCalf.rotation.x = 1.44;
+
+    // Torso
+    const torso = new THREE.Group();
+    torso.position.y = 1.25;
+    bot.add(torso);
+
+    for (let i = 0; i < 4; i++) {
+      const vY = 0.16 + i * 0.2;
+      addMesh(new THREE.CylinderGeometry(0.13, 0.14, 0.12, 16), chassisMat, torso, 0, vY, -0.04);
+      addMesh(new THREE.TorusGeometry(0.15, 0.014, 8, 24), goldMat, torso, 0, vY, -0.04).rotation.x = Math.PI / 2;
+    }
+    addMesh(new THREE.CylinderGeometry(0.55, 0.42, 0.95, 32), armorMat, torso, 0, 0.5, 0);
+
+    // Split chest armor
+    [-1, 1].forEach((sg) => {
+      const chestPlate = addMesh(new THREE.BoxGeometry(0.24, 0.34, 0.08), armorMat, torso, sg * 0.22, 0.66, 0.44);
+      chestPlate.rotation.y = sg * -0.28;
+      chestPlate.rotation.x = -0.15;
+      addMesh(new THREE.BoxGeometry(0.02, 0.32, 0.02), goldMat, chestPlate, sg * 0.1, 0, 0.045);
+    });
+
+    // Golden Logic Reactor Core
+    const coreGroup = new THREE.Group();
+    coreGroup.position.set(0, 0.58, 0.42);
+    torso.add(coreGroup);
+    addMesh(new THREE.CylinderGeometry(0.16, 0.16, 0.1, 24), chassisMat, coreGroup, 0, 0, 0).rotation.x = Math.PI / 2;
+    const reactorSphere = addMesh(new THREE.SphereGeometry(0.09, 24, 16), glowMat, coreGroup, 0, 0, 0.03);
+    reactorSphere.castShadow = false;
+    const gyroRing1 = addMesh(new THREE.TorusGeometry(0.125, 0.012, 10, 32), goldMat, coreGroup, 0, 0, 0.03);
+    const gyroRing2 = addMesh(new THREE.TorusGeometry(0.145, 0.01, 8, 32), chromeMat, coreGroup, 0, 0, 0.03);
+
+    // ARTICULATED CYBERNETIC ARMS & HANDS (RELAXED, NATURAL JOINTS - NO WEIRD BENDS!)
+    // Left Arm (Dynamic Gesture / Knee Rest Arm)
+    const leftShoulder = new THREE.Group();
+    leftShoulder.position.set(-0.65, 0.82, 0);
+    torso.add(leftShoulder);
+    const leftPauldron = addMesh(new THREE.SphereGeometry(0.19, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, leftShoulder);
+    leftPauldron.rotation.z = 0.4;
+    addMesh(new THREE.TorusGeometry(0.18, 0.014, 10, 32), goldMat, leftShoulder).rotation.x = Math.PI / 2;
+
+    const leftUpperArm = new THREE.Group();
+    leftShoulder.add(leftUpperArm);
+    addLimb([0, 0, 0], [0, -0.42, 0], 0.06, armorMat, leftUpperArm);
+    addLimb([0.04, -0.04, -0.03], [0.04, -0.38, -0.03], 0.032, chromeMat, leftUpperArm);
+    const leftElbow = addMesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 20), goldMat, leftUpperArm, 0, -0.42, 0);
+    leftElbow.rotation.z = Math.PI / 2;
+
+    const leftForearm = new THREE.Group();
+    leftForearm.position.set(0, -0.42, 0);
+    leftUpperArm.add(leftForearm);
+    addMesh(new THREE.BoxGeometry(0.14, 0.42, 0.14), armorMat, leftForearm, 0, -0.21, 0.02);
+    addMesh(new THREE.BoxGeometry(0.02, 0.36, 0.03), glowMat, leftForearm, 0, -0.21, 0.095);
+    addMesh(new THREE.SphereGeometry(0.07, 16, 12), chassisMat, leftForearm, 0, -0.42, 0);
+
+    const leftHand = new THREE.Group();
+    leftHand.position.set(0, -0.42, 0);
+    leftForearm.add(leftHand);
+    addMesh(new THREE.BoxGeometry(0.12, 0.045, 0.12), chassisMat, leftHand, 0, -0.02, 0.06);
+    addMesh(new THREE.BoxGeometry(0.10, 0.02, 0.06), goldMat, leftHand, 0, 0.005, 0.06);
+    [-0.04, -0.013, 0.014, 0.041].forEach((fx) => {
+      const fg = new THREE.Group();
+      fg.position.set(fx, -0.01, 0.12);
+      leftHand.add(fg);
+      addMesh(new THREE.SphereGeometry(0.014, 8, 6), goldMat, fg);
+      addLimb([0, 0, 0], [0, -0.03, 0.06], 0.012, armorMat, fg);
+      addLimb([0, -0.03, 0.06], [0, -0.07, 0.09], 0.010, chromeMat, fg);
+    });
+    const leftThumb = new THREE.Group();
+    leftThumb.position.set(0.06, -0.01, 0.04);
+    leftThumb.rotation.set(0.2, 0.5, -0.3);
+    leftHand.add(leftThumb);
+    addLimb([0, 0, 0], [0.03, -0.03, 0.05], 0.013, armorMat, leftThumb);
+    addLimb([0.03, -0.03, 0.05], [0.05, -0.06, 0.08], 0.011, chromeMat, leftThumb);
+
+    // Right Arm (Microphone Arm)
+    const rightShoulder = new THREE.Group();
+    rightShoulder.position.set(0.65, 0.82, 0);
+    torso.add(rightShoulder);
+    const rightPauldron = addMesh(new THREE.SphereGeometry(0.19, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, rightShoulder);
+    rightPauldron.rotation.z = -0.4;
+    addMesh(new THREE.TorusGeometry(0.18, 0.014, 10, 32), goldMat, rightShoulder).rotation.x = Math.PI / 2;
+
+    const rightUpperArm = new THREE.Group();
+    rightShoulder.add(rightUpperArm);
+    addLimb([0, 0, 0], [0, -0.42, 0], 0.06, armorMat, rightUpperArm);
+    addLimb([-0.04, -0.04, -0.03], [-0.04, -0.38, -0.03], 0.032, chromeMat, rightUpperArm);
+    const rightElbow = addMesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 20), goldMat, rightUpperArm, 0, -0.42, 0);
+    rightElbow.rotation.z = Math.PI / 2;
+
+    const rightForearm = new THREE.Group();
+    rightForearm.position.set(0, -0.42, 0);
+    rightUpperArm.add(rightForearm);
+    addMesh(new THREE.BoxGeometry(0.14, 0.42, 0.14), armorMat, rightForearm, 0, -0.21, 0.02);
+    addMesh(new THREE.BoxGeometry(0.02, 0.36, 0.03), glowMat, rightForearm, 0, -0.21, 0.095);
+    addMesh(new THREE.SphereGeometry(0.07, 16, 12), chassisMat, rightForearm, 0, -0.42, 0);
+
+    const rightHand = new THREE.Group();
+    rightHand.position.set(0, -0.42, 0);
+    rightForearm.add(rightHand);
+    addMesh(new THREE.BoxGeometry(0.12, 0.045, 0.12), chassisMat, rightHand, 0, -0.02, 0.06);
+    addMesh(new THREE.BoxGeometry(0.10, 0.02, 0.06), goldMat, rightHand, 0, 0.005, 0.06);
+    [-0.035, -0.01, 0.015, 0.038].forEach((fx) => {
+      const fg = new THREE.Group();
+      fg.position.set(fx, -0.01, 0.12);
+      rightHand.add(fg);
+      addMesh(new THREE.SphereGeometry(0.014, 8, 6), goldMat, fg);
+      addLimb([0, 0, 0], [0, -0.04, 0.04], 0.012, armorMat, fg);
+      addLimb([0, -0.04, 0.04], [0, -0.07, 0.02], 0.010, chromeMat, fg);
+    });
+    const rightThumb = new THREE.Group();
+    rightThumb.position.set(-0.06, -0.01, 0.04);
+    rightThumb.rotation.set(0.2, -0.5, 0.3);
+    rightHand.add(rightThumb);
+    addLimb([0, 0, 0], [-0.03, -0.03, 0.04], 0.013, armorMat, rightThumb);
+    addLimb([-0.03, -0.03, 0.04], [-0.04, -0.06, 0.06], 0.011, chromeMat, rightThumb);
+
+    // Initial Seated Arm Angles: Relaxed, natural, zero acute cramps
+    leftShoulder.rotation.set(0.38, 0.10, -0.18);
+    leftUpperArm.rotation.set(0.10, 0, 0);
+    leftForearm.rotation.set(0.55, 0, 0);
+    leftHand.rotation.set(-0.25, 0, 0);
+
+    rightShoulder.rotation.set(0.48, -0.18, 0.18);
+    rightUpperArm.rotation.set(0.12, 0, 0);
+    rightForearm.rotation.set(0.70, 0, 0);
+    rightHand.rotation.set(0.12, 0, 0);
+
+    // Head Assembly
+    const headPivot = new THREE.Group();
+    headPivot.position.y = 1.24;
+    torso.add(headPivot);
+    const head = new THREE.Group();
+    head.position.y = 0.42;
+    headPivot.add(head);
+
+    const helmShape = new THREE.Shape();
+    helmShape.moveTo(-0.64, -0.38);
+    helmShape.lineTo(0.64, -0.38);
+    helmShape.lineTo(0.74, 0.12);
+    helmShape.lineTo(0.62, 0.52);
+    helmShape.lineTo(0.3, 0.62);
+    helmShape.lineTo(-0.3, 0.62);
+    helmShape.lineTo(-0.62, 0.52);
+    helmShape.lineTo(-0.74, 0.12);
+    helmShape.closePath();
+    const hg = new THREE.ExtrudeGeometry(helmShape, { depth: 0.72, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.06, bevelSegments: 4 });
+    hg.center();
+    addMesh(hg, armorMat, head);
+
+    // Spectrogram
+    const eqGroup = new THREE.Group();
+    eqGroup.position.set(0, 0.04, 0.45);
+    head.add(eqGroup);
+    const eqBars = [];
+    for (let i = 0; i < 16; i++) {
+      const bar = addMesh(new THREE.BoxGeometry(0.044, 0.1, 0.01), glowMat, eqGroup, -0.465 + i * 0.062, 0, 0);
+      bar.castShadow = false;
+      eqBars.push(bar);
+    }
+
+    // Halo
+    const haloGroup = new THREE.Group();
+    haloGroup.position.set(0, 0.82, 0.02);
+    head.add(haloGroup);
+    addMesh(new THREE.TorusGeometry(0.36, 0.012, 12, 64), goldMat, haloGroup).rotation.x = Math.PI / 2;
+    const haloNodes = [];
+    for (let i = 0; i < 3; i++) {
+      haloNodes.push(addMesh(new THREE.SphereGeometry(0.026, 12, 8), glowMat, haloGroup));
+    }
+
+    /* =========================================================================
+       MOTION CHOREOGRAPHY ENGINE (SIDEWAYS PACING VS FORWARD STEP)
+       ========================================================================= */
+    let walkMode = "side"; // "side" (Pacing across stage to the side) or "fwd" (forward)
+    let isPlaying = false;
+    let manualScroll = 0; // 0 to 1
+    let time = 0;
+
+    function applyPose(scrollVal) {
+      // Phase 1 (0.00 -> 0.06): Poised Seated
+      // Phase 2 (0.06 -> 0.32): Rising & Standing tall
+      // Phase 3 (0.32 -> 1.00): Pacing across stage sideways
+      const standT = Math.max(0, Math.min(1, (scrollVal - 0.06) / 0.26));
+      const standEase = standT * standT * (3 - 2 * standT);
+
+      const walkT = Math.max(0, Math.min(1, (scrollVal - 0.32) / 0.68));
+      const walkEase = walkT * walkT * (3 - 2 * walkT);
+      const walkCycle = walkT * Math.PI * 4; // Multiple fluid steps across stage
+
+      // Update Phase Label
+      const phaseEl = document.getElementById("phase-label");
+      if (scrollVal < 0.06) {
+        phaseEl.innerText = "Phase: Seated on Throne (Poised)";
+      } else if (scrollVal < 0.32) {
+        phaseEl.innerText = "Phase: Standing Up (Extending Joints)";
+      } else {
+        phaseEl.innerText = walkMode === "side" 
+          ? "Phase: Pacing Sideways Across Stage (Stand-up Comedian Pacing)"
+          : "Phase: Stepping Forward to Stage Front";
+      }
+
+      // Height
+      const walkBob = walkT > 0 ? Math.abs(Math.sin(walkCycle * 2)) * 0.035 : 0;
+      bot.position.y = standEase * 0.48 + walkBob;
+
+      // Z & X Displacement
+      if (walkMode === "side") {
+        // Robot stands up slightly forward off throne (+0.42), then paces across stage sideways along X!
+        bot.position.z = standEase * 0.42;
+        // Pacing side to side: from center (0) smoothly pacing to stage right (+1.1), commanding the floor!
+        bot.position.x = walkT > 0 ? Math.sin(walkT * Math.PI * 1.5) * 1.15 : 0;
+      } else {
+        // Forward stepping
+        bot.position.z = standEase * 0.42 + walkEase * 0.85;
+        bot.position.x = walkT > 0 ? Math.sin(walkCycle) * 0.06 : 0;
+      }
+
+      // LEGS KINEMATICS
+      // Seated: Thighs horizontal (-1.44), Calves down (+1.44), Feet flat on footrest
+      // Standing: Straight (0)
+      // Walking:
+      const stride = walkT > 0 ? Math.sin(walkCycle) : 0;
+      const leftStride = stride;
+      const rightStride = -stride;
+
+      if (walkMode === "side") {
+        // Lateral pacing: Hip abduction & forward-lateral foot plant
+        const lateralRoll = walkT > 0 ? Math.cos(walkCycle) * 0.12 : 0;
+        
+        leftThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - leftStride * 0.32;
+        leftThigh.rotation.z = lateralRoll * 0.5;
+        leftCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (leftStride < 0 ? -leftStride * 0.45 : 0.04);
+        leftFoot.rotation.x = leftStride > 0 ? -leftStride * 0.18 : leftStride * 0.12;
+
+        rightThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - rightStride * 0.32;
+        rightThigh.rotation.z = -lateralRoll * 0.5;
+        rightCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (rightStride < 0 ? -rightStride * 0.45 : 0.04);
+        rightFoot.rotation.x = rightStride > 0 ? -rightStride * 0.18 : rightStride * 0.12;
+      } else {
+        // Forward walk
+        leftThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - leftStride * 0.45;
+        leftThigh.rotation.z = 0;
+        leftCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (leftStride < 0 ? -leftStride * 0.55 : 0.05);
+        leftFoot.rotation.x = leftStride > 0 ? -leftStride * 0.2 : leftStride * 0.15;
+
+        rightThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - rightStride * 0.45;
+        rightThigh.rotation.z = 0;
+        rightCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (rightStride < 0 ? -rightStride * 0.55 : 0.05);
+        rightFoot.rotation.x = rightStride > 0 ? -rightStride * 0.2 : rightStride * 0.15;
+      }
+
+      // Torso posture & stage orientation
+      // While pacing sideways, the torso angles slightly toward the direction of pacing (+-0.22 rad)
+      const facingAngle = walkMode === "side" 
+        ? (walkT > 0 ? Math.cos(walkT * Math.PI * 1.5) * 0.25 : 0)
+        : (walkT > 0 ? Math.sin(walkCycle) * 0.1 : 0);
+      
+      torso.rotation.x = -standEase * 0.08 + Math.abs(stride) * 0.02;
+      torso.rotation.y = facingAngle;
+      torso.rotation.z = walkMode === "side" ? (walkT > 0 ? Math.sin(walkCycle) * 0.03 : 0) : 0;
+
+      // ARMS & HANDS (RELAXED, NATURAL, NO CRAMPED ANGLES)
+      // Left Arm:
+      // Seated: Resting calmly on knee
+      // Standing/Pacing: Swings naturally with the stride and gestures comfortably
+      const armSwing = walkT > 0 ? Math.sin(walkCycle) * 0.18 : 0;
+      leftShoulder.rotation.x = THREE.MathUtils.lerp(0.38, -0.15, standEase) - armSwing;
+      leftShoulder.rotation.y = THREE.MathUtils.lerp(0.10, 0.25, standEase);
+      leftShoulder.rotation.z = THREE.MathUtils.lerp(-0.18, -0.32, standEase);
+      leftUpperArm.rotation.x = THREE.MathUtils.lerp(0.10, 0.18, standEase);
+      leftForearm.rotation.x = THREE.MathUtils.lerp(0.55, 0.35, standEase);
+      leftHand.rotation.x = THREE.MathUtils.lerp(-0.25, 0.05, standEase);
+
+      // Right Arm (Microphone Arm):
+      // Holds microphone stem comfortably; as robot paces sideways, arm holds mic gracefully
+      rightShoulder.rotation.x = THREE.MathUtils.lerp(0.48, 0.28, standEase) + armSwing * 0.5;
+      rightShoulder.rotation.y = THREE.MathUtils.lerp(-0.18, -0.10, standEase);
+      rightShoulder.rotation.z = THREE.MathUtils.lerp(0.18, 0.15, standEase);
+      rightUpperArm.rotation.x = THREE.MathUtils.lerp(0.12, 0.20, standEase);
+      rightForearm.rotation.x = THREE.MathUtils.lerp(0.70, 0.58, standEase);
+      rightHand.rotation.x = THREE.MathUtils.lerp(0.12, 0.08, standEase);
+
+      // Mic Movement
+      if (walkMode === "side") {
+        // Mic tilts slightly or stays reachable
+        mic.position.x = 0.68 + (walkT > 0 ? Math.sin(walkT * Math.PI * 1.5) * 0.85 : 0);
+        mic.position.z = 0.78 + standEase * 0.25;
+      } else {
+        mic.position.x = 0.68;
+        mic.position.z = 0.78 + standEase * 0.35 + walkEase * 0.65;
+      }
+    }
+
+    /* =========================================================================
+       ANIMATION LOOP & UI BINDING
+       ========================================================================= */
+    const scrubber = document.getElementById("scrubber");
+    const progressVal = document.getElementById("progress-val");
+    const tVal = document.getElementById("t-val");
+
+    scrubber.addEventListener("input", (e) => {
+      isPlaying = false;
+      document.getElementById("btn-play").innerText = "▶ Play Animation";
+      document.getElementById("btn-play").classList.remove("active");
+      manualScroll = e.target.value / 1000;
+      progressVal.innerText = `${Math.round(manualScroll * 100)}%`;
+      tVal.innerText = manualScroll.toFixed(2);
+      applyPose(manualScroll);
+    });
+
+    // Play button
+    const btnPlay = document.getElementById("btn-play");
+    btnPlay.addEventListener("click", () => {
+      isPlaying = !isPlaying;
+      btnPlay.classList.toggle("active", isPlaying);
+      btnPlay.innerText = isPlaying ? "⏸ Pause" : "▶ Play Animation";
+    });
+
+    // Reset button (Sit)
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      isPlaying = false;
+      btnPlay.innerText = "▶ Play Animation";
+      btnPlay.classList.remove("active");
+      manualScroll = 0;
+      scrubber.value = 0;
+      progressVal.innerText = "0%";
+      tVal.innerText = "0.00";
+      applyPose(0);
+    });
+
+    // Stand Pose button (32%)
+    document.getElementById("btn-stand-pose").addEventListener("click", () => {
+      isPlaying = false;
+      btnPlay.innerText = "▶ Play Animation";
+      btnPlay.classList.remove("active");
+      manualScroll = 0.32;
+      scrubber.value = 320;
+      progressVal.innerText = "32%";
+      tVal.innerText = "0.32";
+      applyPose(0.32);
+    });
+
+    // Walk Mode buttons
+    const btnSide = document.getElementById("btn-mode-side");
+    const btnFwd = document.getElementById("btn-mode-fwd");
+    btnSide.addEventListener("click", () => {
+      walkMode = "side";
+      btnSide.classList.add("active");
+      btnFwd.classList.remove("active");
+      applyPose(manualScroll);
+    });
+    btnFwd.addEventListener("click", () => {
+      walkMode = "fwd";
+      btnFwd.classList.add("active");
+      btnSide.classList.remove("active");
+      applyPose(manualScroll);
+    });
+
+    // Camera preset buttons
+    const btnCamFront = document.getElementById("btn-cam-front");
+    const btnCamSide = document.getElementById("btn-cam-side");
+    const btnCamFree = document.getElementById("btn-cam-free");
+
+    function setCam(x, y, z, tx, ty, tz) {
+      camera.position.set(x, y, z);
+      controls.target.set(tx, ty, tz);
+      controls.update();
+    }
+
+    btnCamFront.addEventListener("click", () => {
+      [btnCamFront, btnCamSide, btnCamFree].forEach(b => b.classList.remove("active"));
+      btnCamFront.classList.add("active");
+      setCam(0, 1.8, 5.8, 0, 1.25, 0);
+    });
+
+    btnCamSide.addEventListener("click", () => {
+      [btnCamFront, btnCamSide, btnCamFree].forEach(b => b.classList.remove("active"));
+      btnCamSide.classList.add("active");
+      setCam(5.2, 1.8, 0.5, 0, 1.25, 0);
+    });
+
+    btnCamFree.addEventListener("click", () => {
+      [btnCamFront, btnCamSide, btnCamFree].forEach(b => b.classList.remove("active"));
+      btnCamFree.classList.add("active");
+    });
+
+    // Animation Loop
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = 0.016;
+      time += dt;
+
+      if (isPlaying) {
+        manualScroll += dt * 0.22;
+        if (manualScroll > 1) manualScroll = 0;
+        scrubber.value = Math.round(manualScroll * 1000);
+        progressVal.innerText = `${Math.round(manualScroll * 100)}%`;
+        tVal.innerText = manualScroll.toFixed(2);
+        applyPose(manualScroll);
+      }
+
+      // Reactor & Halo subtle ambient pulse
+      const corePulse = Math.sin(time * 3) * 0.5 + 0.5;
+      reactorSphere.scale.setScalar(0.95 + corePulse * 0.08);
+      gyroRing1.rotation.x = time * 2.2;
+      gyroRing1.rotation.y = time * 1.5;
+      gyroRing2.rotation.z = -time * 1.8;
+      haloGroup.rotation.y = time * 0.6;
+      haloNodes.forEach((node, idx) => {
+        const a = time * 1.6 + (idx * Math.PI * 2) / 3;
+        node.position.set(Math.cos(a) * 0.36, Math.sin(time * 3 + idx) * 0.015, Math.sin(a) * 0.36);
+      });
+      eqBars.forEach((bar, idx) => {
+        const freq = Math.sin(time * 7 + idx * 0.7) * 0.5 + Math.cos(time * 11 + idx * 0.9) * 0.5;
+        const h = Math.max(0.04, 0.08 + Math.abs(freq) * 0.18);
+        bar.scale.y = h / 0.1;
+        bar.position.y = h / 2 - 0.04;
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Initial pose
+    applyPose(0);
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
