@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { createPublicClient, http } from "viem";
+import {
+  concat,
+  createPublicClient,
+  encodeAbiParameters,
+  http,
+  keccak256,
+} from "viem";
 import { getChainForEnv } from "@/lib/haha-chains";
 import {
   getServerContracts,
@@ -9,6 +15,32 @@ import {
 import { readChainEnv } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
+
+function tipJarLeafHash(account: `0x${string}`, cumulativeMicro: bigint): `0x${string}` {
+  const inner = keccak256(
+    encodeAbiParameters(
+      [{ type: "address" }, { type: "uint256" }],
+      [account, cumulativeMicro],
+    ),
+  );
+  return keccak256(concat([inner]));
+}
+
+function verifyMerkleProof(
+  proof: `0x${string}`[],
+  root: `0x${string}`,
+  leaf: `0x${string}`,
+): boolean {
+  let acc = leaf;
+  for (const sib of proof) {
+    acc = keccak256(
+      concat(
+        acc.toLowerCase() < sib.toLowerCase() ? [acc, sib] : [sib, acc],
+      ),
+    );
+  }
+  return acc.toLowerCase() === root.toLowerCase();
+}
 
 function proofEpochOf(reward: {
   merkle_proof: unknown;
@@ -95,6 +127,7 @@ export async function GET(req: Request) {
     let pendingEpoch: number | null = null;
     let pendingEta: number | null = null;
     let rootActive = false;
+    let activeMerkleRoot: `0x${string}` | null = null;
     try {
       if (isDeployed(contracts, "tipJar")) {
         const override =
@@ -129,6 +162,7 @@ export async function GET(req: Request) {
           }),
         ]);
         activeEpoch = Number(currentEpoch);
+        activeMerkleRoot = merkleRoot as `0x${string}`;
         rootActive =
           merkleRoot !==
           "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -143,13 +177,22 @@ export async function GET(req: Request) {
     }
 
     const proofEpoch = proofEpochOf(latest);
-    // A Merkle proof is only valid against the root it was built for. Do not
-    // offer a claim when the current proof is older than the active root.
+    const proofMatchesActiveRoot =
+      rootActive &&
+      activeMerkleRoot !== null &&
+      verifyMerkleProof(
+        proof,
+        activeMerkleRoot,
+        tipJarLeafHash(wallet as `0x${string}`, cumulative),
+      );
+    // A Merkle proof is valid if it cryptographically verifies against the
+    // on-chain merkleRoot (or if its epoch label equals activeEpoch when no
+    // pending root is queued).
     const claimReady =
       activeEpoch !== null &&
       rootActive &&
-      proofEpoch === activeEpoch &&
-      pendingEpoch === null;
+      (proofMatchesActiveRoot ||
+        (proofEpoch === activeEpoch && pendingEpoch === null));
 
     return NextResponse.json(
       {
