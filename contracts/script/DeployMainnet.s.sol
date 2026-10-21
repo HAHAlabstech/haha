@@ -94,10 +94,12 @@ contract DeployMainnet is Script {
 
         // View surface only. These are safe under staticcall. The live Pons V2
         // escrow exposes a claim ledger per token; it has NO pending-fee views.
-        _mustRespond(p.escrow, abi.encodeWithSignature("balanceOf(address)", address(this)), "escrow.balanceOf");
+        // Probe with the cold admin, not `address(this)`: Foundry rejects
+        // `address(this)` in scripts because script addresses are ephemeral.
+        _mustRespond(p.escrow, abi.encodeWithSignature("balanceOf(address)", p.cold), "escrow.balanceOf");
         _mustRespond(
             p.escrow,
-            abi.encodeWithSignature("balanceOfToken(address,address)", address(this), p.usdg),
+            abi.encodeWithSignature("balanceOfToken(address,address)", p.cold, p.usdg),
             "escrow.balanceOfToken"
         );
 

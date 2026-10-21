@@ -105,12 +105,16 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
 - The script **cannot broadcast** without both `--broadcast` and
   `MAINNET_DEPLOY_CONFIRM=DEPLOY_HAHA_MAINNET_4663`. No mainnet transaction was
   signed or sent in this pass.
-- A full `forge script --fork-url` simulation was attempted, but the public
-  4663 RPC does not serve the historical state needed by the fork (error
-  `historical state ... is not available`). It failed before any broadcast.
-  The Node gate and direct view calls above are the real-chain interface proof;
-  the full fork dry-run still needs an archive-capable RPC and the external
-  launch window. Do not treat the mock preflight as a substitute.
+- Full **4663 fork simulation passed** via an Alchemy archive endpoint at block
+  94313447: preflight exit 0, all deploy constructors wired, estimated
+  9,906,008 gas / 0.000396 ETH, **no `--broadcast`**. The deployed addresses in
+  that run are fork-local simulations, not live contracts.
+- Foundry's script guard rejects `address(this)` in a script; the preflight now
+  probes the escrow with the cold admin address. This was the second blocker
+  behind the earlier `staticcall`/RPC failures, and is fixed.
+- The remaining gate is external launch authorization, not code or RPC.
+  Re-run the same command in the launch window with the final RPC and confirm
+  the fork block; only then add `--broadcast`.
 
 ## 3. Worker bring-up
 

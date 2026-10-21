@@ -3,9 +3,9 @@
 > **Remediation status (21 Oct 2026):** the code-level findings below were
 > remediated and re-verified on testnet; see §6 for the per-finding evidence.
 > The original findings are retained as the historical baseline. Mainnet code
-> is prepared and real-4663 read-only preflight passes, but **no mainnet
-> deployment/broadcast was made**; the full fork dry-run is blocked by the
-> public RPC's missing historical state. External launch gates remain.
+> is prepared; real-4663 read-only preflight and a full 4663 deploy simulation
+> passed on an Alchemy archive fork. **No mainnet deployment/broadcast was
+> made.** External launch gates remain.
 
 ## Verdict
 
@@ -134,7 +134,7 @@ no reward-math change). Deployed testnet SHA: `b354374` (with the UI follow-up
 | QUIZ-02 | FIXED | Submit shows `Grading your answers…`, disables duplicate submission, and renders a visible `role="alert"` error while retaining answers. Error handling is outside the graded-only branch. |
 | QUIZ-03 | FIXED | With the QA wallet's local token and cookies removed, `/crowd/join` showed `Sign in to check your saved result` and hid the ten questions. Sign-in recovery returned **200** and then showed `Calibration already passed`. |
 | ERROR-01 | FIXED | Injected Crowd `next` 503 rendered `JURY QUEUE UNAVAILABLE` + `RETRY QUEUE` and never the empty-queue copy. Injected rewards 503 rendered `Rewards unavailable` + retry and never “no reward allocation”. |
-| CLAIM-01 | FIXED (UI/read path) | Real operator wallet: lifetime **$220.15**, already claimed **$220.15**, available **$0.00**, full-claimed state, **0** Claim buttons. No-provider run showed `Reconnect Wallet` and **0** Claim buttons. A controlled claim-ready response showed `$220.15` available and one enabled `Claim $220.15 USDG` button. Proofs are now cryptographically checked against the active on-chain root, not merely compared by epoch label. |
+| CLAIM-01 | FIXED (on-chain claim) | Real operator wallet: lifetime **$220.15**, already claimed **$220.15**, available **$0.00**, full-claimed state, **0** Claim buttons. No-provider run showed `Reconnect Wallet` and **0** Claim buttons. A controlled claim-ready response showed `$220.15` available and one enabled `Claim $220.15 USDG` button. Proofs are cryptographically checked against the active root. **Actual claim executed** from QA wallet `0x638D…ec35`: root epoch 8 activated (`0x4cfa…ed35`), claim tx `0x8469…74a7`, cumulative `0 → 1,000,000` micro-USDG, wallet balance `0 → 1.00 USDG`, nonce `0 → 1`; UI then showed `ALL CAUGHT UP — FULLY CLAIMED` with **0** claim buttons. |
 | MOBILE-01 | FIXED | At 390px: header `scrollWidth=375`, two-row header, named/active workspace tabs, wallet control fully inside the viewport. Screenshot: `C:/Users/sifaq/AppData/Local/Temp/opencode/shots/stage-mobile-b8eb1d3.png`. Producers/SiteNav also no longer clips the brand; Launch App moved into the mobile menu. |
 | NOTFOUND-01 | FIXED | `/bit/does-not-exist-qa-123` rendered `This bit does not exist.` with recovery links; no `SCREENING` or fake AI processing state. |
 | BUYER-01 | FIXED | Vault → Holdout Eval checkout opened `/producers?plan=eval` with **Holdout Eval Run** selected and `Selected Plan` on that card. |
@@ -148,16 +148,21 @@ Additional source-risk closures:
 - `heckled_off` is appealable; self-conceded `bombed` is not (server enforced).
 - Rejected prescreen renders the rejection reason; `crisis_support` renders a support panel instead of a generic rejection. A live duplicate reject (`cmvi3f32g000gqn01x2aj5hyj`, `duplicate sim=1.000`) confirmed the non-crisis branch end-to-end.
 - Crowd vote POST enforces onboarding, own-bit exclusion, and daily tier quota server-side.
+- **Live juror vote:** fresh wallet `0x1d20…637d` passed SIWE, received assignment `qa_juror_a_mvi4q84e` for disputed bit `cmvi1d4fp0005k501dztwm0ri`, and `POST /api/crowd/[id]` returned **200 `{saved:true,votes:1}`**. The DB assignment now has `vote=A`, `fairness=fair`, `voted_at` set.
+- **Live quota:** after 15 ballots, the 16th POST returned **429 `daily ballot quota reached (15)`**. The temporary quota rows were deleted after the check; the live vote remains.
 - `GET /api/crowd/next` is now session-gated. A no-credential request returned **401**; a calibrated wallet with an expired session saw the explicit `Sign in to load ballots` card, not an empty queue. This closes the blind-ballot read leak (the route previously returned A/B candidate text for any caller-supplied wallet).
+- **Crisis-support UI:** a harmless DB fixture (`qa_crisis_mvi4test`, reason `crisis_support`) rendered `You are not alone`, the 988/findahelpline support copy, and no verdict controls. No self-harm content was submitted.
 - Settlement now writes the proof epoch and refreshes every reward row for a wallet, so a wallet with no new reward still receives a current proof.
 - Holdout share-card branch still seals category-only content and uses the separate `sealed-bit-*` key.
-- Mainnet preflight no longer `staticcall`s the state-changing `claimToken/claim`; it checks the live per-token claim ledger (`balanceOf`/`balanceOfToken`) plus dispatcher selectors. The live Pons V2 escrow has no pending-fee views; `FeeSplitter` now sweeps curve/hook then quotes `balanceOfToken`, covered by a no-pending-view regression test. Foundry: **68 tests passed**, including 4 dedicated preflight/selector tests against a mock chain `4663`. `scripts/preflight-mainnet.mjs` also passed **read-only on real 4663** (chain, USDG 6dp, code, claim selectors, ledger call). The full forge fork simulation was attempted but the public RPC lacks historical state; it failed before any broadcast. Dry-run deploy code is complete; **no mainnet broadcast was made**.
+- Mainnet preflight no longer `staticcall`s the state-changing `claimToken/claim`; it checks the live per-token claim ledger (`balanceOf`/`balanceOfToken`) plus dispatcher selectors. The live Pons V2 escrow has no pending-fee views; `FeeSplitter` now sweeps curve/hook then quotes `balanceOfToken`, covered by a no-pending-view regression test. Foundry: **68 tests passed**, including 4 dedicated preflight/selector tests against a mock chain `4663`. `scripts/preflight-mainnet.mjs` passed **read-only on real 4663** (chain, USDG 6dp, code, claim selectors, ledger call). A full **4663 fork simulation** then passed via an Alchemy archive endpoint at block 94313447: preflight exit 0, all deploy constructors wired, estimated 9,906,008 gas / 0.000396 ETH, **no `--broadcast`**. The prior blocker was twofold: public RPC pruning and a Foundry script guard against `address(this)`; both are fixed.
+- **Actual claim:** epoch 8 root activated on testnet (`0x4cfa…ed35`) and QA wallet `0x638D…ec35` claimed `1.00 USDG` (`0x8469…74a7`); cumulative claimed `1,000,000`, balance `1,000,000`, nonce `1`. UI shows fully claimed.
+- **Live juror ballot:** assignment `qa_juror_a_mvi4q84e` voted `A/fair` through the UI/API (`200 {saved:true,votes:1}`).
+- **Live quota:** 16th ballot returned **429 `daily ballot quota reached (15)`**.
+- A real duplicate bit (`cmvi3f32g000gqn01x2aj5hyj`) was rejected by the live prescreen with `duplicate sim=1.000`; the UI showed the reason, no AI answer, no verdict buttons, and no Crowd copy. The harmless crisis-support DB fixture rendered the support panel; no self-harm content was submitted.
 
 ### Remaining evidence boundaries (do not overclaim)
 
-- No paid claim transaction was executed in this pass. The operator allocation is already fully claimed on-chain, and the QA provider intentionally denies `eth_sendTransaction`. Receipt polling/revert handling is implemented but only read-path/claim-ready states were browser-tested.
-- No new daily settlement was forced. The current active root was verified cryptographically against the stored proof; the next settlement will exercise the refreshed-proof write.
-- A real duplicate bit (`cmvi3f32g000gqn01x2aj5hyj`) was rejected by the live prescreen with `duplicate sim=1.000`; the UI showed the reason, no AI answer, no verdict buttons, and no Crowd copy. No self-harm/crisis content was submitted deliberately; that UI branch is covered by code inspection/mock only, not a live fixture.
-- No live juror ballot was cast, so the new server quota path was not exercised end-to-end; the uncalibrated gate and queue failure states were.
-- Mainnet remains **prepared, not deployed**. External audit/legal/sanctions/geo, kill-switch, takedown/GDPR, invoice/KYC, Pons V2 audit, and backup/restore drill gates are still outside code.
-- Real 4663 read-only preflight passed (chain, USDG, code, claim selectors, `balanceOfToken`). A full `forge script --fork-url` simulation was attempted but the public RPC lacks historical state; it failed before any broadcast. An archive-capable RPC is still required for the full fork dry-run.
+- No new daily settlement was forced. The manual QA root (epoch 8) refreshed every wallet's proof and funded one QA claim; the next scheduled settlement will exercise the normal worker path.
+- The crisis-support **worker** branch was not triggered with real crisis content (deliberate); its UI was exercised from a live DB fixture.
+- Mainnet remains **prepared and fully simulated, not deployed**. External audit/legal/sanctions/geo, kill-switch, takedown/GDPR, invoice/KYC, Pons V2 audit, and backup/restore drill gates are still outside code.
+- No mainnet transaction was signed or broadcast; the 4663 deploy simulation exists only in the local fork.
