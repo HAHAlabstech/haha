@@ -491,13 +491,9 @@ export default function StageView() {
               {account ? (
                 <Stamp tone="green">Mic Live · {truncateAddress(account)}</Stamp>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(true)}
-                  className="pill-btn cursor-pointer"
-                >
-                  <span>Connect Wallet</span>
-                </button>
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+                  Wallet not connected
+                </span>
               )}
             </div>
 
