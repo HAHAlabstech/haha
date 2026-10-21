@@ -1741,19 +1741,7 @@ body::before {
   }
 }
 
-/* ================= HAHA 5-SHUTTER WAVE PRELOADER (FINENESS & TERA REFERENCE) ================= */
-:root {
-  --haha-pre-ink: #ffffff;
-  --haha-pre-muted: rgba(255, 255, 255, 0.55);
-  --haha-pre-muted-2: #ffc53d;
-  --haha-pre-muted-3: rgba(255, 255, 255, 0.38);
-  --haha-pre-shutter: #08080c;
-  --haha-pre-shutter-border: rgba(255, 197, 61, 0.12);
-  --haha-pre-progress: #ffc53d;
-  --haha-pre-track: rgba(255, 197, 61, 0.15);
-  --haha-pre-orbit: rgba(255, 197, 61, 0.3);
-}
-
+/* ================= HAHA STANDUP SOUNDSTAGE PRELOADER ================= */
 body.haha-preloader-pending {
   overflow: hidden !important;
 }
@@ -1770,266 +1758,176 @@ header {
   transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.haha-preloader {
+.haha-stage-preloader {
   position: fixed;
   inset: 0;
   z-index: 100000;
-  color: var(--haha-pre-ink);
+  color: #ffffff;
   isolation: isolate;
   font-family: var(--font-sans), system-ui, sans-serif;
   overflow: hidden;
   user-select: none;
   cursor: pointer;
-}
-
-.haha-load-shutters {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  z-index: -1;
-}
-
-.haha-load-shutters i {
-  background: var(--haha-pre-shutter);
-  border-right: 1px solid var(--haha-pre-shutter-border);
-  position: relative;
-  transform-origin: top;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(24px, 4vw, 44px) clamp(24px, 5vw, 56px);
+  background: #08080c;
+  border-bottom: 2px solid #ffc53d;
+  box-shadow: 0 15px 50px rgba(255, 197, 61, 0.25);
+  transition: transform 0.75s cubic-bezier(0.76, 0, 0.24, 1);
   will-change: transform;
 }
 
-.haha-load-top,
-.haha-load-bottom {
-  position: absolute;
-  left: clamp(24px, 5vw, 48px);
-  right: clamp(24px, 5vw, 48px);
+.haha-stage-preloader.is-exiting {
+  transform: translateY(-101%);
+  pointer-events: none;
+}
+
+.haha-stage-top,
+.haha-stage-bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  font-family: var(--font-mono), monospace;
-  font-size: 11px;
-  line-height: 1.5;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  width: 100%;
+  position: relative;
   z-index: 10;
 }
 
-.haha-load-top {
-  top: clamp(20px, 3.5vh, 32px);
-}
-
-.haha-load-bottom {
-  bottom: clamp(20px, 3.5vh, 32px);
-}
-
-.haha-load-brand {
-  font-size: 13px;
+/* Vintage-Modern ON AIR Ruby Badge */
+.haha-on-air-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 4px;
+  color: #f87171;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.18em;
-  color: #ffffff;
+  letter-spacing: 0.16em;
 }
 
-.haha-load-edition {
-  color: var(--haha-pre-muted-2);
+.haha-on-air-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: onAirPulse 1.6s ease-in-out infinite;
 }
 
-.haha-load-center {
-  position: absolute;
-  inset: 0;
+@keyframes onAirPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.85); }
+}
+
+/* Center Stage */
+.haha-stage-center {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 24px;
-  box-sizing: border-box;
-  z-index: 10;
-}
-
-/* Orbiting acoustic concentric diamond mark */
-.haha-load-mark {
   position: relative;
-  width: 136px;
-  height: 136px;
-  display: grid;
-  place-items: center;
-  margin-bottom: 28px;
+  z-index: 10;
+  margin: auto 0;
+  padding: 40px 0;
 }
 
-.haha-load-mark::before,
-.haha-load-mark::after {
-  content: '';
+.haha-spotlight-cone {
   position: absolute;
-  inset: 0;
-  border: 1px solid var(--haha-pre-orbit);
-  transform: rotate(45deg);
-  animation: haha-load-orbit 3.2s ease-in-out infinite alternate;
-}
-
-.haha-load-mark::after {
-  inset: 15px;
-  transform: rotate(0deg);
-  opacity: 0.6;
-  border-color: rgba(255, 197, 61, 0.45);
-  animation-direction: alternate-reverse;
-}
-
-.haha-load-logo {
-  width: auto;
-  max-width: 90px;
-  height: 72px;
-  object-fit: contain;
-  animation: haha-load-float 2.6s ease-in-out infinite;
-  filter: drop-shadow(0 0 20px rgba(255, 197, 61, 0.65));
-}
-
-/* Massive 3D Staggered Letter Reveal */
-.haha-load-title {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(68px, 11vw, 144px);
-  line-height: 0.92;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  margin: 0;
-  text-align: center;
-  display: flex;
-  gap: 0.05em;
-  color: #ffffff;
-}
-
-.haha-load-title span {
-  display: inline-block;
-  animation: haha-load-letter 0.75s cubic-bezier(0.2, 0.7, 0.25, 1) both;
-  animation-delay: calc(var(--i, 0) * 80ms);
-}
-
-.haha-load-subtitle {
-  font-size: 11px;
-  line-height: 1.6;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  margin: 20px 0 8px;
-  color: var(--haha-pre-muted);
-  text-align: center;
-}
-
-.haha-load-kicker {
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-/* 5-Step Segmented Amber Progress Track */
-.haha-load-track {
-  width: min(340px, 82vw);
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-
-.haha-load-track i {
-  height: 3px;
-  background: var(--haha-pre-track);
-  border-radius: 2px;
-  transition: background 0.25s ease, box-shadow 0.25s ease;
-}
-
-.haha-load-track i[data-active="true"] {
-  background: var(--haha-pre-progress);
-  box-shadow: 0 0 10px rgba(255, 197, 61, 0.6);
-}
-
-.haha-load-readout {
-  width: min(340px, 82vw);
-  display: flex;
-  justify-content: space-between;
-  margin-top: 14px;
-  font-size: 11px;
-  line-height: 1.5;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--haha-pre-muted-3);
-}
-
-.haha-load-percent {
-  font-variant-numeric: tabular-nums;
-  color: #ffc53d;
-  font-weight: 600;
-}
-
-.haha-load-skip {
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--haha-pre-progress);
-  padding: 6px 0;
-  cursor: pointer;
-  min-height: 36px;
-}
-
-/* Keyframes */
-@keyframes haha-load-orbit {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(90deg); }
-}
-
-@keyframes haha-load-float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-6px) scale(1.04); }
-}
-
-@keyframes haha-load-letter {
-  0% {
-    opacity: 0;
-    transform: translateY(35px) rotateX(35deg);
-    filter: blur(4px);
-  }
-  100% {
-    opacity: 1;
-    transform: none;
-    filter: blur(0);
-  }
-}
-
-/* Exit Transition: 5-Column Wave Venetian Shutter Lift */
-.haha-preloader.is-exiting {
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80vw;
+  max-width: 900px;
+  height: 60vh;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 197, 61, 0.15) 0%, rgba(255, 197, 61, 0.03) 45%, transparent 70%);
   pointer-events: none;
 }
 
-.haha-preloader.is-exiting .haha-load-center,
-.haha-preloader.is-exiting .haha-load-top,
-.haha-preloader.is-exiting .haha-load-bottom {
-  opacity: 0;
-  transform: translateY(-16px);
-  transition: opacity 0.25s ease, transform 0.32s ease;
+.haha-wordmark-wrap {
+  text-align: center;
+  margin-bottom: 8px;
 }
 
-.haha-preloader.is-exiting .haha-load-shutters i {
-  transform: translateY(-101%);
-  transition-property: transform;
-  transition-duration: 0.72s;
-  transition-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
-  transition-delay: calc(var(--i, 0) * 70ms);
+.haha-stage-title {
+  font-size: clamp(80px, 15vw, 170px);
+  line-height: 0.88;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
 }
 
-@media (max-width: 640px) {
-  .haha-load-top,
-  .haha-load-bottom {
-    left: 20px;
-    right: 20px;
-    font-size: 10px;
-  }
-  .haha-load-mark {
-    width: 104px;
-    height: 104px;
-    margin-bottom: 22px;
-  }
-  .haha-load-logo {
-    max-width: 68px;
-    height: 54px;
-  }
+.haha-stage-tagline {
+  font-size: clamp(10px, 1.4vw, 13px);
+  letter-spacing: 0.32em;
+  color: #ffc53d;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 14px;
+}
+
+.haha-stage-premise {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(8px, 2vw, 16px);
+  justify-content: center;
+  align-items: center;
+  font-size: clamp(15px, 2.2vw, 22px);
+  color: #ffffff;
+  margin: 24px 0 32px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Analog VU-Meter Progress Track */
+.haha-vu-meter-box {
+  width: min(380px, 86vw);
+  background: rgba(12, 12, 18, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 14px 18px;
+  backdrop-filter: blur(8px);
+}
+
+.haha-vu-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.haha-vu-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #ffd875, #ffc53d);
+  border-radius: 9999px;
+  box-shadow: 0 0 12px rgba(255, 197, 61, 0.6);
+  transition: width 0.05s linear;
+}
+
+/* Skip Button */
+.haha-stage-skip {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 197, 61, 0.5);
+  padding: 6px 0;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.haha-stage-skip:hover {
+  color: #ffc53d;
+  border-color: #ffc53d;
 }
 
