@@ -64,7 +64,7 @@ export default function VaultMethodPage() {
                       {p.note}
                     </p>
                   </div>
-                  <p className="display-serif text-2xl text-[#fff6ed] tabular-nums">
+                  <p className="display-serif text-2xl text-white tabular-nums">
                     {p.value}
                   </p>
                 </div>
@@ -86,7 +86,7 @@ export default function VaultMethodPage() {
             <ul className="space-y-2 text-sm leading-relaxed text-zinc-300">
               <li>
                 · Settled entries are hashed into weekly Merkle roots published
-                to <code className="text-[#fff6ed]">VaultRegistry.sol</code> —
+                to <code className="text-white">VaultRegistry.sol</code> —
                 the corpus is verifiable without trusting this frontend.
               </li>
               <li>

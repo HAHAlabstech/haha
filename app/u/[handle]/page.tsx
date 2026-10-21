@@ -118,24 +118,24 @@ export default function ProfilePage({
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
-              label: "01 · Bits Performed",
+              label: "Bits Performed",
               value: data ? data.stats.bits_count.toString() : "—",
             },
             {
-              label: "02 · Killed It",
+              label: "Verified Stumpers",
               value: data ? data.stats.killed_it_count.toString() : "—",
             },
             {
-              label: "03 · Crowd Ballots",
+              label: "Crowd Ballots",
               value: data ? data.stats.crowd_votes_count.toString() : "—",
             },
-            { label: "04 · Earned (USDG)", value: earnedDisplay },
+            { label: "Earned (USDG)", value: earnedDisplay },
           ].map((s) => (
             <Card key={s.label}>
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
                 {s.label}
               </span>
-              <p className="display-serif mt-3 text-4xl text-[#f4f4f5] tabular-nums">
+              <p className="display-serif mt-3 text-4xl text-white tabular-nums">
                 {s.value}
               </p>
             </Card>
@@ -150,33 +150,32 @@ export default function ProfilePage({
         {data && data.recent_bits.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
             {data.recent_bits.map((b) => (
-              <div key={b.id} className="screen">
-                <div className="screen-bar">
-                  <span>
-                    {b.category} · {b.stage}
-                  </span>
-                  <span>{b.status}</span>
+              <div
+                key={b.id}
+                className="haha-glass-panel rounded-2xl p-6 sm:p-7 flex flex-col justify-between gap-6"
+              >
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
+                    <span className="text-[#ffc53d]">{b.category}</span>
+                    <span>{b.stage}</span>
+                  </div>
+                  <p className="font-serif text-xl leading-relaxed text-zinc-100 mt-4">
+                    “{b.scenario}”
+                  </p>
+                  <p className="mt-3 font-mono text-xs text-zinc-400">
+                    {b.question}
+                  </p>
                 </div>
-                <div className="screen-body">
-                  <div>
-                    <p className="quote">“{b.scenario}”</p>
-                    <p className="mt-3 font-mono text-xs text-[#ffb13b]">
-                      {b.question}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between pt-3">
-                    <Stamp
-                      tone={b.status === "killed_it" ? "green" : "amber"}
-                    >
-                      {b.status}
-                    </Stamp>
-                    <Link
-                      href={`/bit/${encodeURIComponent(b.id)}`}
-                      className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-widest text-[#ffb13b] hover:text-white transition-colors"
-                    >
-                      Inspect Bit <ArrowUpRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
+                <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#ffc53d]">
+                    {b.status.replace(/_/g, " ")}
+                  </span>
+                  <Link
+                    href={`/bit/${encodeURIComponent(b.id)}`}
+                    className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-widest text-zinc-300 hover:text-[#ffc53d] transition-colors"
+                  >
+                    Inspect Bit <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </div>
             ))}

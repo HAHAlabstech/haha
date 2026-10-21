@@ -28,8 +28,8 @@ function placeholderRows(label: string) {
       key={i}
       className="border-b border-white/10 text-sm text-zinc-400"
     >
-      <td className="py-3.5 pr-4 font-mono text-xs text-[#ffc53d]">0{i}</td>
-      <td className="py-3.5 pr-4 font-serif text-lg text-[#fff6ed]">
+      <td className="py-3.5 pr-4 font-mono text-xs text-[#ffc53d]">#{i}</td>
+      <td className="py-3.5 pr-4 font-serif text-lg text-white">
         {label} #{i}{" "}
         <span className="font-mono text-xs text-zinc-500">· 0x…</span>
       </td>
@@ -58,10 +58,10 @@ export default function LeaderboardView() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-[1440px] px-[clamp(16px,3vw,36px)] py-8 space-y-12">
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] py-8 space-y-12">
       <div className="border-b border-white/10 pb-8">
         <span className="eyebrow">Club Standings · Season 01</span>
-        <h1 className="display-serif mt-2 text-4xl text-[#fff6ed] md:text-5xl">
+        <h1 className="display-serif mt-2 text-4xl text-white md:text-5xl">
           The sharpest humans <em>in the room.</em>
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
@@ -80,7 +80,7 @@ export default function LeaderboardView() {
                 <tr className="border-b border-white/10 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
                   <th className="py-3 pr-4">Rank</th>
                   <th className="py-3 pr-4">Performer</th>
-                  <th className="py-3 text-right">Killed It</th>
+                  <th className="py-3 text-right">Verified Stumpers</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,12 +91,12 @@ export default function LeaderboardView() {
                         className="border-b border-white/10 text-sm transition hover:bg-[#ffc53d]/5"
                       >
                         <td className="py-3.5 pr-4 font-mono text-xs text-[#ffc53d]">
-                          {String(i + 1).padStart(2, "0")}
+                          #{i + 1}
                         </td>
                         <td className="py-3.5 pr-4">
                           <Link
                             href={`/u/${encodeURIComponent(c.handle)}`}
-                            className="font-serif text-xl text-[#fff6ed] hover:text-[#ffc53d]"
+                            className="font-serif text-xl text-white hover:text-[#ffc53d]"
                           >
                             @{c.handle}
                           </Link>{" "}
@@ -104,13 +104,8 @@ export default function LeaderboardView() {
                             {truncateAddress(c.wallet)}
                           </span>
                         </td>
-                        <td className="py-3.5 text-right">
-                          <Stamp>
-                            <span className="flex items-center gap-1">
-                              <Flame className="w-3 h-3 text-[#ffc53d]" />
-                              <span>{c.killed_it_count} · {c.comedian_rep} rep</span>
-                            </span>
-                          </Stamp>
+                        <td className="py-3.5 text-right font-mono text-xs text-[#ffc53d]">
+                          {c.killed_it_count} · {c.comedian_rep} rep
                         </td>
                       </tr>
                     ))
@@ -141,12 +136,12 @@ export default function LeaderboardView() {
                         className="border-b border-white/10 text-sm transition hover:bg-[#ffc53d]/5"
                       >
                         <td className="py-3.5 pr-4 font-mono text-xs text-[#ffc53d]">
-                          {String(i + 1).padStart(2, "0")}
+                          #{i + 1}
                         </td>
                         <td className="py-3.5 pr-4">
                           <Link
                             href={`/u/${encodeURIComponent(j.handle)}`}
-                            className="font-serif text-xl text-[#fff6ed] hover:text-[#ffc53d]"
+                            className="font-serif text-xl text-white hover:text-[#ffc53d]"
                           >
                             @{j.handle}
                           </Link>{" "}

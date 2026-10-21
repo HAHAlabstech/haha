@@ -155,12 +155,12 @@ export default function CrowdView() {
   }
 
   return (
-    <div className="mx-auto max-w-[1440px] px-[clamp(16px,3vw,36px)] py-8 space-y-12">
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] py-8 space-y-12">
       {/* Editorial Header */}
       <div className="grid gap-8 border-b border-white/10 pb-8 lg:grid-cols-[1.3fr_1fr] lg:items-end">
         <div>
           <span className="eyebrow">The Crowd · Blind Human Quorum</span>
-          <h1 className="display-serif mt-2 text-4xl text-[#f4f4f5] md:text-5xl">
+          <h1 className="display-serif mt-2 text-4xl text-white md:text-5xl">
             You be the <em>judge.</em>
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
@@ -189,9 +189,8 @@ export default function CrowdView() {
             <dt>Calibration</dt>
             <dd>
               {stakeInfo?.onboarding_passed ? (
-                <span className="text-[#ffc53d] flex items-center gap-1 font-mono text-xs">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Passed (8+/10)</span>
+                <span className="text-[#ffc53d] font-mono text-xs">
+                  Passed (8+/10)
                 </span>
               ) : (
                 <span className="font-mono text-xs text-rose-300">Not passed</span>
@@ -269,7 +268,7 @@ export default function CrowdView() {
               </div>
 
               <div>
-                <p className="display-serif text-2xl leading-snug text-[#fff6ed] md:text-3xl">
+                <p className="display-serif text-2xl leading-snug text-white md:text-3xl">
                   “{assignment.scenario}”
                 </p>
                 <p className="mt-3 font-mono text-xs uppercase tracking-widest text-[#ffc53d]">
@@ -286,8 +285,8 @@ export default function CrowdView() {
                     aria-pressed={selectedVote === opt}
                     className={`rounded-2xl border p-5 text-left transition cursor-pointer ${
                       selectedVote === opt
-                        ? "border-[#ffc53d] bg-[#ffc53d]/12 text-[#fff6ed]"
-                        : "border-white/10 bg-[#0c0a08] text-zinc-300 hover:border-white/30"
+                        ? "border-[#ffc53d] bg-[#ffc53d]/12 text-white"
+                        : "border-white/10 bg-[#070709] text-zinc-300 hover:border-white/30"
                     }`}
                   >
                     <div className="font-mono text-xs uppercase tracking-widest text-[#ffc53d]">
@@ -323,7 +322,7 @@ export default function CrowdView() {
 
               <div className="border-t border-white/10 pt-5">
                 <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
-                  Step 02 · Is this a fair bit?
+                  Is this a fair bit?
                 </p>
                 <div className="mt-3 flex flex-wrap gap-3">
                   {(["fair", "unfair"] as const).map((f) => (
@@ -334,19 +333,7 @@ export default function CrowdView() {
                       aria-pressed={selectedFair === f}
                       className={`pill-btn cursor-pointer ${selectedFair === f ? "hot" : ""}`}
                     >
-                      <span className="flex items-center gap-1.5">
-                        {f === "fair" ? (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Fair Bit</span>
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="w-3.5 h-3.5" />
-                            <span>Unfair / Cheap Trick</span>
-                          </>
-                        )}
-                      </span>
+                      <span>{f === "fair" ? "Fair Bit" : "Unfair / Cheap Trick"}</span>
                     </button>
                   ))}
                 </div>
@@ -424,15 +411,14 @@ export default function CrowdView() {
           {TIERS.map((t) => (
             <Card key={t.name}>
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
-                {t.num}
+                {t.votes}
               </span>
-              <h3 className="display-serif mt-2 text-2xl text-[#fff6ed]">
+              <h3 className="display-serif mt-2 text-2xl text-white">
                 {t.name}
               </h3>
               <p className="mt-2 font-mono text-base text-[#ffc53d]">
                 {t.weight}
               </p>
-              <p className="mt-1 font-mono text-xs text-zinc-400">{t.votes}</p>
             </Card>
           ))}
         </div>

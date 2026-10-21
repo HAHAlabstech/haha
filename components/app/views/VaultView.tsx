@@ -189,12 +189,12 @@ export default function VaultView() {
   const areaD = `${pathD} L ${lastPt.x} ${padY + plotH} L ${firstPt.x} ${padY + plotH} Z`;
 
   return (
-    <div className="mx-auto max-w-[1440px] px-[clamp(16px,3vw,36px)] py-8 space-y-12">
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] py-8 space-y-12">
       {/* Header */}
       <div className="grid gap-8 border-b border-white/10 pb-8 lg:grid-cols-[1.3fr_1fr] lg:items-end">
         <div>
           <span className="eyebrow">The Joke Vault · Provenance Corpus</span>
-          <h1 className="display-serif mt-2 text-4xl text-[#fff6ed] md:text-5xl">
+          <h1 className="display-serif mt-2 text-4xl text-white md:text-5xl">
             Every laugh becomes <em>permanent record.</em>
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
@@ -207,7 +207,7 @@ export default function VaultView() {
         <dl className="case-meta-grid">
           <div>
             <dt>Verified Entries</dt>
-            <dd className="font-mono text-xl text-[#fff6ed] tabular-nums">
+            <dd className="font-mono text-xl text-white tabular-nums">
               {summary ? totalVerified.toLocaleString("en-US") : "—"}
             </dd>
           </div>
@@ -247,10 +247,6 @@ export default function VaultView() {
                   <stop offset="0%" stopColor="#ffc53d" stopOpacity="0.8" />
                   <stop offset="100%" stopColor="#d97706" stopOpacity="0.3" />
                 </linearGradient>
-                <linearGradient id="apertureSapphire" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#1e3a8a" stopOpacity="0.2" />
-                </linearGradient>
               </defs>
               <g className="animate-spin-slow" style={{ transformOrigin: "170px 170px" }}>
                 <circle cx="170" cy="170" r="150" stroke="url(#apertureBronze)" strokeWidth="2.5" fill="none" />
@@ -263,7 +259,7 @@ export default function VaultView() {
               Corpus Valuation · Live Metric
             </span>
             <div className="mt-4 flex flex-wrap items-baseline gap-4">
-              <span className="display-serif text-5xl font-light tracking-tight text-[#fff6ed] sm:text-7xl">
+              <span className="display-serif text-5xl font-light tracking-tight text-white sm:text-7xl">
                 {summary ? fmtUsd(summary.replacementMicroUsd) : "$0.00"}
               </span>
               <span className="font-mono text-xs uppercase tracking-widest text-zinc-400">
@@ -274,10 +270,10 @@ export default function VaultView() {
 
           <div className="laocoon-card flex flex-col justify-between p-8">
             <div>
-              <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#3b82f6]">
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#ffc53d]">
                 Vault Registry Status
               </span>
-              <p className="display-serif mt-3 text-4xl text-[#fff6ed]">
+              <p className="display-serif mt-3 text-4xl text-white">
                 {snapshots.length} Published Epochs
               </p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400 flex items-center gap-2">
@@ -342,7 +338,7 @@ export default function VaultView() {
                 <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
                   {item.tag}
                 </span>
-                <h3 className="display-serif mt-2 text-2xl text-[#fff6ed]">
+                <h3 className="display-serif mt-2 text-2xl text-white">
                   {item.name}
                 </h3>
                 <p className="display-serif mt-2 text-3xl text-[#ffc53d]">

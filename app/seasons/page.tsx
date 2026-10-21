@@ -72,10 +72,10 @@ export default function SeasonsPage() {
               {STAGE_ROWS.map((row, i) => (
                 <div
                   key={row.label}
-                  className="rounded-xl border border-white/10 bg-[#0c0a08] p-5"
+                  className="rounded-xl border border-white/10 bg-[#070709] p-5"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="display-serif text-2xl text-[#fff6ed]">
+                    <p className="display-serif text-2xl text-white">
                       {row.label}
                     </p>
                     <Stamp tone={i === 1 ? "amber" : "green"}>
@@ -103,7 +103,7 @@ export default function SeasonsPage() {
             How the pool <em>splits.</em>
           </SectionTitle>
           <Card>
-            <p className="font-mono text-sm text-[#fff6ed]">
+            <p className="font-mono text-sm text-white">
               score = win_strength × fairness × stage_mult (1.0 / 2.5) ×
               tier_mult × category_mult
             </p>
@@ -131,7 +131,7 @@ export default function SeasonsPage() {
             {CROWD_TIERS.map((t) => (
               <Card key={t.tier}>
                 <div className="flex items-center justify-between">
-                  <p className="display-serif text-xl text-[#fff6ed]">
+                  <p className="display-serif text-xl text-white">
                     {t.tier}
                   </p>
                   <Stamp tone="amber">{t.weight}</Stamp>

@@ -241,12 +241,12 @@ export default function StageView() {
   }
 
   return (
-    <div className="mx-auto max-w-[1440px] px-[clamp(16px,3vw,36px)] py-8">
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] py-8">
       {/* Workspace Subheader */}
       <div className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-white/10 pb-8">
         <div>
           <span className="eyebrow">The Stage · Live Performance</span>
-          <h1 className="display-serif mt-2 text-4xl text-[#f4f4f5] md:text-5xl tracking-tight">
+          <h1 className="display-serif mt-2 text-4xl text-white md:text-5xl tracking-tight">
             Walk up to the <em>mic.</em>
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">
@@ -279,7 +279,7 @@ export default function StageView() {
       {/* Category Selection Cards */}
       <section aria-label="Pick a category" className="mb-8">
         <div className="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-400">
-          <span>Step 01 · Choose Your Set</span>
+          <span>Choose Your Set</span>
           <span>4 Categories</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -305,12 +305,12 @@ export default function StageView() {
                 }`}
               >
                 <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
-                  <span>{c.num}</span>
+                  <span>{c.sub}</span>
                   <span className={active ? "text-[#ffc53d]" : ""}>
-                    {active ? "● Selected" : c.sub}
+                    {active ? "Selected" : ""}
                   </span>
                 </div>
-                <h2 className="display-serif mt-2.5 text-2xl text-[#f4f4f5]">
+                <h2 className="display-serif mt-2.5 text-2xl text-white">
                   {c.name}
                 </h2>
                 <p className="mt-1.5 font-mono text-[10px] leading-relaxed text-zinc-400">
@@ -323,7 +323,7 @@ export default function StageView() {
       </section>
 
       {account && calibrated === false ? (
-        <section aria-label="First time guide">
+        <section aria-label="First time guide" className="mb-8">
           <Card>
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div className="max-w-2xl">
@@ -331,12 +331,12 @@ export default function StageView() {
                   First time here? Two ways to play
                 </p>
                 <p className="mt-2.5 text-sm leading-relaxed text-zinc-300">
-                  <strong className="text-[#fff6ed]">1 · Perform a bit</strong> —
+                  <strong className="text-white">Perform a bit</strong> —
                   write a setup below and see if the Straight Man gets the joke.
                   Free, takes about a minute.
                 </p>
                 <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">
-                  <strong className="text-[#fff6ed]">2 · Judge the Crowd</strong> —
+                  <strong className="text-white">Judge the Crowd</strong> —
                   pass the 10-case calibration quiz (8/10) to earn 20% of the tip
                   pool as a juror.
                 </p>
@@ -396,7 +396,7 @@ export default function StageView() {
                   htmlFor="scenario"
                   className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffc53d]"
                 >
-                  Step 02 · Paint the Scene / Setup
+                  Paint the Scene / Setup
                 </label>
                 <span
                   className={`font-mono text-[11px] tabular-nums ${
@@ -413,7 +413,7 @@ export default function StageView() {
                 maxLength={SCENARIO_MAX + 50}
                 onChange={(e) => setScenario(e.target.value)}
                 placeholder="Drop the setup, the passive-aggressive message, or the real-world moment…"
-                className="mt-2.5 w-full rounded-xl border border-white/10 bg-[#0c0a08] p-4 font-serif text-xl leading-relaxed text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
+                className="mt-2.5 w-full rounded-xl border border-white/10 bg-[#070709] p-4 font-serif text-xl leading-relaxed text-white placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
               />
             </div>
 
@@ -423,7 +423,7 @@ export default function StageView() {
                   htmlFor="question"
                   className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffc53d]"
                 >
-                  Step 03 · Ask the Straight Man One Question
+                  Ask the Straight Man One Question
                 </label>
                 <span
                   className={`font-mono text-[11px] tabular-nums ${
@@ -440,7 +440,7 @@ export default function StageView() {
                 maxLength={QUESTION_MAX + 50}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="Ask the one question the Straight Man must answer…"
-                className="mt-2.5 w-full rounded-xl border border-white/10 bg-[#0c0a08] p-4 text-base text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
+                className="mt-2.5 w-full rounded-xl border border-white/10 bg-[#070709] p-4 text-base text-white placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
               />
             </div>
 
@@ -474,11 +474,11 @@ export default function StageView() {
 
             {crisisSupport ? (
               <div
-                className="mt-5 rounded-xl border border-[#ffc53d]/40 bg-[#ffc53d]/10 p-4 text-sm text-[#fff6ed]"
+                className="mt-5 rounded-xl border border-[#ffc53d]/40 bg-[#ffc53d]/10 p-4 text-sm text-white"
                 role="alert"
               >
                 <p className="font-semibold">You are not alone.</p>
-                <p className="mt-1 text-xs leading-relaxed text-[#efe8dc]">
+                <p className="mt-1 text-xs leading-relaxed text-zinc-300">
                   If you or someone you know is going through a difficult time
                   or having thoughts of self-harm, please reach out for free,
                   confidential support right now: call or text{" "}
@@ -499,7 +499,7 @@ export default function StageView() {
 
             {createdBitId ? (
               <p
-                className="mt-5 rounded-xl border border-[#ffc53d]/40 bg-[#ffc53d]/10 p-3.5 text-sm text-[#fff6ed]"
+                className="mt-5 rounded-xl border border-[#ffc53d]/40 bg-[#ffc53d]/10 p-3.5 text-sm text-white"
                 role="status"
               >
                 Bit submitted!{" "}
@@ -514,7 +514,7 @@ export default function StageView() {
 
             {error ? (
               <p
-                className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/15 p-3.5 text-sm text-[#ffc53d]"
+                className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/15 p-3.5 text-sm text-rose-300"
                 role="alert"
               >
                 {error}
@@ -537,7 +537,7 @@ export default function StageView() {
                 {category.toUpperCase()}
               </span>
             </div>
-            <p className="display-serif mt-4 text-2xl leading-snug text-[#fff6ed]">
+            <p className="display-serif mt-4 text-2xl leading-snug text-white">
               “{idea}”
             </p>
             <div className="mt-4 flex flex-wrap gap-2.5">
@@ -567,7 +567,7 @@ export default function StageView() {
                     <button
                       type="button"
                       onClick={() => setScenario(t)}
-                      className="w-full rounded-xl border border-white/10 bg-[#0c0a08]/70 p-3 text-left font-mono text-xs leading-relaxed text-zinc-300 transition hover:border-[#ffc53d] hover:text-[#ffc53d] cursor-pointer"
+                      className="w-full rounded-xl border border-white/10 bg-[#070709] p-3 text-left font-mono text-xs leading-relaxed text-zinc-300 transition hover:border-[#ffc53d] hover:text-[#ffc53d] cursor-pointer"
                     >
                       {t}
                     </button>

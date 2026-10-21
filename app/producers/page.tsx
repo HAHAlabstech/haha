@@ -418,7 +418,12 @@ export default function ProducersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-16">
+    <div className="relative min-h-screen bg-[#070709] text-white selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-clip">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-radial from-[#ffc53d]/06 via-[#ffc53d]/01 to-transparent blur-[160px] rounded-full z-0"
+      />
+      <div className="relative z-10 mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-16">
       <PageHero
         kicker="Producers & AI Labs · ProducerGateway.sol"
         title={
@@ -444,38 +449,29 @@ export default function ProducersPage() {
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb13b]">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
                       {p.tag}
                     </span>
                     {active ? <Stamp>Selected</Stamp> : null}
                   </div>
-                  <h3 className="display-serif mt-3 text-2xl text-[#fff6ed]">
+                  <h3 className="display-serif mt-3 text-2xl text-white">
                     {p.name}
                   </h3>
-                  <p className="display-serif mt-2 text-4xl text-[#ffb13b]">
+                  <p className="display-serif mt-2 text-4xl text-[#ffc53d]">
                     {p.price}
                   </p>
-                  <p className="mt-3 text-sm leading-relaxed text-[#a49b8e]">
+                  <p className="mt-3 text-sm leading-relaxed text-zinc-400">
                     {p.body}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setPlanId(p.id)}
-                  className={`pill-btn mt-6 w-full justify-center ${
+                  className={`pill-btn mt-6 w-full justify-center cursor-pointer ${
                     active ? "hot" : ""
                   }`}
                 >
-                  <span className="flex items-center justify-center gap-1.5">
-                    {active ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Selected Plan</span>
-                      </>
-                    ) : (
-                      <span>Select Plan</span>
-                    )}
-                  </span>
+                  <span>{active ? "Selected Plan" : "Select Plan"}</span>
                 </button>
               </Card>
             );
@@ -485,7 +481,7 @@ export default function ProducersPage() {
 
       <section aria-label="Checkout">
         <SectionTitle
-          eyebrow="Step 01 · On-Chain Checkout"
+          eyebrow="On-Chain Checkout"
           hint="USDG → ProducerGateway.sol"
         >
           Pay &amp; Activate <em>On-Chain.</em>
@@ -495,7 +491,7 @@ export default function ProducersPage() {
             <div>
               <label
                 htmlFor="p-order"
-                className="block font-mono text-xs uppercase tracking-widest text-[#ffb13b]"
+                className="block font-mono text-xs uppercase tracking-widest text-[#ffc53d]"
               >
                 Organization / Order Reference
               </label>
@@ -506,13 +502,13 @@ export default function ProducersPage() {
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
                 placeholder="ACME-RESEARCH-001"
-                className="mt-2 w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-3.5 text-sm text-[#fff6ed] focus:border-[#ffb13b] focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white focus:border-[#ffc53d] focus:outline-none"
               />
             </div>
             <div>
               <label
                 htmlFor="p-batch"
-                className="block font-mono text-xs uppercase tracking-widest text-[#ffb13b]"
+                className="block font-mono text-xs uppercase tracking-widest text-[#ffc53d]"
               >
                 Dataset Batch Reference
               </label>
@@ -523,34 +519,34 @@ export default function ProducersPage() {
                 value={batchId}
                 onChange={(e) => setBatchId(e.target.value)}
                 placeholder="snapshot-latest"
-                className="mt-2 w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-3.5 text-sm text-[#fff6ed] focus:border-[#ffb13b] focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white focus:border-[#ffc53d] focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#efe8dc]/10 bg-[#0c0a08] p-4">
+          <div className="rounded-xl border border-white/10 bg-[#070709] p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="font-mono text-xs text-[#a49b8e]">
+              <div className="font-mono text-xs text-zinc-400">
                 <p>
                   Plan:{" "}
-                  <span className="text-[#fff6ed]">
+                  <span className="text-white">
                     {plan.name} · {plan.price}
                   </span>
                 </p>
                 <p className="mt-1">
                   On-chain price:{" "}
-                  <span className="text-[#ffb13b]">
+                  <span className="text-[#ffc53d]">
                     {priceMicro === null ? "read after connect" : fmtUsdg(priceMicro)}
                   </span>
                 </p>
                 {account ? (
                   <p className="mt-1">
                     Wallet:{" "}
-                    <span className="text-[#fff6ed]">
+                    <span className="text-white">
                       {truncateAddress(account)}
                     </span>{" "}
                     · USDG:{" "}
-                    <span className="text-[#fff6ed]">
+                    <span className="text-white">
                       {balanceMicro === null ? "—" : fmtUsdg(balanceMicro)}
                     </span>
                   </p>
@@ -561,7 +557,7 @@ export default function ProducersPage() {
                   <button
                     type="button"
                     onClick={() => setModalOpen(true)}
-                    className="pill-btn hot"
+                    className="pill-btn hot cursor-pointer"
                   >
                     <span className="flex items-center gap-1.5">
                       <Wallet className="w-3.5 h-3.5" />
@@ -574,7 +570,7 @@ export default function ProducersPage() {
                     type="button"
                     onClick={() => void handleMintTestUsdg()}
                     disabled={faucetBusy}
-                    className="pill-btn disabled:opacity-40"
+                    className="pill-btn disabled:opacity-40 cursor-pointer"
                   >
                     <span>
                       {faucetBusy ? "Minting…" : "Get Test USDG"}
@@ -585,7 +581,7 @@ export default function ProducersPage() {
                   type="button"
                   onClick={() => void handleBuy()}
                   disabled={paying || !gatewayReady}
-                  className="pill-btn hot disabled:opacity-40"
+                  className="pill-btn hot disabled:opacity-40 cursor-pointer"
                 >
                   <span>
                     {paying
@@ -598,36 +594,36 @@ export default function ProducersPage() {
               </div>
             </div>
             {!gatewayReady ? (
-              <p className="mt-3 font-mono text-[11px] text-[#ffb13b]">
+              <p className="mt-3 font-mono text-[11px] text-[#ffc53d]">
                 ProducerGateway is not configured on this network — checkout is
                 disabled.
               </p>
             ) : null}
             {payTxHash ? (
-              <p className="mt-3 font-mono text-[11px] break-all text-[#8fb596]">
+              <p className="mt-3 font-mono text-[11px] break-all text-[#ffc53d]">
                 Payment tx: {payTxHash}
               </p>
             ) : null}
             {faucetMsg ? (
-              <p className="mt-3 font-mono text-[11px] break-all text-[#a49b8e]">
+              <p className="mt-3 font-mono text-[11px] break-all text-zinc-400">
                 {faucetMsg}
               </p>
             ) : null}
             {buyError ? (
-              <p className="mt-3 font-mono text-xs text-[#ffb13b]" role="alert">
+              <p className="mt-3 font-mono text-xs text-rose-400" role="alert">
                 {buyError}
               </p>
             ) : null}
           </div>
 
-          <details className="rounded-xl border border-[#efe8dc]/10 bg-[#0c0a08] p-4">
-            <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-widest text-[#a49b8e]">
+          <details className="rounded-xl border border-white/10 bg-[#070709] p-4">
+            <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-widest text-zinc-400">
               Already paid? Verify an existing transaction
             </summary>
             <div className="mt-4 space-y-3">
               <label
                 htmlFor="p-txhash"
-                className="block font-mono text-xs uppercase tracking-widest text-[#a49b8e]"
+                className="block font-mono text-xs uppercase tracking-widest text-zinc-400"
               >
                 On-Chain Payment Transaction Hash (0x…)
               </label>
@@ -638,7 +634,7 @@ export default function ProducersPage() {
                 value={txHash}
                 onChange={(e) => setTxHash(e.target.value)}
                 placeholder="0x..."
-                className="w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-3.5 font-mono text-xs text-[#fff6ed] focus:border-[#ffb13b] focus:outline-none"
+                className="w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 font-mono text-xs text-white focus:border-[#ffc53d] focus:outline-none"
               />
               <button
                 type="button"
@@ -649,7 +645,7 @@ export default function ProducersPage() {
                   !txHash.trim()
                 }
                 onClick={() => void handleActivate()}
-                className="pill-btn hot disabled:opacity-40"
+                className="pill-btn hot disabled:opacity-40 cursor-pointer"
                 style={{ padding: "14px 28px", fontSize: "12px" }}
               >
                 <span>
@@ -662,19 +658,16 @@ export default function ProducersPage() {
           </details>
 
           {activateError ? (
-            <p className="font-mono text-xs text-[#ffb13b]" role="alert">
+            <p className="font-mono text-xs text-rose-400" role="alert">
               {activateError}
             </p>
           ) : null}
 
           {activationResult ? (
-            <div className="space-y-2 rounded-xl border border-[#8fb596]/40 bg-[#8fb596]/10 p-4 font-mono text-xs text-[#fff6ed]">
-              <p className="text-emerald-400 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>
-                  License Activated
-                  {activationResult.verified ? " · payment verified on-chain" : ""}
-                </span>
+            <div className="space-y-2 rounded-xl border border-[#ffc53d]/35 bg-[#ffc53d]/10 p-4 font-mono text-xs text-white">
+              <p className="text-[#ffc53d] font-semibold">
+                License Activated
+                {activationResult.verified ? " · payment verified on-chain" : ""}
               </p>
               {activationResult.apiKey ? (
                 <p className="break-all">API Key: {activationResult.apiKey}</p>
@@ -696,7 +689,7 @@ export default function ProducersPage() {
 
       <section aria-label="Snapshot DEK exchange">
         <SectionTitle
-          eyebrow="Step 02 · Cryptographic Envelope"
+          eyebrow="Cryptographic Envelope"
           hint="RSA-OAEP-256 wrapped AES-256-GCM DEK"
         >
           Exchange Snapshot <em>Decryption Key.</em>
@@ -712,7 +705,7 @@ export default function ProducersPage() {
             value={exchangeToken}
             onChange={(e) => setExchangeToken(e.target.value)}
             placeholder="One-time key exchange token"
-            className="w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-3.5 font-mono text-xs text-[#fff6ed] focus:border-[#ffb13b] focus:outline-none"
+            className="w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 font-mono text-xs text-white focus:border-[#ffc53d] focus:outline-none"
           />
           <label htmlFor="p-xchg-pem" className="sr-only">
             RSA public key PEM
@@ -724,7 +717,7 @@ export default function ProducersPage() {
             value={publicKeyPem}
             onChange={(e) => setPublicKeyPem(e.target.value)}
             placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----"
-            className="w-full rounded-xl border border-[#efe8dc]/15 bg-[#0c0a08] p-3.5 font-mono text-xs text-[#fff6ed] focus:border-[#ffb13b] focus:outline-none"
+            className="w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 font-mono text-xs text-white focus:border-[#ffc53d] focus:outline-none"
           />
           <button
             type="button"
@@ -732,19 +725,19 @@ export default function ProducersPage() {
               exchanging || !exchangeToken.trim() || !publicKeyPem.trim()
             }
             onClick={() => void handleExchangeKey()}
-            className="pill-btn hot disabled:opacity-40"
+            className="pill-btn hot disabled:opacity-40 cursor-pointer"
           >
             <span>
               {exchanging ? "Wrapping DEK…" : "Fetch RSA-OAEP Wrapped DEK →"}
             </span>
           </button>
           {exchangeError ? (
-            <p className="font-mono text-xs text-[#ffb13b]" role="alert">
+            <p className="font-mono text-xs text-rose-400" role="alert">
               {exchangeError}
             </p>
           ) : null}
           {wrappedKeyResult ? (
-            <p className="rounded-xl border border-[#8fb596]/40 bg-[#0c0a08] p-4 font-mono text-xs break-all text-[#8fb596]">
+            <p className="rounded-xl border border-[#ffc53d]/35 bg-[#070709] p-4 font-mono text-xs break-all text-[#ffc53d]">
               {wrappedKeyResult}
             </p>
           ) : null}
@@ -757,6 +750,7 @@ export default function ProducersPage() {
         onClose={() => setModalOpen(false)}
         onConnected={handleConnected}
       />
+      </div>
     </div>
   );
 }

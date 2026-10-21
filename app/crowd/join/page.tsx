@@ -257,10 +257,10 @@ export default function CrowdJoinPage() {
 
       {alreadyPassed && !graded ? (
         <Card hot>
-          <p className="display-serif text-3xl text-[#fff6ed]" role="status">
-            Calibration already passed ✓
+          <p className="display-serif text-3xl text-white" role="status">
+            Calibration already passed
           </p>
-          <p className="mt-2 text-sm text-[#a49b8e]">
+          <p className="mt-2 text-sm text-zinc-400">
             This wallet{account ? ` (${truncateAddress(account)})` : ""} is
             already calibrated into the Crowd — no need to retake the quiz.
           </p>
@@ -283,10 +283,10 @@ export default function CrowdJoinPage() {
             graded && exp != null && !(v === exp.correct && (f ?? null) === exp.fair);
           return (
             <li key={i}>
-              <Card className={gradedWrong ? "border-[#c93b2b]/50" : ""}>
-                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffb13b]">
+              <Card className={gradedWrong ? "border-rose-500/50" : ""}>
+                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
                   <span>
-                    Case {String(i + 1).padStart(2, "0")} / {QUIZ.length}
+                    Case {i + 1} of {QUIZ.length}
                   </span>
                   {graded ? (
                     <Stamp tone={gradedWrong ? "red" : "green"}>
@@ -294,10 +294,10 @@ export default function CrowdJoinPage() {
                     </Stamp>
                   ) : null}
                 </div>
-                <p className="display-serif mt-3 text-2xl text-[#fff6ed]">
+                <p className="display-serif mt-3 text-2xl text-white">
                   “{q.scenario}”
                 </p>
-                <p className="mt-2 font-mono text-xs uppercase tracking-widest text-[#a49b8e]">
+                <p className="mt-2 font-mono text-xs uppercase tracking-widest text-zinc-400">
                   {q.question}
                 </p>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -308,13 +308,13 @@ export default function CrowdJoinPage() {
                       disabled={graded}
                       onClick={() => setVotes((s) => ({ ...s, [i]: opt }))}
                       aria-pressed={v === opt}
-                      className={`rounded-xl border p-4 text-left text-sm transition ${
+                      className={`rounded-xl border p-4 text-left text-sm transition cursor-pointer ${
                         v === opt
-                          ? "border-[#ffb13b] bg-[#ffb13b]/12 text-[#fff6ed]"
-                          : "border-[#efe8dc]/12 bg-[#0c0a08] text-[#efe8dc] hover:border-[#efe8dc]/30"
+                          ? "border-[#ffc53d] bg-[#ffc53d]/12 text-white"
+                          : "border-white/10 bg-[#070709] text-zinc-300 hover:border-white/25"
                       }`}
                     >
-                      <span className="mr-2 font-mono font-bold text-[#ffb13b]">
+                      <span className="mr-2 font-mono font-bold text-[#ffc53d]">
                         {opt}
                       </span>
                       {opt === "A" ? q.a : q.b}
@@ -329,26 +329,14 @@ export default function CrowdJoinPage() {
                       disabled={graded}
                       onClick={() => setFair((s) => ({ ...s, [i]: val }))}
                       aria-pressed={f === val}
-                      className={`pill-btn ${f === val ? "hot" : ""}`}
+                      className={`pill-btn cursor-pointer ${f === val ? "hot" : ""}`}
                     >
-                      <span className="flex items-center gap-1.5">
-                        {val ? (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Fair Bit</span>
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="w-3.5 h-3.5" />
-                            <span>Unfair Trick</span>
-                          </>
-                        )}
-                      </span>
+                      <span>{val ? "Fair Bit" : "Unfair Trick"}</span>
                     </button>
                   ))}
                 </div>
                 {graded && gradedWrong && exp ? (
-                  <p className="mt-3 font-mono text-xs text-[#ffb13b]">
+                  <p className="mt-3 font-mono text-xs text-[#ffc53d]">
                     Expected: {exp.correct} · {exp.fair ? "Fair" : "Unfair"}
                   </p>
                 ) : null}
@@ -364,20 +352,20 @@ export default function CrowdJoinPage() {
             type="button"
             disabled={!answered}
             onClick={() => void handleSubmit()}
-            className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40"
+            className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
             style={{ padding: "14px 28px", fontSize: "12px" }}
           >
             <span>Submit Calibration Quiz →</span>
           </button>
         ) : (
           <Card hot={score >= PASS_MARK}>
-            <p className="display-serif text-3xl text-[#fff6ed]" role="status">
+            <p className="display-serif text-3xl text-white" role="status">
               {score} / {QUIZ.length} —{" "}
               {score >= PASS_MARK
                 ? "Welcome to the Crowd."
                 : "Not quite — review & retry."}
             </p>
-            <p className="mt-2 text-sm text-[#a49b8e]">
+            <p className="mt-2 text-sm text-zinc-400">
               {score >= PASS_MARK
                 ? savedServer
                   ? `Recorded for ${account ? truncateAddress(account) : "your wallet"}. You can now judge live Crowd assignments!`
@@ -395,7 +383,7 @@ export default function CrowdJoinPage() {
                       if (!account) setModalOpen(true);
                       else void recordPassOnServer();
                     }}
-                    className="pill-btn hot"
+                    className="pill-btn hot cursor-pointer"
                   >
                     <span>
                       {saving
@@ -421,13 +409,13 @@ export default function CrowdJoinPage() {
                   setExpectedKey(null);
                   setError(null);
                 }}
-                className="pill-btn hot mt-4"
+                className="pill-btn hot mt-4 cursor-pointer"
               >
                 <span>↻ Retake Quiz</span>
               </button>
             )}
             {error ? (
-              <p className="mt-3 font-mono text-xs text-[#ffb13b]" role="alert">
+              <p className="mt-3 font-mono text-xs text-rose-400" role="alert">
                 {error}
               </p>
             ) : null}

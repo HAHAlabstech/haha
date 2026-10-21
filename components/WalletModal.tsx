@@ -267,7 +267,7 @@ export default function WalletModal({
         ) : null}
 
         {onWrongChain ? (
-          <div className="mb-4 rounded-xl border border-[#c93b2b]/40 bg-[#c93b2b]/15 p-3.5 text-sm text-[#efe8dc]">
+          <div className="mb-4 rounded-xl border border-rose-500/40 bg-rose-500/15 p-3.5 text-sm text-white">
             <p>
               Wallet is on chain {chainId}, expected {expectedChain}.
             </p>
@@ -392,14 +392,14 @@ export default function WalletModal({
 
         <div className="mt-4 flex items-center justify-between">
           {scanning ? (
-            <p className="font-mono text-[11px] uppercase tracking-wider text-[#a49b8e]">
+            <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">
               Scanning EIP-6963 providers…
             </p>
           ) : (
             <button
               type="button"
               onClick={() => void scan()}
-              className="font-mono text-[11px] uppercase tracking-wider text-[#a49b8e] underline hover:text-[#ffb13b]"
+              className="font-mono text-[11px] uppercase tracking-wider text-zinc-400 underline hover:text-[#ffc53d]"
             >
               Rescan wallets
             </button>
@@ -408,14 +408,14 @@ export default function WalletModal({
 
         {error ? (
           <p
-            className="mt-3 rounded-lg border border-[#c93b2b]/35 bg-[#c93b2b]/10 p-3 text-xs text-[#ffb13b]"
+            className="mt-3 rounded-lg border border-rose-500/35 bg-rose-500/10 p-3 text-xs text-rose-300"
             role="alert"
           >
             {error}
           </p>
         ) : null}
 
-        <p className="mt-5 border-t border-[#efe8dc]/10 pt-4 font-mono text-[10px] uppercase tracking-[0.14em] leading-relaxed text-[#6c6459]">
+        <p className="mt-5 border-t border-white/10 pt-4 font-mono text-[10px] uppercase tracking-[0.14em] leading-relaxed text-zinc-500">
           Zero seed phrases · SIWE session verified · Rewards depend on the Tip
           Jar
         </p>

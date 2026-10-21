@@ -37,8 +37,8 @@ export default function AppHeader({
 }: AppHeaderProps) {
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-[#070709]/90 backdrop-blur-xl transition-all">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-[clamp(16px,3vw,36px)]">
+      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-[#070709]/90 backdrop-blur-xl transition-all px-[clamp(20px,4vw,56px)]">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4">
           {/* Left: Brand mark + Return to Landing */}
           <div className="flex items-center gap-4">
             <Link

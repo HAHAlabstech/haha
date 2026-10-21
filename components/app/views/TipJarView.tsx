@@ -297,17 +297,17 @@ export default function TipJarView() {
   const micDropUsdg = fmtUsdg(summary?.escrow?.micDrop?.microUsdg);
 
   return (
-    <div className="mx-auto max-w-[1440px] px-[clamp(16px,3vw,36px)] py-8 space-y-12">
+    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] py-8 space-y-12">
       {/* Header */}
       <div className="grid gap-8 border-b border-white/10 pb-8 lg:grid-cols-[1.3fr_1fr] lg:items-end">
         <div>
           <span className="eyebrow">The Tip Jar · Daily Merkle Escrow</span>
-          <h1 className="display-serif mt-2 text-4xl text-[#fff6ed] md:text-5xl">
+          <h1 className="display-serif mt-2 text-4xl text-white md:text-5xl">
             Trading fees pay the humans who <em>beat AI.</em>
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
             70% of creator fees and producer revenues flow into{" "}
-            <code className="font-mono text-xs text-[#efe8dc]">TipJar.sol</code>{" "}
+            <code className="font-mono text-xs text-white">TipJar.sol</code>{" "}
             and are settled daily via cumulative Merkle trees — 80% to winning
             comedians, 20% to consensus Crowd jurors. Claim any time in a single
             transaction.
@@ -329,13 +329,13 @@ export default function TipJarView() {
           </div>
           <div>
             <dt>Mic Drop Reserve</dt>
-            <dd className="font-mono text-base text-[#fff6ed] tabular-nums">
+            <dd className="font-mono text-base text-white tabular-nums">
               {micDropUsdg}
             </dd>
           </div>
           <div>
             <dt>Latest Epoch</dt>
-            <dd className="font-mono text-base text-[#fff6ed]">
+            <dd className="font-mono text-base text-white">
               #{summary?.latestEpoch ?? 0}
             </dd>
           </div>
@@ -387,7 +387,7 @@ export default function TipJarView() {
                     <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
                       Lifetime Cumulative Allocation
                     </span>
-                    <p className="display-serif mt-1 text-5xl text-[#fff6ed] tabular-nums">
+                    <p className="display-serif mt-1 text-5xl text-white tabular-nums">
                       +${cumulativeUsdg.toFixed(2)}{" "}
                       <span className="font-mono text-sm uppercase tracking-widest text-zinc-400">
                         USDG ({reward.epochs ?? 1} epoch
@@ -398,7 +398,7 @@ export default function TipJarView() {
 
                   {fullyClaimed ? (
                     <div className="space-y-2">
-                      <Stamp tone="green">All caught up — fully claimed ✓</Stamp>
+                      <Stamp tone="green">All caught up — fully claimed</Stamp>
                       <p className="text-sm leading-relaxed text-zinc-400">
                         Everything in this cumulative allocation has already
                         been paid to your wallet. New rewards appear here after
@@ -421,7 +421,7 @@ export default function TipJarView() {
                           value={recipientOverride}
                           onChange={(e) => setRecipientOverride(e.target.value)}
                           placeholder={account}
-                          className="mt-2 w-full rounded-xl border border-white/10 bg-[#0c0a08] px-4 py-3 font-mono text-xs text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
+                          className="mt-2 w-full rounded-xl border border-white/10 bg-[#070709] px-4 py-3 font-mono text-xs text-white placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
                         />
                       </div>
 
@@ -445,11 +445,10 @@ export default function TipJarView() {
 
                   {txHash ? (
                     <p
-                      className="font-mono text-xs text-[#ffc53d] flex items-center gap-1.5"
+                      className="font-mono text-xs text-[#ffc53d]"
                       role="status"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Claim transaction broadcast: {txHash}</span>
+                      Claim transaction broadcast: {txHash}
                     </p>
                   ) : null}
                 </div>
@@ -462,7 +461,7 @@ export default function TipJarView() {
               )}
               {error ? (
                 <p
-                  className="rounded-xl border border-rose-500/40 bg-rose-500/15 p-3 font-mono text-xs text-[#ffc53d]"
+                  className="rounded-xl border border-rose-500/40 bg-rose-500/15 p-3 font-mono text-xs text-rose-300"
                   role="alert"
                 >
                   {error}
