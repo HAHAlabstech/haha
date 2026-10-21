@@ -118,7 +118,11 @@ export default function CrowdView() {
           error?: string;
         };
         setAssignment(null);
-        setQueueError(data.error ?? `Jury queue unavailable (${nextRes.status}).`);
+        setQueueError(
+          nextRes.status >= 500
+            ? "We could not load the jury queue. This is not an empty queue."
+            : (data.error ?? `Jury queue unavailable (${nextRes.status}).`),
+        );
         setQueueState("error");
         return;
       }

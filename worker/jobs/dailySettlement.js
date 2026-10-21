@@ -278,12 +278,16 @@ async function run(job) {
     for (const a of agg) {
       const proof = proofs.get(a.account) ?? [];
       const cumBig = BigInt(a.cum || "0");
+      // A wallet can have a cumulative entitlement without a new Reward row in
+      // this epoch. Update EVERY row for the wallet so its latest proof always
+      // matches the active root; storing the proof epoch inside the JSON lets
+      // the API distinguish "latest reward epoch" from "latest proof epoch".
       await prisma.$executeRaw`
         UPDATE "Reward" r
-        SET merkle_proof = ${JSON.stringify({ proof })}::jsonb,
+        SET merkle_proof = ${JSON.stringify({ proof, epoch })}::jsonb,
             cumulative_micro_usdg = ${cumBig}
         FROM "User" u
-        WHERE r.user_id = u.id AND u.wallet = ${a.account} AND r.epoch_id = (SELECT id FROM "Epoch" WHERE epoch_number = ${epoch})`;
+        WHERE r.user_id = u.id AND u.wallet = ${a.account}`;
     }
     return { root, r2: url, leaves: agg.length };
   });

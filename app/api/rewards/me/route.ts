@@ -10,6 +10,18 @@ import { readChainEnv } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
+function proofEpochOf(reward: {
+  merkle_proof: unknown;
+  epoch: { epoch_number: number };
+}): number {
+  const proof = reward.merkle_proof;
+  if (proof != null && typeof proof === "object" && "epoch" in proof) {
+    const n = Number((proof as { epoch?: unknown }).epoch);
+    if (Number.isInteger(n) && n > 0) return n;
+  }
+  return reward.epoch.epoch_number;
+}
+
 // GET /api/rewards/me?account=0x... (alias: ?wallet=0x...)
 // Returns aggregate cumulative micro-USDG + the latest Merkle proof for
 // TipJar.claim(). Aggregation is cross-epoch AND cross-role per wallet
@@ -54,11 +66,20 @@ export async function GET(req: Request) {
     let cumulative = 0n;
     for (const r of rewards) cumulative += BigInt(r.amount_micro_usdg);
 
-    // Reward rows are per (epoch, role); the proof to use is the one from the
-    // highest epoch, never whichever row happens to be last by created_at.
+    // Reward rows are per (epoch, role); the proof to use is the newest one.
+    // The settlement worker stores the proof epoch inside the JSON and updates
+    // every row for a wallet, so a wallet with no new reward still gets a
+    // current proof. Fall back to the reward epoch for legacy rows.
     let latest = rewards[0]!;
     for (const r of rewards) {
-      if (r.epoch.epoch_number >= latest.epoch.epoch_number) latest = r;
+      const re = proofEpochOf(r);
+      const le = proofEpochOf(latest);
+      if (
+        re > le ||
+        (re === le && r.epoch.epoch_number >= latest.epoch.epoch_number)
+      ) {
+        latest = r;
+      }
     }
     const proof =
       latest.merkle_proof != null &&
@@ -121,7 +142,7 @@ export async function GET(req: Request) {
       // rather than claiming the allocation is claimable.
     }
 
-    const proofEpoch = latest.epoch.epoch_number;
+    const proofEpoch = proofEpochOf(latest);
     // A Merkle proof is only valid against the root it was built for. Do not
     // offer a claim when the current proof is older than the active root.
     const claimReady =

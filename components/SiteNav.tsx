@@ -65,7 +65,7 @@ export default function SiteNav() {
           {/* Brand Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2.5 group focus:outline-none"
+            className="flex min-w-0 items-center gap-2.5 group focus:outline-none"
             aria-label="HAHA Home"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,12 +100,12 @@ export default function SiteNav() {
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <WalletMenu />
 
             <Link
               href="/app"
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#ffc53d] to-[#f59e0b] hover:from-[#ffd875] hover:to-[#ffc53d] font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-[#070709] shadow-[0_0_24px_rgba(255,197,61,0.35)] hover:shadow-[0_0_32px_rgba(255,197,61,0.55)] hover:scale-[1.02] transition-all"
+              className="hidden items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#ffc53d] to-[#f59e0b] hover:from-[#ffd875] hover:to-[#ffc53d] font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-[#070709] shadow-[0_0_24px_rgba(255,197,61,0.35)] hover:shadow-[0_0_32px_rgba(255,197,61,0.55)] hover:scale-[1.02] transition-all sm:inline-flex"
             >
               <Mic className="w-3.5 h-3.5" />
               <span>Launch App</span>
