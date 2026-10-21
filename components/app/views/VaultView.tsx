@@ -327,6 +327,48 @@ export default function VaultView() {
         </div>
       </section>
 
+      {/* B2B Licensing Tiers + Producer Gateway Link */}
+      <section aria-label="B2B Dataset Licensing">
+        <SectionTitle
+          eyebrow="ProducerGateway.sol · B2B Licensing"
+          hint="Enforced on-chain in USDG · 50% TipJar / 25% MicDrop / 25% Ops"
+        >
+          License the <em>Corpus.</em>
+        </SectionTitle>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {PRICE_LIST.map((item) => (
+            <Card key={item.name} className="flex flex-col justify-between">
+              <div>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
+                  {item.tag}
+                </span>
+                <h3 className="display-serif mt-2 text-2xl text-[#fff6ed]">
+                  {item.name}
+                </h3>
+                <p className="display-serif mt-2 text-3xl text-[#ffc53d]">
+                  {item.price}
+                </p>
+                <p className="mt-3 text-xs leading-relaxed text-zinc-400">
+                  {item.body}
+                </p>
+              </div>
+              <div className="mt-6 border-t border-white/10 pt-4 flex items-center justify-between">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
+                  {item.tier}
+                </span>
+                <Link
+                  href="/producers"
+                  className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-widest text-[#ffc53d] hover:underline"
+                >
+                  <span>Checkout</span>
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       <Disclaimer />
     </div>
   );

@@ -77,7 +77,7 @@ async function settleBit(bitId) {
     await prisma.bit.update({ where: { id: bitId }, data: { status: d.result } });
     try {
       const card = await cardLib.ensureCardForBit(prisma, bitId, putR2);
-      console.log(`[share-card] ${cardKey(bitId)} bytes=${card.bytes}`);
+      console.log(`[share-card] ${cardLib.cardKey(bitId)} bytes=${card.bytes}`);
     } catch (e) {
       console.log(`[share-card] fail ${bitId}: ${e.message}`);
     }

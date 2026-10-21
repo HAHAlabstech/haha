@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createHash } from "node:crypto";
+import { constants, createHash, publicEncrypt } from "node:crypto";
 import { bad, getPrisma } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
@@ -18,11 +18,7 @@ function unwrapDek(wrapped: string): string {
   return out.toString("base64");
 }
 
-// GET /api/producers/key?token=hkt_... -> single-use DEK exchange.
-// Sets used_at, enforces expiry; a token can only be exchanged once.
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const token = searchParams.get("token") ?? "";
+async function exchangeToken(token: string, publicKeyPem?: string) {
   if (!token) {
     return bad("token required", 400);
   }
@@ -53,11 +49,29 @@ export async function GET(req: Request) {
     const dekWrapped = snap?.dek_wrapped ?? "kmsv1:stub";
     const dekBase64 = snap?.dek_wrapped ? unwrapDek(snap.dek_wrapped) : null;
 
+    let rsaWrappedDek: string | null = null;
+    if (publicKeyPem && publicKeyPem.includes("BEGIN PUBLIC KEY") && dekBase64) {
+      try {
+        const encrypted = publicEncrypt(
+          {
+            key: publicKeyPem,
+            padding: constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: "sha256",
+          },
+          Buffer.from(dekBase64, "base64"),
+        );
+        rsaWrappedDek = `rsa-oaep-sha256:${encrypted.toString("base64")}`;
+      } catch {
+        rsaWrappedDek = null;
+      }
+    }
+
     return NextResponse.json(
       {
         producerId: row.producer_id,
         batchId: row.batch_id,
         dekWrapped,
+        wrappedDek: rsaWrappedDek ?? dekBase64 ?? dekWrapped,
         dekBase64,
         r2DatasetKey: snap?.r2_dataset_key ?? null,
         expiresAt: row.expires_at.toISOString(),
@@ -67,4 +81,24 @@ export async function GET(req: Request) {
   } catch {
     return bad("key exchange unavailable", 503);
   }
+}
+
+// GET /api/producers/key?token=hkt_... -> single-use DEK exchange.
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const token = (searchParams.get("token") ?? "").trim();
+  return exchangeToken(token);
+}
+
+// POST /api/producers/key { token, publicKeyPem? } -> single-use DEK exchange (optional RSA-OAEP wrap).
+export async function POST(req: Request) {
+  let body: { token?: string; publicKeyPem?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return bad("invalid json");
+  }
+  const token = (body.token ?? "").trim();
+  const publicKeyPem = (body.publicKeyPem ?? "").trim() || undefined;
+  return exchangeToken(token, publicKeyPem);
 }

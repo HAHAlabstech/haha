@@ -586,7 +586,8 @@ export default function LandingShowtimeHero() {
     const targetPos = new THREE.Vector3();
     const lookAt = new THREE.Vector3();
     const camLocal = new THREE.Vector3();
-    const clock = new THREE.Clock();
+    const t0 = performance.now();
+    let prevNow = t0;
 
     // Scroll Handler synced to Runway Height
     const onScroll = () => {
@@ -654,8 +655,10 @@ export default function LandingShowtimeHero() {
       raf = requestAnimationFrame(animate);
       if (!isVisible) return;
 
-      const dt = Math.min(0.05, clock.getDelta());
-      const time = clock.getElapsedTime();
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - prevNow) / 1000);
+      prevNow = now;
+      const time = (now - t0) / 1000;
 
       // Smooth scroll interpolation (responsive tracking, Lenis handles wheel easing)
       st.scroll += (st.targetScroll - st.scroll) * 0.25;

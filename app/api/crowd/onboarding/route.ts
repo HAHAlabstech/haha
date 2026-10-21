@@ -8,10 +8,13 @@ const MAX_BODY_BYTES = 64 * 1024;
 const PASS_RATIO = 0.8;
 
 // Calibration answer key — server-side only. The UI quiz (static cases in
-// app/crowd/join/page.tsx) renders these same 10 items; grading here must
-// match exactly what the user sees. Never ship this to the client bundle.
+// app/crowd/join/page.tsx) renders these same 10 items without shipping the
+// answers in the client bundle; grading here must match what the user sees.
 const CALIB_KEY: Array<"A" | "B"> = [
   "B", "B", "B", "B", "B", "B", "B", "A", "B", "B",
+];
+const CALIB_FAIR: boolean[] = [
+  true, true, true, true, true, false, false, true, true, true,
 ];
 
 
@@ -61,9 +64,11 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/crowd/onboarding {wallet, answers: (number | "A" | "B")[]}
-// Grades against the server-side CALIB_KEY (matches the UI quiz cases).
-// Session required; pass ratio 0.8. The forgeable correct/total path was removed.
+// POST /api/crowd/onboarding {wallet?, answers: (number | "A" | "B" | {vote, fair})[], preview?: boolean}
+// Grades against the server-side CALIB_KEY + CALIB_FAIR.
+// When `preview: true` (or wallet omitted), returns the graded score & expected
+// corrections without writing to DB; when `wallet` is provided, requires SIWE
+// session and records onboarding_passed.
 export async function POST(req: Request) {
   let raw: string;
   try {
@@ -79,18 +84,16 @@ export async function POST(req: Request) {
     return bad("Invalid JSON", 400);
   }
   const b = body as Record<string, unknown>;
+  const preview = b.preview === true;
   const wallet = (
     typeof b.wallet === "string" ? b.wallet : ""
   ).toLowerCase();
-  if (!/^0x[0-9a-f]{40}$/.test(wallet)) return bad("invalid wallet", 400);
+  if (!preview && !/^0x[0-9a-f]{40}$/.test(wallet)) {
+    return bad("invalid wallet", 400);
+  }
 
   try {
     const prisma = getPrisma();
-
-    // Session must prove the wallet: the quiz result is keyed to a signed
-    // account, not to a self-asserted body field.
-    const gate = await requireWalletSession(req, prisma, wallet);
-    if (!gate.ok) return gate.response;
 
     // Grade ONLY the per-item answers against the server-side key above.
     // The legacy correct/total self-report path is removed — it was forgeable.
@@ -105,18 +108,46 @@ export async function POST(req: Request) {
     for (let i = 0; i < CALIB_KEY.length; i++) {
       const a = answers[i];
       let picked: "A" | "B";
+      let pickedFair: boolean | undefined;
       if (typeof a === "number") {
         picked = a === 0 ? "A" : "B";
       } else if (a === "A" || a === "B") {
         picked = a;
+      } else if (typeof a === "object" && a !== null) {
+        const obj = a as { vote?: unknown; fair?: unknown };
+        if (obj.vote !== "A" && obj.vote !== "B") {
+          return bad("each answer.vote must be 'A' or 'B'", 400);
+        }
+        if (typeof obj.fair !== "boolean") {
+          return bad("each answer.fair must be boolean", 400);
+        }
+        picked = obj.vote;
+        pickedFair = obj.fair;
       } else {
-        return bad("answers must be numbers (0/1) or 'A'/'B'", 400);
+        return bad("answers must be numbers (0/1), 'A'/'B', or {vote, fair}", 400);
       }
-      if (picked === CALIB_KEY[i]) correct++;
+      const voteOk = picked === CALIB_KEY[i];
+      const fairOk = pickedFair === undefined ? true : pickedFair === CALIB_FAIR[i];
+      if (voteOk && fairOk) correct++;
     }
     const total = CALIB_KEY.length;
-
     const passed = total > 0 && correct / total >= PASS_RATIO;
+    const expected = CALIB_KEY.map((c, i) => ({
+      correct: c,
+      fair: CALIB_FAIR[i]!,
+    }));
+
+    if (preview) {
+      return NextResponse.json(
+        { passed, correct, total, expected },
+        { headers: { "cache-control": "no-store" } },
+      );
+    }
+
+    // Session must prove the wallet: the quiz result is keyed to a signed
+    // account, not to a self-asserted body field.
+    const gate = await requireWalletSession(req, prisma, wallet);
+    if (!gate.ok) return gate.response;
 
     let user = await prisma.user.findUnique({
       where: { wallet },
@@ -154,7 +185,7 @@ export async function POST(req: Request) {
       },
     });
     return NextResponse.json(
-      { passed, correct, total },
+      { passed, correct, total, expected },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {

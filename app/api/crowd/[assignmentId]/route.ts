@@ -5,6 +5,7 @@ import {
   enqueueJob,
   getPrisma,
   isColluding,
+  requireWalletSession,
   shuffleInPlace,
   TIER_WEIGHT,
 } from "@/lib/server";
@@ -59,6 +60,9 @@ export async function POST(
 
   try {
     const prisma = getPrisma();
+    const auth = await requireWalletSession(req, prisma, wallet);
+    if (!auth.ok) return auth.response;
+
     const assignment = await prisma.crowdAssignment.findUnique({
       where: { id: assignmentId },
       include: {

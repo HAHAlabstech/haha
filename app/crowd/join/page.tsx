@@ -18,6 +18,9 @@ interface QuizItem {
   question: string;
   a: string;
   b: string;
+}
+
+interface ExpectedKeyItem {
   correct: "A" | "B";
   fair: boolean;
 }
@@ -29,8 +32,6 @@ const QUIZ: QuizItem[] = [
     question: "What's the joke?",
     a: "The narrator is sad about a breakup and the plants symbolize lost love.",
     b: "It treats dead plants like a dramatic human farewell (“didn't leave a note”) while the cause is the narrator's broken promise.",
-    correct: "B",
-    fair: true,
   },
   {
     scenario:
@@ -38,8 +39,6 @@ const QUIZ: QuizItem[] = [
     question: "How does your friend actually feel?",
     a: "Completely fine and understanding — the cheerful phrasing proves it.",
     b: "Hurt and fed up; the over-cheerful tone and “next year” are passive-aggressive.",
-    correct: "B",
-    fair: true,
   },
   {
     scenario:
@@ -47,16 +46,12 @@ const QUIZ: QuizItem[] = [
     question: "What does this tell you about the party?",
     a: "The host is rude and didn't want guests at all.",
     b: "Guests are expected fashionably late — the on-time guest is effectively early.",
-    correct: "B",
-    fair: true,
   },
   {
     scenario: "“I saw the man with the binoculars.”",
     question: "Who has the binoculars?",
     a: "Obviously the man — grammar always resolves this.",
     b: "Genuinely ambiguous without context; either the speaker used them or the man had them.",
-    correct: "B",
-    fair: true,
   },
   {
     scenario:
@@ -64,16 +59,12 @@ const QUIZ: QuizItem[] = [
     question: "Finish the punchline.",
     a: "…phone charger, to prove a point about screen time.",
     b: "…life support. The shock turn from a generational argument into something dark is the joke.",
-    correct: "B",
-    fair: true,
   },
   {
     scenario: "How many R's are in “strawberry”?",
     question: "Is this a fair bit?",
     a: "Yes — it's a clean test of careful reading.",
     b: "No — it's a token-counting trick, not human understanding.",
-    correct: "B",
-    fair: false,
   },
   {
     scenario:
@@ -81,8 +72,6 @@ const QUIZ: QuizItem[] = [
     question: "Is this a fair bit?",
     a: "Yes — the barking detail makes the answer guessable.",
     b: "No — it needs private info only the sender knows.",
-    correct: "B",
-    fair: false,
   },
   {
     scenario:
@@ -90,8 +79,6 @@ const QUIZ: QuizItem[] = [
     question: "Who can park here?",
     a: "Only patients (and possibly staff); non-patient visitors must park elsewhere.",
     b: "Any visitor — signs like this are never enforced.",
-    correct: "A",
-    fair: true,
   },
   {
     scenario:
@@ -99,16 +86,12 @@ const QUIZ: QuizItem[] = [
     question: "Is it fine?",
     a: "Yes — she said it's fine and only tonight's dishes matter.",
     b: "No — “like always” reveals a long-standing grievance about unequal effort.",
-    correct: "B",
-    fair: true,
   },
   {
     scenario: "A job ad: “We work hard and play hard. We're a family here.”",
     question: "What is the ad really saying?",
     a: "It's a warm, supportive workplace that values fun and belonging.",
     b: "Expect long hours and blurred boundaries; “family” signals loyalty pressure beyond the job.",
-    correct: "B",
-    fair: true,
   },
 ];
 
@@ -118,6 +101,8 @@ export default function CrowdJoinPage() {
   const [votes, setVotes] = useState<Record<number, "A" | "B">>({});
   const [fair, setFair] = useState<Record<number, boolean>>({});
   const [graded, setGraded] = useState(false);
+  const [score, setScore] = useState(0);
+  const [expectedKey, setExpectedKey] = useState<ExpectedKeyItem[] | null>(null);
   const [account, setAccount] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -163,14 +148,16 @@ export default function CrowdJoinPage() {
     };
   }, [account]);
 
-  const score = QUIZ.reduce((n, q, i) => {
-    const okVote = votes[i] === q.correct;
-    const okFair = (fair[i] ?? null) === q.fair;
-    return n + (okVote && okFair ? 1 : 0);
-  }, 0);
   const answered =
     Object.keys(votes).length === QUIZ.length &&
     Object.keys(fair).length === QUIZ.length;
+
+  function buildAnswersPayload() {
+    return QUIZ.map((_, i) => ({
+      vote: votes[i] ?? "A",
+      fair: fair[i] ?? true,
+    }));
+  }
 
   async function recordPassOnServer() {
     const st = getSharedWalletState();
@@ -191,16 +178,20 @@ export default function CrowdJoinPage() {
         },
         body: JSON.stringify({
           wallet: siwe.wallet ?? st.account,
-          // Route contract: the server grades the calibration against its own
-          // key — the page ships per-item answers only (the forgeable
-          // correct/total self-report path was removed).
-          answers: QUIZ.map((_, i) => votes[i]),
+          answers: buildAnswersPayload(),
         }),
       });
+      const d = (await res.json().catch(() => ({}))) as {
+        correct?: number;
+        expected?: ExpectedKeyItem[];
+        error?: string;
+      };
       if (res.ok) {
+        if (typeof d.correct === "number") setScore(d.correct);
+        if (Array.isArray(d.expected)) setExpectedKey(d.expected);
+        setGraded(true);
         setSavedServer(true);
       } else {
-        const d = (await res.json().catch(() => ({}))) as { error?: string };
         setError(d.error ?? "Could not record onboarding result.");
       }
     } catch (e) {
@@ -211,9 +202,37 @@ export default function CrowdJoinPage() {
   }
 
   async function handleSubmit() {
-    setGraded(true);
+    setError(null);
     if (account) {
       await recordPassOnServer();
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/crowd/onboarding", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          preview: true,
+          answers: buildAnswersPayload(),
+        }),
+      });
+      const d = (await res.json().catch(() => ({}))) as {
+        correct?: number;
+        expected?: ExpectedKeyItem[];
+        error?: string;
+      };
+      if (res.ok) {
+        if (typeof d.correct === "number") setScore(d.correct);
+        if (Array.isArray(d.expected)) setExpectedKey(d.expected);
+        setGraded(true);
+      } else {
+        setError(d.error ?? "Could not grade quiz.");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to grade quiz.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -259,8 +278,9 @@ export default function CrowdJoinPage() {
         {QUIZ.map((q, i) => {
           const v = votes[i];
           const f = fair[i];
+          const exp = expectedKey?.[i];
           const gradedWrong =
-            graded && !(v === q.correct && (f ?? null) === q.fair);
+            graded && exp != null && !(v === exp.correct && (f ?? null) === exp.fair);
           return (
             <li key={i}>
               <Card className={gradedWrong ? "border-[#c93b2b]/50" : ""}>
@@ -327,9 +347,9 @@ export default function CrowdJoinPage() {
                     </button>
                   ))}
                 </div>
-                {graded && gradedWrong ? (
+                {graded && gradedWrong && exp ? (
                   <p className="mt-3 font-mono text-xs text-[#ffb13b]">
-                    Expected: {q.correct} · {q.fair ? "Fair" : "Unfair"}
+                    Expected: {exp.correct} · {exp.fair ? "Fair" : "Unfair"}
                   </p>
                 ) : null}
               </Card>
@@ -397,6 +417,9 @@ export default function CrowdJoinPage() {
                   setVotes({});
                   setFair({});
                   setGraded(false);
+                  setScore(0);
+                  setExpectedKey(null);
+                  setError(null);
                 }}
                 className="pill-btn hot mt-4"
               >

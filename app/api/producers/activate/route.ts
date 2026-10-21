@@ -99,8 +99,28 @@ export async function POST(req: Request) {
     typeof b.tx_hash === "string" ? b.tx_hash : ""
   ).toLowerCase();
   const plan = typeof b.plan === "string" ? b.plan.toLowerCase() : "";
-  const orderId = typeof b.orderId === "string" ? b.orderId : "";
-  const batchId = typeof b.batchId === "string" ? b.batchId : "";
+  const rawOrder =
+    typeof b.orderId === "string" && b.orderId.trim()
+      ? b.orderId.trim()
+      : typeof b.org_name === "string"
+        ? b.org_name.trim()
+        : "";
+  const rawBatch =
+    typeof b.batchId === "string" && b.batchId.trim()
+      ? b.batchId.trim()
+      : typeof b.contact === "string" && b.contact.trim()
+        ? b.contact.trim()
+        : "latest";
+  const orderId = rawOrder;
+  const batchId = rawBatch;
+  const orgName =
+    typeof b.org_name === "string" && b.org_name.trim()
+      ? b.org_name.trim().slice(0, 128)
+      : orderId.slice(0, 128);
+  const contactInfo =
+    typeof b.contact === "string" && b.contact.trim()
+      ? b.contact.trim().slice(0, 128)
+      : `batch:${batchId}`.slice(0, 128);
   const walletAddress =
     typeof b.wallet === "string" && /^0x[0-9a-fA-F]{40}$/.test(b.wallet)
       ? b.wallet.toLowerCase()
@@ -213,8 +233,8 @@ export async function POST(req: Request) {
 
     const producer = await prisma.producer.create({
       data: {
-        org_name: orderId.slice(0, 128),
-        contact: `batch:${batchId}`.slice(0, 128),
+        org_name: orgName,
+        contact: contactInfo,
         wallet_address: walletAddress,
         plan,
         api_key_hash,
@@ -265,6 +285,7 @@ export async function POST(req: Request) {
         producerId: producer.id,
         apiKey,
         keyToken,
+        keyExchangeToken: keyToken,
         downloadUrl,
         verified,
         splits,
