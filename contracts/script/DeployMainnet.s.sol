@@ -5,9 +5,9 @@ import {Script, console} from "forge-std/Script.sol";
 import {TipJar} from "../src/TipJar.sol";
 import {MicDrop} from "../src/MicDrop.sol";
 import {FeeSplitter} from "../src/FeeSplitter.sol";
-import {CrowdStaking} from "../src/CrowdStaking.sol";
 import {VaultRegistry} from "../src/VaultRegistry.sol";
 import {ProducerGateway} from "../src/ProducerGateway.sol";
+import {V4BuybackAdapter} from "../src/V4BuybackAdapter.sol";
 
 interface IDecimals {
     function decimals() external view returns (uint8);
@@ -57,9 +57,9 @@ contract DeployMainnet is Script {
         address router;
         address poolManager;
         address hook;
+        address permit2;
         address cold;
         address treasury;
-        address haha;
     }
 
     function _preflight() internal view returns (Preflight memory p) {
@@ -71,16 +71,17 @@ contract DeployMainnet is Script {
         p.escrow = vm.envAddress("PONS_FEE_ESCROW_ADDRESS");
         p.factory = vm.envAddress("PONS_FACTORY_ADDRESS");
         p.router = vm.envAddress("UNIVERSAL_ROUTER_ADDRESS");
+        p.permit2 = vm.envAddress("PERMIT2_ADDRESS");
         p.poolManager = vm.envAddress("POOL_MANAGER_ADDRESS");
         p.hook = vm.envAddress("PONS_MEME_HOOK_ADDRESS");
         p.cold = vm.envAddress("ADMIN_COLD_ADDRESS");
         p.treasury = vm.envAddress("COLD_TREASURY_ADDRESS");
-        p.haha = vm.envOr("HAHA_TOKEN_ADDRESS", address(0));
 
         _requireCode(p.usdg, "usdg-no-code");
         _requireCode(p.escrow, "escrow-no-code");
         _requireCode(p.factory, "factory-no-code");
         _requireCode(p.router, "router-no-code");
+        _requireCode(p.permit2, "permit2-no-code");
         _requireCode(p.poolManager, "poolmanager-no-code");
         _requireCode(p.hook, "hook-no-code");
 
@@ -118,19 +119,14 @@ contract DeployMainnet is Script {
     function _deploy(Preflight memory p) internal {
         uint256 pk = vm.envUint("OPERATOR_PRIVATE_KEY");
         address deployer = vm.addr(pk);
-        uint256 extraBitStake = vm.envOr("EXTRA_BIT_STAKE_WEI", uint256(10 ether));
+        _validateKeySeparation(deployer, p.cold);
 
         vm.startBroadcast(pk);
 
         TipJar tipJar = new TipJar(p.usdg, p.cold, deployer, p.cold, TIPJAR_ROOT_DELAY);
-
-        // Construction cycle: FeeSplitter needs a MicDrop, MicDrop needs the
-        // splitter. Deploy a temporary MicDrop, then rotate the splitter to the
-        // real one after TIMELOCK (cold-admin action in the runbook).
-        MicDrop placeholder = new MicDrop(p.usdg, deployer, p.router, p.cold, deployer, TIMELOCK);
-        FeeSplitter splitter =
-            new FeeSplitter(p.usdg, p.escrow, address(tipJar), address(placeholder), p.cold, deployer, TIMELOCK);
-        MicDrop micDrop = new MicDrop(p.usdg, address(splitter), p.router, p.cold, deployer, TIMELOCK);
+        V4BuybackAdapter adapter = new V4BuybackAdapter(p.usdg, p.router, p.permit2, p.hook);
+        MicDrop micDrop = new MicDrop(p.usdg, address(adapter), p.cold, deployer, TIMELOCK);
+        FeeSplitter splitter = new FeeSplitter(p.usdg, p.escrow, address(tipJar), address(micDrop), p.cold, deployer, TIMELOCK);
 
         VaultRegistry registry = new VaultRegistry(p.cold, deployer);
 
@@ -139,27 +135,24 @@ contract DeployMainnet is Script {
         ProducerGateway gateway =
             new ProducerGateway(p.usdg, p.treasury, address(tipJar), address(micDrop), p.cold, prices);
 
-        address staking = address(0);
-        if (p.haha != address(0)) {
-            staking = address(new CrowdStaking(p.haha, address(tipJar), p.cold, deployer, extraBitStake));
-        }
-
         vm.stopBroadcast();
 
         console.log("TipJar:", address(tipJar));
         console.log("FeeSplitter:", address(splitter));
-        console.log("MicDropPlaceholder:", address(placeholder));
         console.log("MicDrop:", address(micDrop));
+        console.log("V4BuybackAdapter:", address(adapter));
         console.log("VaultRegistry:", address(registry));
         console.log("ProducerGateway:", address(gateway));
-        if (staking != address(0)) console.log("CrowdStaking:", staking);
-        else console.log("CrowdStaking: SKIPPED (HAHA_TOKEN_ADDRESS is zero; deploy after $HAHA launch)");
+        console.log("CrowdStaking: SKIPPED (deploy only after the real Pons CA is received; do not bind the temporary public-mint MockHAHA)");
 
         console.log("PHASE 2 (cold admin):");
-        console.log("1. FeeSplitter.proposeSetMicDrop(MicDrop) then confirm after 48h");
-        console.log("2. MicDrop.proposeHahaToken(...) then confirm after 48h");
-        console.log("3. FeeSplitter.proposeSetLaunchRefs(curve,hook,poolId) then confirm after 48h");
-        console.log("4. Write every address into VPS env; keep WORKER_CHAIN_WRITES=off until roles verified");
+        console.log("1. Optional: bind creator-fee sweep refs only if on-chain ownership/recipient is verified");
+        console.log("2. After actual Pons CA: proposeHahaToken(CA), confirm after 48h; route stays unset/HOLD");
+        console.log("3. Write every address into VPS env; keep WORKER_CHAIN_WRITES=off until roles verified");
+    }
+
+    function _validateKeySeparation(address hot, address cold) internal pure {
+        if (hot == address(0) || cold == address(0) || hot == cold) revert PreflightFailed("hot-cold-key-separation");
     }
 
     /// @dev staticcall must not revert (returndata ignored — views may return 0 pre-launch).

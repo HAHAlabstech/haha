@@ -8,6 +8,7 @@ import {
   tipJarAbi,
 } from "@/lib/haha-contracts";
 import { getPrisma, readChainEnv } from "@/lib/server";
+import { epochScope } from "@/worker/lib/funding";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,7 @@ export async function GET() {
         take: 10,
       }),
       prisma.epoch.findFirst({
+        where: epochScope({ chainId: chain.id, tipJar: contracts.tipJar }),
         orderBy: { epoch_number: "desc" },
         select: { epoch_number: true },
       }),

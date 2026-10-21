@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
-import { createPublicClient, decodeEventLog, http } from "viem";
+import { createPublicClient, decodeEventLog, http, keccak256, toBytes } from "viem";
+import { fundingConfig, importFundingReceipt } from "@/worker/lib/funding";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getChainForEnv } from "@/lib/haha-chains";
@@ -131,6 +132,7 @@ export async function POST(req: Request) {
   if (price === undefined) return bad("invalid plan", 400);
   if (!orderId || orderId.length > 128) return bad("invalid orderId", 400);
   if (!batchId || batchId.length > 128) return bad("invalid batchId", 400);
+  if (!walletAddress) return bad("buyer wallet required", 400);
 
   const prisma = getPrisma();
   try {
@@ -146,6 +148,8 @@ export async function POST(req: Request) {
   }
 
   let verified = false;
+  let paidAmount = price;
+  let paidSplits: Record<string, string> | null = null;
   const contracts = getServerContracts();
   try {
     const chainEnv = readChainEnv();
@@ -159,6 +163,7 @@ export async function POST(req: Request) {
         ? override
         : (chain.rpcUrls.default.http[0] as string);
     const client = createPublicClient({ chain, transport: http(rpcUrl) });
+    if (!isDeployed(contracts, "producerGateway")) return bad("ProducerGateway not configured", 503);
     const receipt = await client.getTransactionReceipt({
       hash: tx_hash as `0x${string}`,
     });
@@ -195,6 +200,9 @@ export async function POST(req: Request) {
         return bad("invalid ProducerPurchase event", 402);
       }
       const ev = decoded.args as {
+        orderId: `0x${string}`;
+        batchId: `0x${string}`;
+        buyer: `0x${string}`;
         planType: number;
         operatorShare: bigint;
         tipJarGeneralShare: bigint;
@@ -204,25 +212,33 @@ export async function POST(req: Request) {
       if (Number(ev.planType) !== expectedType) {
         return bad("payment plan does not match the activated plan", 402);
       }
+      if (ev.orderId !== keccak256(toBytes(orderId)) || ev.batchId !== keccak256(toBytes(batchId))) {
+        return bad("payment order or dataset batch does not match", 402);
+      }
+      if (walletAddress && ev.buyer.toLowerCase() !== walletAddress) return bad("payment buyer does not match", 402);
       const paid =
         ev.operatorShare + ev.tipJarGeneralShare + ev.royaltyShare + ev.micDropShare;
       if (paid < price) {
         return bad("payment amount is below the plan price", 402);
       }
+      paidAmount = paid;
+      paidSplits = { operator_share: ev.operatorShare.toString(), tipjar_general: ev.tipJarGeneralShare.toString(), comedian_royalty: ev.royaltyShare.toString(), mic_drop: ev.micDropShare.toString() };
+      // Receipt funding is independent of successful dataset delivery. A retry
+      // cannot allocate it twice, and an unknown manifest keeps royalties held.
+      await importFundingReceipt(prisma, client, tx_hash, fundingConfig(), batchId);
     }
     verified = true;
   } catch {
-    if (process.env.ALLOW_UNVERIFIED_PRODUCER_TX !== "true") {
+    if (readChainEnv() === "mainnet" || process.env.ALLOW_UNVERIFIED_PRODUCER_TX !== "true") {
       return bad("unable to verify payment transaction on-chain", 402);
     }
     verified = false;
   }
 
   try {
-    const latestSnap = await prisma.vaultSnapshot.findFirst({
-      orderBy: { created_at: "desc" },
-      select: { r2_dataset_key: true },
-    });
+    const boundSnap = await prisma.vaultSnapshot.findUnique({ where: { id: batchId }, select: { r2_dataset_key: true, contributors_json: true } });
+    if (readChainEnv() === "mainnet" && (!boundSnap?.r2_dataset_key || !Array.isArray(boundSnap.contributors_json))) return bad("paid dataset batch is unavailable; funding remains registered", 409);
+    const latestSnap = boundSnap || (readChainEnv() === "testnet" ? await prisma.vaultSnapshot.findFirst({ orderBy: { created_at: "desc" }, select: { r2_dataset_key: true } }) : null);
 
     const apiKey = `haha_${randomBytes(24).toString("hex")}`;
     const api_key_hash = createHash("sha256").update(apiKey).digest("hex");
@@ -254,7 +270,7 @@ export async function POST(req: Request) {
       data: { r2_download_url: downloadUrl },
     });
 
-    const splits = {
+    const splits = paidSplits || {
       operator_share: ((price * 40n) / 100n).toString(),
       tipjar_general: ((price * 30n) / 100n).toString(),
       mic_drop: ((price * 20n) / 100n).toString(),
@@ -263,7 +279,7 @@ export async function POST(req: Request) {
     await prisma.revenueEvent.create({
       data: {
         producer_id: producer.id,
-        amount_micro_usd: price,
+        amount_micro_usd: paidAmount,
         type: "producer_activation",
         split_json: splits,
         tx_hash,

@@ -101,7 +101,7 @@ export default function ProducersPage() {
   const [faucetMsg, setFaucetMsg] = useState<string | null>(null);
 
   const [orderId, setOrderId] = useState("");
-  const [batchId, setBatchId] = useState("snapshot-latest");
+  const [batchId, setBatchId] = useState("");
   const [txHash, setTxHash] = useState("");
   const [activating, setActivating] = useState(false);
   const [activationResult, setActivationResult] = useState<{
@@ -162,6 +162,14 @@ export default function ProducersPage() {
         );
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/producers/batch").then(r => r.ok ? r.json() : null).then(batch => {
+      if (!cancelled && typeof batch?.batchId === "string") setBatchId(batch.batchId);
+    }).catch(() => {});
+    return () => { cancelled = true; };
   }, []);
 
   const handleConnected = useCallback((accs: string[]) => {
@@ -333,6 +341,7 @@ export default function ProducersPage() {
       }
 
       // 2) Purchase the plan (price enforced on-chain + backend).
+      if (!batchId.trim()) throw new Error("No published dataset batch is available yet.");
       const orderIdBytes32 = keccak256(toBytes(orderId.trim()));
       const batchIdBytes32 = keccak256(toBytes(batchId.trim() || "latest"));
       const buyData = encodeFunctionData({

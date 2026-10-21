@@ -777,6 +777,31 @@ Sebelum melakukan deploy ke Mainnet (`4663`), kedelapan skenario pengujian ini *
 | Price list B2B `/producers` + enforced on-chain + alur beli (Test 7) | §4.6 / §Test 7 | `/producers` menyediakan halaman price list 4 tier + checkout on-chain `ProducerGateway.purchasePlan` + `MockUSDG.mintTest` + aktivasi lisensi `/api/producers/activate` + pertukaran DEK RSA-OAEP-256 `/api/producers/key` | ✅ DIPULIHKAN & SESUAI — terhubung dari `/app?tab=vault` dan `/producers`. **Bukti e2e 21 Okt**: harga on-chain plan 0 = `2_500_000_000` micro (eth_call `0x1ec3d9b5`); Snapshot $2.500 dibeli tx `0xb67b8bb6…` → `/activate` HTTP 200 `verified=true` (producerId `cmvht2piw0000s1016n7o9t06`, apiKey 53 char, `keyToken` DEK exchange, URL unduh R2 24 jam); splits **1000/750/500/250 = tepat 40/30/20/10** ✓; replay tx sama → 409 ✓; backend kini memverifikasi event `ProducerPurchase` (planType match + total shares ≥ price; verifikasi wajib kecuali `ALLOW_UNVERIFIED_PRODUCER_TX=true`) |
 | Hardening sesi SIWE di endpoint mutasi (`verdict`, `appeal`, `crowd/[assignmentId]`) + fix `cardLib.cardKey` + DR Drill (`scripts/backup-restore-drill.mjs`) | §5 / §7 / §8 | `verdict`, `appeal`, `crowd/[assignmentId]` belum memanggil `requireWalletSession`; `fiveMinuteOps.js` memanggil `cardKey` tanpa prefix `cardLib.`; belum ada skrip drill formal | ✅ SESUAI — semua endpoint mutasi dilindungi `requireWalletSession`, `cardLib.cardKey` diperbaiki, dan `scripts/backup-restore-drill.mjs` lulus 100% (Merkle parity, AES-256-GCM DEK round-trip, Quorum 5→7 & 5% cap invariant) |
 
+> **Koreksi batas evidence §8.5 (21 Okt 2026):** `scripts/backup-restore-drill.mjs`
+> lulus uji invariant sintetis (Merkle, AES-GCM, kuorum, cap reward), **bukan**
+> restore PostgreSQL dari dump R2 atau pemulihan snapshot VPS. Gate restore
+> nyata §4 item 9 belum boleh dianggap tertutup dari skrip itu saja.
+> Rekonsiliasi keputusan D1–D7 dan gap teknis ada di
+> `docs/MAINNET-HANDOFF.md` §0.1; tidak ada keputusan locked yang diubah.
+
+> **Override pemilik terbaru — scope lanjutan:** audit eksternal, legal, dan
+> pekerjaan approval manusia dikeluarkan dari task ini, bukan blocker yang
+> perlu diulang. Ini bukan klaim sudah diaudit/patuh hukum. Pemilik **hanya
+> menerima CA**, tanpa komunikasi atau kendali konfigurasi launcher. Asumsi
+> koordinasi launch di §3.1/Lampiran A tidak boleh dipakai sebagai prasyarat
+> operasional baru. Desain teknis pengganti CA-only masih menunggu persetujuan;
+> jangan menganggap creator fee milik HAHA hanya karena CA tersedia.
+> Larangan broadcast mainnet tetap berlaku.
+
+> **Implementasi CA-only (21 Okt 2026):** creator-fee harvesting defaults OFF;
+> B2B/treasury receipts are the explicit USDG reward source, keyed by
+> `(chain_id, tx_hash, log_index)`. B2B 10% royalties remain bound to the paid
+> snapshot contributor manifest. Epochs and game bits are chain-scoped. The
+> Mainnet foundation deploys V4BuybackAdapter + MicDrop with HOLD/unset route;
+> `CrowdStaking` is not constructed against the temporary public-mint
+> `MockHAHA`. See `docs/CA-ONLY-BUDGET.md`; estimates are separated from actual
+> balances and optional seed principal.
+
 ## Lampiran A — Checklist form launch Pons (2 orang verifikasi + screenshot pra-submit)
 Pra-submit: nama/simbol/logo/deskripsi/tautan final; pair **USDG** (`0x5fc5…d168`, 6 des); creator wallet = **FeeSplitter terverifikasi Blockscout** (cocokkan awal+akhir+checksum); tax = **200bps (2%, LOCKED)**; buyback **OFF**; exempt tambahan **KOSONG**; TANPA launch-and-buy; fee-sharing lain = default ke recipient.
 Pasca-launch (skrip read-only): simpan tx hash; `getLaunchedToken` (recipient=splitter, pair=USDG, tax cocok, buyback=false); nol event exempt + listing Pons tampil exempt 0 tambahan; `getLaunchFeePolicy` (catat share); `pendingCreatorFeeRecipient==0`. Cocok → propose (48h) → confirm; tidak → JANGAN confirm. `sync-chain` cek berkala buyback+recipient.

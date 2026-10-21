@@ -28,6 +28,15 @@ function scoreOf({ win_strength, fairness, stage, comedian_tier, category_mult =
 // entries: [{ account, score }] (score>0 only). poolMicro: bigint.
 // Returns { payouts: Map(account->bigint), rollover: bigint }.
 function distribute(poolMicro, entries) {
+  // Score belongs to a wallet, not an individual bit. Previously Map.set
+  // overwrote earlier bits while the denominator still included their scores.
+  const aggregated = new Map();
+  for (const e of entries) {
+    if (!Number.isFinite(e.score) || e.score <= 0) continue;
+    const account = e.account.toLowerCase();
+    aggregated.set(account, (aggregated.get(account) || 0) + e.score);
+  }
+  entries = [...aggregated].map(([account, score]) => ({ account, score }));
   const total = entries.reduce((a, e) => a + e.score, 0);
   const payouts = new Map();
   if (total <= 0 || poolMicro <= 0n) return { payouts, rollover: poolMicro };
@@ -62,4 +71,26 @@ function distribute(poolMicro, entries) {
   return { payouts, rollover: poolMicro - paid };
 }
 
-module.exports = { scoreOf, distribute, CAP_BPS, MAX_ITERS, DUST_MICRO };
+// Exact pro-rata allocation of batch-specific royalties. These receipts are
+// already contractually earmarked for snapshot contributors and must not be
+// subjected to the general comedian/crowd pool's per-account 5% cap.
+function distributeProRata(poolMicro, entries) {
+  const aggregated=new Map();
+  for(const e of entries) {
+    if(!Number.isFinite(e.score)||e.score<=0)continue;
+    const account=e.account.toLowerCase();
+    aggregated.set(account,(aggregated.get(account)||0)+e.score);
+  }
+  const list=[...aggregated].map(([account,score])=>({account,score}));
+  const total=list.reduce((s,e)=>s+e.score,0);
+  const payouts=new Map();
+  if(poolMicro<=0n||total<=0)return {payouts,rollover:poolMicro};
+  let paid=0n;
+  for(const e of list) {
+    const amount=poolMicro*BigInt(Math.floor(e.score*1e9))/BigInt(Math.floor(total*1e9));
+    payouts.set(e.account,amount);paid+=amount;
+  }
+  return {payouts,rollover:poolMicro-paid};
+}
+
+module.exports = { scoreOf, distribute, distributeProRata, CAP_BPS, MAX_ITERS, DUST_MICRO };

@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
 import { type PrismaClient, type Category } from "@prisma/client";
 import { cardUrl } from "@/lib/shareUrl";
+import { getChainForEnv } from "@/lib/haha-chains";
 import {
   bad,
   enqueueJob,
   getPrisma,
+  readChainEnv,
   requireWalletSession,
 } from "@/lib/server";
 
@@ -104,14 +106,16 @@ async function ensureSeason(prisma: PrismaClient) {
 export async function GET() {
   try {
     const prisma = getPrisma();
+    const chainId = getChainForEnv(readChainEnv()).id;
     const dayAgo = new Date(Date.now() - 24 * 3600 * 1000);
     const [bitsToday, killedToday, spotlight] = await Promise.all([
-      prisma.bit.count({ where: { created_at: { gt: dayAgo } } }),
+      prisma.bit.count({ where: { chain_id: chainId, created_at: { gt: dayAgo } } }),
       prisma.bit.count({
-        where: { status: "killed_it", created_at: { gt: dayAgo } },
+        where: { chain_id: chainId, status: "killed_it", created_at: { gt: dayAgo } },
       }),
       prisma.bit.findMany({
         where: {
+          chain_id: chainId,
           status: "killed_it",
           is_holdout: false,
           share_public: true,
@@ -182,6 +186,7 @@ export async function POST(req: Request) {
 
   try {
     const prisma = getPrisma();
+    const chainId = getChainForEnv(readChainEnv()).id;
     const auth = await requireWalletSession(req, prisma, wallet);
     if (!auth.ok) return auth.response;
 
@@ -205,6 +210,7 @@ export async function POST(req: Request) {
     const season = await ensureSeason(prisma);
     const bit = await prisma.bit.create({
       data: {
+        chain_id: chainId,
         user_id: user.id,
         category: category as Category,
         stage,

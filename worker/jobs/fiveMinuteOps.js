@@ -120,15 +120,16 @@ async function topUpJurors(bitId, n, round, isRetrial) {
 
 async function run(job) {
   const epoch = Number(job.data.epoch_number ?? 0);
-  const idem = `five-minute-ops:${new Date().toISOString().slice(0, 16)}`;
+  const chainId = require("../lib/chain").resolveChainConfig().chainId;
+  const idem = `five-minute-ops:${chainId}:${new Date().toISOString().slice(0, 16)}`;
   await prisma.cronJobRun.upsert({
     where: { idempotency_key: idem },
-    create: { job_name: "five-minute-ops", stage: `tick:${idem}`, epoch_number: epoch, idempotency_key: idem, status: "started" },
+    create: { job_name: "five-minute-ops", stage: `tick:${idem}`, epoch_number: epoch, chain_id:chainId, idempotency_key: idem, status: "started" },
     update: { status: "started", attempt: { increment: 1 } },
   });
 
   // (1) expire + settle in-crowd bits
-  const open = await prisma.bit.findMany({ where: { status: { in: ["disputed", "in_crowd"] } }, select: { id: true } });
+  const open = await prisma.bit.findMany({ where: { chain_id:chainId, status: { in: ["disputed", "in_crowd"] } }, select: { id: true } });
   const settled = [];
   for (const b of open) {
     await prisma.crowdAssignment.deleteMany({ where: { bit_id: b.id, voted_at: null, expires_at: { lt: new Date() } } });
@@ -158,7 +159,7 @@ async function run(job) {
   const pendingNorm = await prisma.$queryRaw`
     SELECT b.id FROM "Bit" b LEFT JOIN "StraightManAnswer" s ON s.bit_id=b.id
     LEFT JOIN "ComedianReveal" r ON r.bit_id=b.id
-    WHERE (s.normalized_text IS NULL OR r.bit_id IS NOT NULL AND r.normalized_text IS NULL) LIMIT 20`;
+    WHERE b.chain_id = ${chainId} AND (s.normalized_text IS NULL OR r.bit_id IS NOT NULL AND r.normalized_text IS NULL) LIMIT 20`;
   for (const p of pendingNorm) { try { await normalize.run({ data: { bitId: p.id } }); } catch { /* next tick */ } }
 
   // (3) plant stage-2 validation (max 5 promotions/day, candidates expire 30d)
@@ -169,7 +170,7 @@ async function run(job) {
     const sevenDays = new Date(Date.now() - 7 * 86400_000);
     const thirtyDays = new Date(Date.now() - 30 * 86400_000);
     const cands = await prisma.bit.findMany({
-      where: { plant_candidate_at: { lt: sevenDays, gt: thirtyDays }, is_plant_bank: false }, take: 5 - promotedToday,
+      where: { chain_id:chainId, plant_candidate_at: { lt: sevenDays, gt: thirtyDays }, is_plant_bank: false }, take: 5 - promotedToday,
     });
     for (const c of cands) {
       const vals = await prisma.crowdAssignment.findMany({ where: { bit_id: c.id, is_validation: true, voted_at: { not: null } } });
@@ -184,13 +185,13 @@ async function run(job) {
   }
 
   // (4) appeal retrials (7 fresh jurors, round=2)
-  const appeals = await prisma.appeal.findMany({ where: { status: "pending" }, take: 10 });
+  const appeals = await prisma.appeal.findMany({ where: { status: "pending", bit:{chain_id:chainId} }, take: 10 });
   for (const ap of appeals) {
     const made = await topUpJurors(ap.bit_id, 7, 2, true);
     await prisma.appeal.update({ where: { id: ap.id }, data: { status: made >= 7 ? "retrial_open" : "pending" } });
   }
   // finalize retrials with 7 votes in
-  const retrials = await prisma.bit.findMany({ where: { retrial_round: { gte: 2 }, status: { in: ["disputed", "in_crowd"] } }, select: { id: true } });
+  const retrials = await prisma.bit.findMany({ where: { chain_id:chainId, retrial_round: { gte: 2 }, status: { in: ["disputed", "in_crowd"] } }, select: { id: true } });
   for (const r of retrials) {
     const s = await settleBit(r.id);
     if (s.action === "final") {
@@ -219,7 +220,7 @@ async function run(job) {
       pc.readContract({ address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "pendingEta" }),
     ]);
     const isPending = pendingRoot !== viemZeroBytes();
-    if (isPending && Number(pendingEta) <= Date.now() / 1000) {
+    if (isPending && Number(pendingEta) <= Date.now() / 1000 && process.env.WORKER_CHAIN_WRITES !== "off") {
       const { client, account } = chainLib.walletClient();
       const hash = await client.writeContract({
         address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "activateRoot",

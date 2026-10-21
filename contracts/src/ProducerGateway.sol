@@ -44,10 +44,12 @@ contract ProducerGateway is AccessControl, ReentrancyGuard {
         uint256 micDropShare
     );
     event PlanPriceUpdated(uint8 indexed planType, uint256 priceMicro);
+    event RewardsFunded(address indexed funder, uint256 amountMicro);
 
     error UnknownPlan();
     error Underpriced();
     error ZeroAddress();
+    error InvalidFunding();
 
     constructor(
         address usdg_,
@@ -75,6 +77,17 @@ contract ProducerGateway is AccessControl, ReentrancyGuard {
         if (planType >= PLAN_COUNT) revert UnknownPlan();
         planPriceMicro[planType] = priceMicro;
         emit PlanPriceUpdated(planType, priceMicro);
+    }
+
+    /// @notice Optional treasury/sponsor USDG principal, not a dataset purchase.
+    ///         The event is imported once into the general 80/20 reward pool.
+    function fundRewards(uint256 amountMicro) external nonReentrant {
+        if (amountMicro == 0) revert InvalidFunding();
+        uint256 beforeBalance = usdg.balanceOf(tipJar);
+        usdg.safeTransferFrom(msg.sender, address(this), amountMicro);
+        usdg.safeTransfer(tipJar, amountMicro);
+        if (usdg.balanceOf(tipJar) - beforeBalance != amountMicro) revert InvalidFunding();
+        emit RewardsFunded(msg.sender, amountMicro);
     }
 
     function setRecipients(address coldTreasury_, address tipJar_, address micDrop_)

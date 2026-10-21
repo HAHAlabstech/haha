@@ -124,6 +124,7 @@ model Bit {
   share_public           Boolean   @default(true)
   share_card_r2_url      String?
   content_hash           String    @unique
+  chain_id               Int       @default(46630)
   embedding              Unsupported("vector(384)")?
   created_at             DateTime  @default(now())
 
@@ -215,7 +216,7 @@ model Outcome {
 
 model Epoch {
   id                  String   @id @default(cuid())
-  epoch_number        Int      @unique
+  epoch_number        Int
   start_at            DateTime
   end_at              DateTime
   fee_in_base_units   BigInt   @default(0)
@@ -226,8 +227,15 @@ model Epoch {
   merkle_root         String?
   merkle_r2_url       String?
   tx_hash             String?
+  chain_id            Int      @default(46630)
+  tipjar_address      String   @default("")
+  funding_finalized   Boolean  @default(false)
+  royalty_micro_usdg  BigInt   @default(0)
 
   rewards Reward[]
+
+  @@unique([epoch_number, chain_id, tipjar_address], map: "Epoch_number_chain_tipjar_key")
+  @@index([chain_id, tipjar_address, epoch_number])
 }
 
 model CronJobRun {
@@ -239,6 +247,7 @@ model CronJobRun {
   // Callers must always set epoch_number (0 if N/A); dedup also enforced
   // via idempotency_key.
   epoch_number    Int      @default(0)
+  chain_id        Int      @default(46630)
   status          String   @default("started")
   idempotency_key String   @unique
   attempt         Int      @default(1)
@@ -247,7 +256,7 @@ model CronJobRun {
   updated_at      DateTime @updatedAt
   created_at      DateTime @default(now())
 
-  @@unique([job_name, epoch_number, stage], map: "cronjobrun_job_epoch_stage_unique")
+  @@unique([job_name, chain_id, epoch_number, stage], map: "cronjobrun_job_chain_epoch_stage_unique")
   @@index([job_name, status])
 }
 
@@ -304,6 +313,7 @@ model VaultSnapshot {
   r2_dataset_key        String?
   dek_wrapped           String?
   tx_hash               String?
+  contributors_json     Json?
   created_at            DateTime @default(now())
 }
 
@@ -332,6 +342,29 @@ model RevenueEvent {
   created_at       DateTime @default(now())
 
   producer Producer @relation(fields: [producer_id], references: [id])
+}
+
+// Only successful, USDG-transfer-backed gateway receipts enter this ledger.
+// Independent of dataset activation; unique on-chain identity prevents replay.
+model RewardFundingReceipt {
+  id                       String   @id @default(cuid())
+  chain_id                 Int
+  gateway_address          String
+  tipjar_address           String
+  tx_hash                  String
+  log_index                Int
+  block_number             BigInt
+  source                   String
+  batch_id                 String?
+  general_micro_usdg       BigInt   @default(0)
+  royalty_remaining_micro  BigInt   @default(0)
+  contributors_json        Json?
+  general_epoch_id         String?
+  last_royalty_epoch       Int?
+  created_at               DateTime @default(now())
+
+  @@unique([chain_id, tx_hash, log_index])
+  @@index([chain_id, gateway_address, tipjar_address, general_epoch_id], map: "RewardFundingReceipt_chain_gateway_tipjar_epoch_idx")
 }
 
 model Appeal {

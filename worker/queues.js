@@ -6,7 +6,7 @@
 //   daily-settlement 0 0 * * * — sweep/claim/split/reward/merkle/proposeRoot
 //   weekly-vault     0 1 * * 0 — AES-GCM snapshot + publishSnapshot
 //   season-upgrade   0 2 1,15 * * — 14-day playbook canary gate
-//   sync-chain       0 * * * * — graduation/takeover/pause monitor
+//   sync-chain       */10      — CA launch-phase / buyback-reserve monitor
 
 const { Queue } = require("bullmq");
 
@@ -41,7 +41,10 @@ async function registerSchedules() {
     await queues.seasonUpgrade.removeRepeatable("upgrade", { pattern: "0 2 1,15 * *" }, "season-upgrade").catch(() => {});
   }
 
-  await queues.syncChain.add("sync", {}, { repeat: { pattern: "0 * * * *" }, jobId: "sync-chain", removeOnComplete: 100 });
+  // Remove the prior hourly schedule when deploying the CA-aware reserve
+  // monitor; it refreshes only when route/phase/reserve is valid.
+  await queues.syncChain.removeRepeatable("sync", { pattern: "0 * * * *" }, "sync-chain").catch(() => {});
+  await queues.syncChain.add("sync", {}, { repeat: { pattern: "*/10 * * * *" }, jobId: "sync-chain", removeOnComplete: 100 });
 }
 
 module.exports = { queues, connection, registerSchedules };

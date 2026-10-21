@@ -24,11 +24,11 @@ export default function PreviewBotPage() {
             href="/"
             className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-white transition-colors"
           >
-            ← KEMBALI KE HOMEPAGE
+            ← BACK TO HOMEPAGE
           </Link>
           <div className="h-4 w-px bg-white/10" />
           <span className="text-xs font-mono uppercase tracking-widest text-[#ffc53d] font-bold">
-            PREVIEW ROBOT 3D BARU (THE STRAIGHT MAN v2)
+            NEW 3D ROBOT PREVIEW (THE STRAIGHT MAN v2)
           </span>
         </div>
 
@@ -70,42 +70,42 @@ export default function PreviewBotPage() {
               <span className="text-[#ffc53d]">▸</span>
               <span>
                 <strong>Stealth Cyber-Chassis:</strong> Polyhedral faceted head
-                armor dengan tinted curved visor.
+                armor with tinted curved visor.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#ffc53d]">▸</span>
               <span>
-                <strong>Animated Audio Spectrogram:</strong> Bar equalizer emas
-                di dalam visor berdenyut real-time.
+                <strong>Animated Audio Spectrogram:</strong> Gold equalizer bar
+                inside visor pulsing in real-time.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#ffc53d]">▸</span>
               <span>
-                <strong>Dual Hydraulic Neck:</strong> Piston chrome kiri-kanan
-                yang memanjang & memendek mengikuti tilt kepala.
+                <strong>Dual Hydraulic Neck:</strong> Left-right chrome pistons
+                extending & contracting with head tilt.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#ffc53d]">▸</span>
               <span>
-                <strong>Golden Logic Reactor Core:</strong> Inti reaktor komedi
-                di dada berputar dengan dual gyroscopic rings.
+                <strong>Golden Logic Reactor Core:</strong> Comedy reactor core
+                in chest rotating with dual gyroscopic rings.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#ffc53d]">▸</span>
               <span>
-                <strong>Articulated Cyber Hands:</strong> Tangan mekanik 4 jari
-                beruas memegang mic stand vintage secara natural.
+                <strong>Articulated Cyber Hands:</strong> 4-finger articulated
+                cybernetic hands gripping vintage mic stand naturally.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#ffc53d]">▸</span>
               <span>
-                <strong>Floating Sensor Halo:</strong> Cincin emitor emas melayang
-                di atas kepala menggantikan antena stik lama.
+                <strong>Floating Sensor Halo:</strong> Floating gold emitter ring
+                above head replacing legacy rod antenna.
               </span>
             </li>
           </ul>

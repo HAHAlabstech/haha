@@ -19,6 +19,8 @@ contract DeployMainnetHarness is DeployMainnet {
         Preflight memory p = _preflight();
         return (p.usdg, p.escrow, p.factory, p.router, p.poolManager, p.hook);
     }
+
+    function validateKeySeparation(address hot,address cold) external pure { _validateKeySeparation(hot,cold); }
 }
 
 contract DeployMainnetPreflightTest is HahaSetup {
@@ -41,6 +43,7 @@ contract DeployMainnetPreflightTest is HahaSetup {
         vm.setEnv("PONS_FEE_ESCROW_ADDRESS", vm.toString(address(escrow)));
         vm.setEnv("PONS_FACTORY_ADDRESS", vm.toString(address(factory)));
         vm.setEnv("UNIVERSAL_ROUTER_ADDRESS", vm.toString(address(router)));
+        vm.setEnv("PERMIT2_ADDRESS", vm.toString(address(router)));
         vm.setEnv("POOL_MANAGER_ADDRESS", vm.toString(address(poolManager)));
         vm.setEnv("PONS_MEME_HOOK_ADDRESS", vm.toString(address(hook)));
         vm.setEnv("ADMIN_COLD_ADDRESS", vm.toString(admin));
@@ -60,6 +63,11 @@ contract DeployMainnetPreflightTest is HahaSetup {
         vm.setEnv("USDG_ADDRESS", vm.toString(address(usdg)));
         vm.expectRevert(abi.encodeWithSelector(DeployMainnet.PreflightFailed.selector, "chainid != 4663"));
         harness.preflight();
+    }
+
+    function test_DeployRejectsSameHotAndColdAddress() public {
+        vm.expectRevert(abi.encodeWithSelector(DeployMainnet.PreflightFailed.selector,"hot-cold-key-separation"));
+        harness.validateKeySeparation(keeper,keeper);
     }
 
     function test_StaticcallOfClaimSurfaceRevertsByDesign() public {

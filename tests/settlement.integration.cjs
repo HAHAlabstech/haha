@@ -1,0 +1,45 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {PrismaClient}=require('@prisma/client');
+const {settleFundingEpoch}=require('../worker/lib/settlementFunding');
+const prisma=new PrismaClient();
+const config={chainId:4663,gateway:'0x0000000000000000000000000000000000000011',tipJar:'0x0000000000000000000000000000000000000033'};
+const since=new Date('2026-10-21T00:00:00Z'),until=new Date('2026-10-22T00:00:00Z');
+test('real PostgreSQL: atomic funding, immutable retry, royalty reserve and rollback',async()=>{
+ assert.match(new URL(process.env.DATABASE_URL).pathname,/_ca_only_verify$/,'isolated test DB only');
+ const tag=Date.now().toString(36);
+ const season=await prisma.season.create({data:{name:'funding-'+tag,system_playbook:'test'}});
+ const users=[];
+ for(let i=0;i<20;i++) {
+  const wallet='0x'+(i+1000).toString(16).padStart(40,'0');
+  const u=await prisma.user.upsert({where:{wallet},create:{wallet,handle:'fund-'+tag+'-'+i,referral_code:tag+'-'+i},update:{}});users.push(u);
+  const b=await prisma.bit.create({data:{user_id:u.id,season_id:season.id,chain_id:config.chainId,category:'punchline',scenario:'funding fixture',question:'test',content_hash:tag+'-'+i,status:'killed_it'}});
+  await prisma.outcome.create({data:{bit_id:b.id,result:'killed_it',comedian_votes:5,ai_votes:0,juror_count:5,fair_ratio:1,win_strength:1,decided_at:new Date('2026-10-21T12:00:00Z')}});
+ }
+ const previous=await prisma.epoch.findFirst({orderBy:{epoch_number:'desc'}});const epoch=(previous?.epoch_number||0)+1;
+ const empty=await settleFundingEpoch(prisma,{epoch,since,until,config,consensus:()=>false});
+ assert.equal(empty.generalMicro,'0');assert.equal(await prisma.reward.count(),0);
+ const receipt=await prisma.rewardFundingReceipt.create({data:{chain_id:4663,gateway_address:config.gateway,tipjar_address:config.tipJar,tx_hash:'0x'+tag.padEnd(64,'0'),log_index:1,block_number:1n,source:'b2b',general_micro_usdg:100_000_000n,royalty_remaining_micro:50_000_000n}});
+ const n=epoch+1;
+ const paid=await settleFundingEpoch(prisma,{epoch:n,since,until,config,consensus:()=>false});
+ assert.equal(paid.generalMicro,'100000000');assert.equal(paid.reservedRoyalty,'50000000');
+ const sum=await prisma.reward.aggregate({_sum:{amount_micro_usdg:true}});assert.equal(sum._sum.amount_micro_usdg,80_000_000n);
+ const retry=await settleFundingEpoch(prisma,{epoch:n,since,until,config,consensus:()=>false});assert.equal(retry.reused,true);
+ assert.equal((await prisma.reward.aggregate({_sum:{amount_micro_usdg:true}}))._sum.amount_micro_usdg,80_000_000n);
+ await prisma.rewardFundingReceipt.update({where:{id:receipt.id},data:{contributors_json:users.map(u=>({wallet:u.wallet,weight:1}))}});
+ await settleFundingEpoch(prisma,{epoch:n+1,since,until,config,consensus:()=>false});
+ assert.equal((await prisma.reward.aggregate({where:{role:'royalty'},_sum:{amount_micro_usdg:true}}))._sum.amount_micro_usdg,50_000_000n);
+ assert.equal((await prisma.rewardFundingReceipt.findUnique({where:{id:receipt.id}})).royalty_remaining_micro,0n);
+ const tiny=[];
+ for(let i=0;i<2;i++) tiny.push(await prisma.rewardFundingReceipt.create({data:{chain_id:4663,gateway_address:config.gateway,tipjar_address:config.tipJar,tx_hash:'0x'+(tag+(i+2)).padEnd(64,'0'),log_index:2,block_number:BigInt(i+3),source:'b2b',batch_id:'tiny-batch',royalty_remaining_micro:500_000n,contributors_json:[{wallet:users[0].wallet,weight:1}]}}));
+ const royaltyBefore=BigInt((await prisma.reward.aggregate({where:{role:'royalty',user_id:users[0].id},_sum:{amount_micro_usdg:true}}))._sum.amount_micro_usdg||0);
+ await settleFundingEpoch(prisma,{epoch:n+3,since,until,config,consensus:()=>false});
+ assert.equal((await prisma.rewardFundingReceipt.findUnique({where:{id:tiny[0].id}})).royalty_remaining_micro,0n);
+ assert.equal((await prisma.rewardFundingReceipt.findUnique({where:{id:tiny[1].id}})).royalty_remaining_micro,0n);
+ assert.equal((await prisma.reward.aggregate({where:{role:'royalty',user_id:users[0].id},_sum:{amount_micro_usdg:true}}))._sum.amount_micro_usdg-royaltyBefore,1_000_000n);
+ const invalid=await prisma.rewardFundingReceipt.create({data:{chain_id:4663,gateway_address:config.gateway,tipjar_address:config.tipJar,tx_hash:'0x'+tag.padEnd(63,'0')+'1',log_index:1,block_number:2n,source:'b2b',general_micro_usdg:10_000_000n,royalty_remaining_micro:5_000_000n,contributors_json:[{wallet:users[0].wallet,weight:-1}]}});
+ await assert.rejects(settleFundingEpoch(prisma,{epoch:n+2,since,until,config,consensus:()=>false}),/invalid snapshot/);
+ assert.equal(await prisma.epoch.findFirst({where:{epoch_number:n+2,chain_id:config.chainId,tipjar_address:config.tipJar}}),null);
+ assert.equal((await prisma.rewardFundingReceipt.findUnique({where:{id:invalid.id}})).general_epoch_id,null);
+ await prisma.$disconnect();
+});

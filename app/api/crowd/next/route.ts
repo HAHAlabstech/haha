@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { requireWalletSession } from "@/lib/server";
+import { getChainForEnv } from "@/lib/haha-chains";
+import { readChainEnv } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,7 @@ export async function GET(req: Request) {
   }
   try {
     const prisma = getPrisma();
+    const chainId = getChainForEnv(readChainEnv()).id;
     // A ballot contains two candidate answers before the public reveal. Only
     // the authenticated owner of the assignment may read it.
     const auth = await requireWalletSession(req, prisma, wallet);
@@ -51,6 +54,7 @@ export async function GET(req: Request) {
     const candidates = await prisma.crowdAssignment.findMany({
       where: {
         juror_id: juror.id,
+        bit: { chain_id: chainId },
         vote: null,
         expires_at: { gt: new Date() },
       },

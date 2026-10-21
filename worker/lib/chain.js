@@ -7,13 +7,24 @@
 const { createPublicClient, createWalletClient, http, defineChain, parseEventLogs } = require("viem");
 const { privateKeyToAccount } = require("viem/accounts");
 
-const RPC =
-  process.env.RPC_URL_TESTNET?.trim() || "https://robinhood-sepolia-rpc.publicnode.com";
-const CHAIN_ID = Number(process.env.CHAIN_ID_TESTNET || 46630);
+function resolveChainConfig(env = process.env) {
+  const chainEnv = env.CHAIN_ENV || "testnet";
+  if (!["testnet", "mainnet"].includes(chainEnv)) throw new Error("[chain] invalid CHAIN_ENV");
+  const mainnet = chainEnv === "mainnet";
+  return {
+    chainEnv,
+    chainId: mainnet ? 4663 : 46630,
+    rpc: (mainnet ? env.RPC_URL_MAINNET : env.RPC_URL_TESTNET)?.trim()
+      || (mainnet ? "https://robinhood-rpc.publicnode.com" : "https://robinhood-sepolia-rpc.publicnode.com"),
+  };
+}
+const config = resolveChainConfig();
+const RPC = config.rpc;
+const CHAIN_ID = config.chainId;
 
 const chain = defineChain({
   id: CHAIN_ID,
-  name: "robinhood-sepolia",
+  name: config.chainEnv === "mainnet" ? "robinhood-mainnet" : "robinhood-sepolia",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: { default: { http: [RPC] } },
 });
@@ -22,14 +33,24 @@ function publicClient() {
   return createPublicClient({ chain, transport: http(RPC, { timeout: 30_000 }) });
 }
 
+async function assertChain(client, expected = CHAIN_ID) {
+  const actual = await client.getChainId();
+  if (actual !== expected) throw new Error(`[chain] RPC chain mismatch: expected ${expected}, got ${actual}`);
+}
+
 /** Hot keeper account + wallet client (throws — loud — when the key is absent). */
 function walletClient() {
+  if (process.env.WORKER_CHAIN_WRITES === "off") throw new Error("[chain] writes disabled");
   const key = (process.env.OPERATOR_PRIVATE_KEY ?? "").trim();
   if (!/^0x[0-9a-fA-F]{64}$/.test(key)) {
     throw new Error("[chain] OPERATOR_PRIVATE_KEY missing or malformed");
   }
   const account = privateKeyToAccount(key);
-  const client = createWalletClient({ chain, transport: http(RPC, { timeout: 30_000 }), account });
+  const base = createWalletClient({ chain, transport: http(RPC, { timeout: 30_000 }), account });
+  const client = { ...base };
+  for (const action of ["writeContract", "sendTransaction", "deployContract"]) {
+    client[action] = async (args) => { await assertChain(publicClient()); return base[action](args); };
+  }
   return { account, client };
 }
 
@@ -96,4 +117,4 @@ function parseFeeSplit(receipt) {
   return { totalMicro: BigInt(totalMicro), tipShare: BigInt(tipShare), dropShare: BigInt(dropShare) };
 }
 
-module.exports = { publicClient, walletClient, ABI, waitForReceipt, parseFeeSplit, chain, RPC, CHAIN_ID };
+module.exports = { publicClient, walletClient, ABI, waitForReceipt, parseFeeSplit, chain, RPC, CHAIN_ID, resolveChainConfig, assertChain };

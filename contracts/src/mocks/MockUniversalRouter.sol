@@ -4,6 +4,7 @@ pragma solidity 0.8.24;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IUniversalRouter} from "../interfaces/IUniversalRouter.sol";
+import {IBuybackAdapter} from "../interfaces/IBuybackAdapter.sol";
 import {MockUSDG} from "./MockUSDG.sol";
 import {MockHAHA} from "./MockHAHA.sol";
 
@@ -12,7 +13,7 @@ import {MockHAHA} from "./MockHAHA.sol";
 /// @dev Pricing: 1 USDG = 100 $HAHA gross. Hook fee 1% is not minted (kept by
 ///      the pool); creator tax 2% is minted to the FeeSplitter. `minHahaOut`
 ///      is therefore enforced AFTER fees. Hop price = hahaOut * 2**36 / amountIn.
-contract MockUniversalRouter is IUniversalRouter {
+contract MockUniversalRouter is IUniversalRouter, IBuybackAdapter {
     using SafeERC20 for IERC20;
 
     MockUSDG public immutable usdg;
@@ -50,7 +51,16 @@ contract MockUniversalRouter is IUniversalRouter {
         return gross - fee;
     }
 
-    function swapExactUsdgForHaha(ExactInputParams calldata params) external returns (uint256 hahaOut) {
+    function validateRoute(address token, bytes calldata route) external view returns (bool) {
+        return token == address(haha) && route.length > 0;
+    }
+
+    function swapExactInput(address token,uint256 amountIn,uint256 minOut,uint256 minPrice,uint256 deadline,bytes calldata) external returns (uint256) {
+        require(token == address(haha), "token mismatch");
+        return swapExactUsdgForHaha(ExactInputParams(amountIn,minPrice,minOut,deadline));
+    }
+
+    function swapExactUsdgForHaha(ExactInputParams memory params) public returns (uint256 hahaOut) {
         if (block.timestamp > params.deadline) revert DeadlineExpired();
         usdg.transferFrom(msg.sender, address(this), params.amountIn);
         uint256 gross = params.amountIn * HAHA_PER_USDG * 1e12;

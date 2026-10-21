@@ -34,14 +34,15 @@ contract DeployTestnet is Script {
         vm.startBroadcast(vm.envUint("OPERATOR_PRIVATE_KEY"));
         _deployMocks();
         TipJar tipJar = new TipJar(address(usdg), cold, deployer, cold, 10 minutes);
-        MicDrop placeholder = new MicDrop(address(usdg), address(tipJar), address(0), cold, deployer, 10 minutes);
+        MicDrop placeholder = new MicDrop(address(usdg), address(0), cold, deployer, 10 minutes);
         FeeSplitter splitter = new FeeSplitter(
             address(usdg), address(_escrow()), address(tipJar), address(placeholder), cold, deployer, 10 minutes
         );
         // Bind sweep refs to testnet mock curve/hook (prod: real Pons curve+poolId).
         MockPonsCurve mockCurve = new MockPonsCurve(address(_escrow()), address(splitter));
         MockPonsHookSweep mockSweepHook = new MockPonsHookSweep(address(_escrow()), address(splitter));
-        _deployRest(address(usdg), address(haha), address(splitter), address(tipJar), cold, deployer);
+        MockUniversalRouter router = new MockUniversalRouter(address(usdg), address(haha), address(splitter));
+        _deployRest(address(usdg), address(haha), address(router), address(tipJar), cold, deployer);
         vm.stopBroadcast();
         console.log("MockPonsCurve:", address(mockCurve));
         console.log("MockPonsHookSweep:", address(mockSweepHook));
@@ -49,10 +50,10 @@ contract DeployTestnet is Script {
         vm.startBroadcast(vm.envUint("OPERATOR_PRIVATE_KEY"));
         splitter.proposeSetLaunchRefs(address(mockCurve), address(mockSweepHook), bytes32(uint256(1)));
         vm.stopBroadcast();
-        console.log("NOTE: confirmSetLaunchRefs after 10m; MicDrop rotation also 10m (testnet TIMELOCK).");
+        console.log("NOTE: confirmSetLaunchRefs and FeeSplitter MicDrop rotation after 10m.");
         console.log("FeeSplitter:", address(splitter));
         console.log("TipJar:", address(tipJar));
-        console.log("NOTE: splitter.micDrop is a placeholder; proposeSetMicDrop -> confirm after 48h");
+        console.log("NOTE: optional testnet rehearsal only; creator-fee ownership is not assumed on mainnet.");
     }
 
     MockPonsFeeEscrow internal _escrowStore;
@@ -79,21 +80,20 @@ contract DeployTestnet is Script {
     function _deployRest(
         address usdgAddr,
         address hahaAddr,
-        address splitterAddr,
+        address routerAddr,
         address tipJarAddr,
         address coldAddr,
         address deployerAddr
     ) internal {
-        MockUniversalRouter router = new MockUniversalRouter(usdgAddr, hahaAddr, splitterAddr);
+        MockUniversalRouter router = MockUniversalRouter(routerAddr);
         // Testnet rehearsal uses the SHORT confirm window; DeployMainnet passes 48h.
-        MicDrop micDrop = new MicDrop(usdgAddr, splitterAddr, address(router), coldAddr, deployerAddr, 10 minutes);
+        MicDrop micDrop = new MicDrop(usdgAddr, address(router), coldAddr, deployerAddr, 10 minutes);
         CrowdStaking staking = new CrowdStaking(hahaAddr, tipJarAddr, coldAddr, deployerAddr, 10 ether);
         VaultRegistry registry = new VaultRegistry(coldAddr, deployerAddr);
         uint256[4] memory prices =
             [uint256(2_500_000_000), uint256(1_000_000_000), uint256(500_000_000), uint256(500_000_000)];
         ProducerGateway gateway =
             new ProducerGateway(usdgAddr, coldAddr, tipJarAddr, address(micDrop), coldAddr, prices);
-        micDrop.setRouter(address(router));
         console.log("MockUniversalRouter:", address(router));
         console.log("MicDrop:", address(micDrop));
         console.log("CrowdStaking:", address(staking));

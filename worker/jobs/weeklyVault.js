@@ -60,8 +60,8 @@ function unwrapDek(wrapped) {
 
 async function run(job) {
   const rows = await prisma.$queryRaw`
-    SELECT b.id, b.category, b.stage, b.question, r.answer, r.explanation, o.result, o.win_strength, o.fair_ratio
-    FROM "Bit" b JOIN "ComedianReveal" r ON r.bit_id=b.id JOIN "Outcome" o ON o.bit_id=b.id
+    SELECT b.id, b.category, b.stage, b.question, r.answer, r.explanation, o.result, o.win_strength, o.fair_ratio, u.wallet
+    FROM "Bit" b JOIN "User" u ON u.id=b.user_id JOIN "ComedianReveal" r ON r.bit_id=b.id JOIN "Outcome" o ON o.bit_id=b.id
     WHERE o.result IN ('killed_it','bombed') AND b.is_holdout = false`;
   const pricing = await prisma.vaultPricing.findMany();
   const priceOf = (cat, res) => pricing.find((p) => p.category === cat && p.outcome === res)?.ref_price_micro_usd ?? 0n;
@@ -71,7 +71,8 @@ async function run(job) {
     const price = priceOf(e.category, e.result);
     total += price;
     byCat[`${e.category}/${e.result}`] = (byCat[`${e.category}/${e.result}`] ?? 0) + 1;
-    return JSON.stringify({ ...e, ref_price_micro_usd: price.toString(), win_strength: Number(e.win_strength), fair_ratio: Number(e.fair_ratio) });
+    const { wallet, ...entry } = e; // contributor addresses stay in the server manifest.
+    return JSON.stringify({ ...entry, ref_price_micro_usd: price.toString(), win_strength: Number(e.win_strength), fair_ratio: Number(e.fair_ratio) });
   });
 
   const dek = randomBytes(32);
@@ -87,10 +88,13 @@ async function run(job) {
   const { keccak256, toHex } = require("viem");
   const { root } = await buildTree(rows.map((e) => ({ account: "0x0000000000000000000000000000000000000000", cumulativeMicro: BigInt(keccak256(toHex(e.id))) })));
 
+  const contributors = new Map();
+  for (const e of rows) contributors.set(e.wallet, (contributors.get(e.wallet) || 0) + 1);
   const snap = await prisma.vaultSnapshot.create({
     data: {
       entry_count: rows.length, by_category_json: byCat, replacement_micro_usd: total,
       merkle_root: root, r2_dataset_key: key, dek_wrapped: wrapDek(dek),
+      contributors_json: [...contributors].map(([wallet, weight]) => ({ wallet, weight })),
     },
   });
   // publishSnapshot(entryCount, replacementMicroUsd, merkleRoot, r2ManifestUri)

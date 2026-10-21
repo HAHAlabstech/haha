@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { type VoteChoice, type FairnessChoice } from "@prisma/client";
+import { getChainForEnv } from "@/lib/haha-chains";
 import {
   bad,
   enqueueJob,
@@ -8,6 +9,7 @@ import {
   requireWalletSession,
   shuffleInPlace,
   TIER_WEIGHT,
+  readChainEnv,
 } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +71,7 @@ export async function POST(
 
   try {
     const prisma = getPrisma();
+    const chainId = getChainForEnv(readChainEnv()).id;
     const auth = await requireWalletSession(req, prisma, wallet);
     if (!auth.ok) return auth.response;
 
@@ -86,6 +89,7 @@ export async function POST(
         bit: {
           select: {
             id: true,
+            chain_id: true,
             user_id: true,
             is_plant_bank: true,
             plant_correct_pos: true,
@@ -102,6 +106,7 @@ export async function POST(
       },
     });
     if (!assignment) return bad("assignment not found", 404);
+    if (assignment.bit.chain_id !== chainId) return bad("assignment belongs to a different chain configuration", 409);
     if (assignment.juror.wallet.toLowerCase() !== wallet) {
       return bad("assignment belongs to another juror", 403);
     }

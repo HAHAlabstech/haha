@@ -83,7 +83,7 @@ contract HahaSetup is Test {
         vm.prank(admin);
         splitter.confirmSetLaunchRefs();
         router = new MockUniversalRouter(address(usdg), address(haha), address(splitter));
-        micDrop = new MicDrop(address(usdg), address(splitter), address(router), admin, keeper, 48 hours);
+        micDrop = new MicDrop(address(usdg), address(router), admin, keeper, 48 hours);
         staking = new CrowdStaking(address(haha), address(tipJar), admin, keeper, 10 ether);
         registry = new VaultRegistry(admin, keeper);
         uint256[4] memory prices =

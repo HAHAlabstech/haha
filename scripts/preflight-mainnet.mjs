@@ -17,7 +17,6 @@
 // contract addresses below. Run: `node scripts/preflight-mainnet.mjs`.
 
 import { createPublicClient, http, fallback, getAddress } from "viem";
-import { readFileSync } from "node:fs";
 
 const CANDIDATES = {
   usdg: "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
@@ -26,6 +25,7 @@ const CANDIDATES = {
   ponsMemeHook: "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
   poolManager: "0x8366a39CC670B4001A1121B8F6A443a643e40951",
   universalRouter: "0x8876789976dEcBfCbBbe364623C63652db8c0904",
+  permit2: "0x000000000022D473030F116dDEE9F6B43aC78BA3",
 };
 
 const USDG_ABI = [
@@ -90,25 +90,10 @@ try {
   check("escrow.balanceOfToken(address,address) answers", false);
 }
 
-// 4. Launch economics are read from the fee-splitter + Pons launch policy
-//    AFTER testnet rehearsal; pre-flight asserts the pinned expectations
-//    against the deployed FeeSplitter config committed in deployments/.
-let deployments = {};
-try {
-  deployments = JSON.parse(readFileSync(new URL("../deployments/mainnet.json", import.meta.url), "utf8"));
-} catch { /* not yet deployed — economics checks run post-deploy */ }
-if (deployments.feeSplitter) {
-  check("feeSplitter.pairToken == USDG", (deployments.pairToken || "").toLowerCase() === CANDIDATES.usdg.toLowerCase());
-  check("creatorTaxBps == 200 (K2 locked)", deployments.creatorTaxBps === 200);
-  check("buybackEnabled == false", deployments.buybackEnabled === false);
-  check("exempt list EMPTY", Array.isArray(deployments.exemptList) && deployments.exemptList.length === 0);
-} else {
-  console.log("SKIP  economics checks (deployments/mainnet.json absent — run after testnet rehearsal)");
-}
-
-// 5. Sablier support must be proven on day-1 via dashboard; otherwise the
-//    locked fallback is OpenZeppelin VestingWallet (cliff 12mo + linear 24mo).
-console.log("NOTE  confirm Sablier supports Robinhood chain day-1, else use VestingWallet fallback");
+// CA-only launch: there is no known launcher configuration to assert here.
+// Creator-fee harvesting defaults OFF; actual token economics are inspected
+// read-only from the supplied CA and must never gate reward funding.
+check("creator fee assumptions", true, "not required; harvesting off by default; pair/tax/recipient are not assumed");
 
 if (failures.length) {
   console.error(`\nPREFLIGHT ABORT: ${failures.length} failing check(s): ${failures.join(", ")}`);

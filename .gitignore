@@ -5,6 +5,7 @@ out/
 .env.app
 .env.worker
 .env.local
+.env.mainnet
 .env.*.local
 *.log
 .DS_Store
@@ -14,5 +15,5 @@ pgdata/
 *.tsbuildinfo
 .opencode-ui-*.png
 
-# root-level QA screenshots — maen git add .  gak boleh nurut ini lagi
+# root-level QA screenshots ï¿½ maen git add .  gak boleh nurut ini lagi
 /*.png

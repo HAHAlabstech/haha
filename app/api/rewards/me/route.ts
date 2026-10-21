@@ -13,6 +13,7 @@ import {
   tipJarAbi,
 } from "@/lib/haha-contracts";
 import { readChainEnv } from "@/lib/server";
+import { epochScope } from "@/worker/lib/funding";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,9 @@ export async function GET(req: Request) {
     };
     g.__hahaPrisma ??= new PrismaClient();
     const prisma = g.__hahaPrisma;
+    const chainEnv = readChainEnv();
+    const chain = getChainForEnv(chainEnv);
+    const contracts = getServerContracts();
     const user = await prisma.user.findUnique({
       where: { wallet },
       select: { id: true },
@@ -82,7 +86,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "no rewards" }, { status: 404 });
     }
     const rewards = await prisma.reward.findMany({
-      where: { user_id: user.id },
+      where: { user_id: user.id, epoch: epochScope({chainId:chain.id,tipJar:contracts.tipJar}) },
       orderBy: [{ created_at: "asc" }],
       select: {
         amount_micro_usdg: true,
@@ -120,9 +124,6 @@ export async function GET(req: Request) {
         ? ((latest.merkle_proof as { proof: string[] }).proof as `0x${string}`[])
         : [];
 
-    const chainEnv = readChainEnv();
-    const chain = getChainForEnv(chainEnv);
-    const contracts = getServerContracts();
     let activeEpoch: number | null = null;
     let pendingEpoch: number | null = null;
     let pendingEta: number | null = null;
@@ -185,14 +186,11 @@ export async function GET(req: Request) {
         activeMerkleRoot,
         tipJarLeafHash(wallet as `0x${string}`, cumulative),
       );
-    // A Merkle proof is valid if it cryptographically verifies against the
-    // on-chain merkleRoot (or if its epoch label equals activeEpoch when no
-    // pending root is queued).
+    // An epoch label is bookkeeping, never a substitute for a valid proof.
     const claimReady =
       activeEpoch !== null &&
       rootActive &&
-      (proofMatchesActiveRoot ||
-        (proofEpoch === activeEpoch && pendingEpoch === null));
+      proofMatchesActiveRoot;
 
     return NextResponse.json(
       {

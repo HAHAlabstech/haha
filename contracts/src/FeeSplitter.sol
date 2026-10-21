@@ -8,10 +8,11 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {IPonsFeeEscrow} from "./interfaces/IPonsFeeEscrow.sol";
 import {IPonsCurve, IPonsHook} from "./interfaces/IPonsSweep.sol";
 
-/// @title FeeSplitter — USDG-ONLY creator-fee splitter (70% TipJar / 30% MicDrop)
-/// @notice The Pons V2 launch pair is USDG, so creator fees always arrive as
-///         USDG. The ETH swap path is deliberately REMOVED (plan §5.1 T10):
-///         this contract never handles native ETH and has no swap logic.
+/// @title FeeSplitter — optional USDG creator-fee adapter (70% TipJar / 30% MicDrop)
+/// @notice CA-only mode does not assume this address is the Pons creator-fee
+///         recipient. Harvesting is disabled in the worker by default. If a
+///         future CA actually routes USDG here, this contract can split it;
+///         native ETH conversion is not implemented and is never implied.
 ///         Harvest ordering is sweep-then-claim (K1 explicit dependency).
 ///         Sweeps live on the CURVE (`sweepFees`, pre-graduation) and the HOOK
 ///         (`sweepPoolFees`, post-graduation) — NOT on the escrow (verified
@@ -110,7 +111,7 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
         _grantRole(KEEPER_ROLE, keeper_);
     }
 
-    /// @notice Keeper harvest: sweep escrow, claim USDG, split 70/30 exact.
+    /// @notice Optional keeper harvest: sweep/claim USDG, split 70/30 exact.
     function harvestAndSplit(uint256 minUsdgOut, uint256 deadline) external onlyRole(KEEPER_ROLE) nonReentrant {
         if (block.timestamp > deadline) revert DeadlineExpired();
         _sweep();

@@ -164,5 +164,11 @@ Additional source-risk closures:
 
 - No new daily settlement was forced. The manual QA root (epoch 8) refreshed every wallet's proof and funded one QA claim; the next scheduled settlement will exercise the normal worker path.
 - The crisis-support **worker** branch was not triggered with real crisis content (deliberate); its UI was exercised from a live DB fixture.
-- Mainnet remains **prepared and fully simulated, not deployed**. External audit/legal/sanctions/geo, kill-switch, takedown/GDPR, invoice/KYC, Pons V2 audit, and backup/restore drill gates are still outside code.
+- Mainnet deployment code passed a full fork simulation, but **launch readiness is not complete**. The earlier claim that every remaining gate was outside code was incorrect: kill-switch enforcement, automated takedown/GDPR, and real PostgreSQL backup/restore require technical evidence/work. Plan D1 chooses hot/cold without mandatory multisig and accepts no external HAHA audit within the 72-hour testnet window; §4 item 9 separately requires the final Pons V2 audit. See `docs/MAINNET-HANDOFF.md` §0.1 for the source-aligned gate matrix, including verified availability of 51 Plants and 10 onboarding items.
 - No mainnet transaction was signed or broadcast; the 4663 deploy simulation exists only in the local fork.
+
+Latest owner override: external audit/legal and human-approval work is excluded
+from this task, not a blocker to repeat. The CA-only launch constraint also
+supersedes coordinated launch assumptions; creator-fee entitlement and native
+buyback compatibility must not be inferred from receipt of a CA. See the
+current scope override in `docs/MAINNET-HANDOFF.md` §0.1.
