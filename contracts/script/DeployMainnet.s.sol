@@ -119,7 +119,7 @@ contract DeployMainnet is Script {
     function _deploy(Preflight memory p) internal {
         uint256 pk = vm.envUint("OPERATOR_PRIVATE_KEY");
         address deployer = vm.addr(pk);
-        _validateKeySeparation(deployer, p.cold);
+        _validateAdminKeyConfig(deployer, p.cold);
 
         vm.startBroadcast(pk);
 
@@ -151,8 +151,14 @@ contract DeployMainnet is Script {
         console.log("3. Write every address into VPS env; keep WORKER_CHAIN_WRITES=off until roles verified");
     }
 
-    function _validateKeySeparation(address hot, address cold) internal pure {
-        if (hot == address(0) || cold == address(0) || hot == cold) revert PreflightFailed("hot-cold-key-separation");
+    function _validateAdminKeyConfig(address hot, address cold) internal pure {
+        if (hot == address(0) || cold == address(0)) revert PreflightFailed("admin-key-zero");
+        if (hot == cold) {
+            // Owner decision (2026-10-22): single-key operation is allowed.
+            // Warn loudly instead of reverting: one leaked VPS key controls
+            // gas, treasury and every admin role.
+            console.log("WARNING: hot and cold admin are the SAME key (single-wallet mode). A compromised VPS key controls all admin roles.");
+        }
     }
 
     /// @dev staticcall must not revert (returndata ignored — views may return 0 pre-launch).

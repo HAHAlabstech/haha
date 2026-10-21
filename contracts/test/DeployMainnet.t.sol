@@ -20,7 +20,7 @@ contract DeployMainnetHarness is DeployMainnet {
         return (p.usdg, p.escrow, p.factory, p.router, p.poolManager, p.hook);
     }
 
-    function validateKeySeparation(address hot,address cold) external pure { _validateKeySeparation(hot,cold); }
+    function validateAdminKeyConfig(address hot,address cold) external pure { _validateAdminKeyConfig(hot,cold); }
 }
 
 contract DeployMainnetPreflightTest is HahaSetup {
@@ -65,9 +65,11 @@ contract DeployMainnetPreflightTest is HahaSetup {
         harness.preflight();
     }
 
-    function test_DeployRejectsSameHotAndColdAddress() public {
-        vm.expectRevert(abi.encodeWithSelector(DeployMainnet.PreflightFailed.selector,"hot-cold-key-separation"));
-        harness.validateKeySeparation(keeper,keeper);
+    function test_DeployAllowsSingleKeyButRejectsZero() public {
+        // Owner decision (2026-10-22): hot == cold is allowed with a warning.
+        harness.validateAdminKeyConfig(keeper, keeper);
+        vm.expectRevert(abi.encodeWithSelector(DeployMainnet.PreflightFailed.selector,"admin-key-zero"));
+        harness.validateAdminKeyConfig(keeper, address(0));
     }
 
     function test_StaticcallOfClaimSurfaceRevertsByDesign() public {

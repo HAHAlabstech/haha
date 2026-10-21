@@ -38,11 +38,13 @@ Use `HAHA IMPLEMENTATION PLAN.md` §3.1, §4 items 9/11 (D1–D7), and
 Appendix A over superseded choices in `haha.md`. Do not add generic launch
 requirements that undo the owner's accepted deviations.
 
-- **D1:** two keys, hot/cold, **no mandatory multisig**. The plan accepts no
-  external HAHA audit in the 72-hour testnet window. This is time-scoped,
-  not evidence of a permanent waiver; §4 item 9 explicitly names the final
-  **Pons V2 audit**. Do not conflate that upstream audit with a newly imposed
-  independent HAHA audit requirement.
+- **D1:** **single key** (owner decision 2026-10-22, supersedes the earlier
+  two-key hot/cold note): the operator key is deployer, treasury and admin.
+  The deploy script **warns** on equal hot/cold instead of rejecting; a zero
+  address still fails. The plan accepts no external HAHA audit in the 72-hour
+  testnet window. This is time-scoped, not evidence of a permanent waiver;
+  §4 item 9 explicitly names the final **Pons V2 audit**. Do not conflate that
+  upstream audit with a newly imposed independent HAHA audit requirement.
 - **D2/D4:** MiMo playbook + DPO export and gated automatic season releases;
   no mandatory LoRA deployment or manual season approval.
 - **D3:** autonomous seven-juror retrial and automated takedown/GDPR
@@ -172,9 +174,9 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
   CA is supplied. The simulation used a dummy, distinct cold address and did
   not broadcast.
 - Live operator balance at block 94396638 was **0.00198809997036 ETH**; account
-  nonce 1. Current mainnet env has hot and cold configured to the same address.
-  Script now rejects equal hot/cold; see budget/reserve recommendation in
-  `docs/CA-ONLY-BUDGET.md`.
+  nonce 1. Owner decision (2026-10-22): single key — hot and cold are the same
+  address by intent. The script **warns** on equal hot/cold (no longer
+  rejects); see the single-wallet budget in `docs/CA-ONLY-BUDGET.md`.
 - Foundry's script guard rejects `address(this)` in a script; the preflight now
   probes the escrow with the cold admin address. This was the second blocker
   behind the earlier `staticcall`/RPC failures, and is fixed.

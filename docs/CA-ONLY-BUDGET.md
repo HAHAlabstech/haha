@@ -6,45 +6,36 @@ CrowdStaking token or infer Pons liquidity from it.
 
 ## Capital to prepare
 
-### ETH for contract deployment and operator gas
+### Single-wallet mode (owner decision, 2026-10-22)
 
-Latest read-only mainnet sample (chain 4663):
+The owner chose **one wallet** for everything: the existing operator key
+(`0xAeA64dd8…B651`, the key already on the VPS) acts as deployer, gas payer,
+treasury and admin. The deploy script now **warns** instead of rejecting
+`hot == cold`; a zero address still fails the preflight. Trade-off: a leaked
+VPS key controls every role.
 
-- Operator wallet balance: **0.00198809997036 ETH**; nonce **1**.
-- Full foundation fork simulation (block 94418437): **11,101,298 gas**,
-  estimated max cost **0.000460615067717298 ETH** at the simulated maximum
-  fee of **0.041492001 gwei**. It deployed TipJar, FeeSplitter, MicDrop,
-  V4BuybackAdapter, VaultRegistry, ProducerGateway; no CrowdStaking.
-- The app's operator low-gas threshold is **0.005 ETH**.
-- Foundry gas report for `MicDrop.setPoolReserve`: **71,516 gas**. If an
-  approved route is configured, `sync-chain` refreshes the on-chain reserve no
-  more often than every 10 minutes. At 4,320 calls/30 days and the sampled
-  0.041492001 gwei max fee, the gas-limit budget is about **0.01282 ETH/month**;
-  no reserve writes occur while the route is unset.
+Measured on the real 4663 fork (block 94.4M, max fee 0.041492001 gwei):
 
-**Suggested reserve, not protocol minimum:** hold **0.010 ETH** in the hot
-operator/deployer wallet. That is about **21.7×** the simulated foundation
-deployment fee and leaves roughly 0.00954 ETH after a deployment at that same
-fee. Relative to the observed balance, the top-up to this reserve is about
-**0.00801190002964 ETH**. Actual fees vary with base fee and RPC/chain conditions.
+- Full foundation deployment: **11,101,298 gas ≈ 0.0004606 ETH** (TipJar,
+  FeeSplitter, MicDrop, V4BuybackAdapter, VaultRegistry, ProducerGateway; no
+  CrowdStaking).
+- Daily settlement writes two small operator txs (proposeRoot + activateRoot),
+  roughly **0.0005–0.001 ETH/month** at the sampled fee.
+- `MicDrop.setPoolReserve` refresh: 71,516 gas, ≤ every 10 min while a buyback
+  route is set → **≈ 0.0128 ETH/month** extra; **$0 while the route is unset**
+  (HOLD, the current state).
+- User claims are user-pays-gas; not budgeted.
 
-Keep the cold admin in a **different address** and pre-fund it with a suggested
-**0.005 ETH** for its timelocked configuration/veto transactions. The current
-`.env.mainnet` points hot and cold at the **same address**; the deploy script
-now rejects that. Do not reuse the hot private key as the cold key. The
-recommended prepared balance is therefore **0.010 ETH hot + 0.005 ETH cold**.
-Against the observed hot balance, the suggested additional funding is about
-**0.00801190002964 ETH hot + 0.005 ETH cold = 0.01301190002964 ETH** if the new
-cold wallet starts empty. The cold wallet needs its own key and balance. This is an operational
-reserve estimate, not a measured lifetime gas guarantee.
+**Single-wallet requirement:**
 
-If a buyback route is enabled for a full month, budget another **~0.013 ETH**
-for these refresh calls at the sampled fee (about **0.017 ETH** with a 30% gas
-buffer), on top of deployment gas. Suggested first month with active route:
-**0.027 ETH hot + 0.005 ETH cold = 0.032 ETH total**. Versus the observed hot
-balance, that is roughly **0.02501190002964 ETH additional** if the new cold
-wallet starts empty. With route unset, the additional monthly reserve-refresh
-spend is not incurred.
+| Scenario | Amount | Note |
+| --- | ---: | --- |
+| Deploy only | **0.00046 ETH** | current balance 0.00199 ETH covers ~4× |
+| + 1 month ops, buyback HOLD | **≈ 0.0015 ETH** | deploy + root txs |
+| Suggested top-up | **0.005 ETH** | ~10× deploy plus month-1 ops, absorbs base-fee spikes |
+
+Optional hardening (not required): a second key held OFF the VPS for admin
+roles would cost 0 extra gas — only create it if the owner changes their mind.
 
 ### USDG for rewards (owner choice)
 
@@ -99,11 +90,13 @@ the owner receives only the CA and has no launcher coordination.
 
 | Bucket | Suggested amount | Required? |
 | --- | ---: | --- |
-| Hot deployment/keeper ETH | 0.010 ETH total | Yes, enough for measured deploy plus buffer; current balance counts toward it |
-| Cold admin ETH | 0.005 ETH total | Yes, at a distinct cold address before admin operations |
+| Operator wallet (single-key, all roles) | **0.005 ETH** total | Yes; measured deploy is 0.00046 ETH, rest is ops buffer. Current balance 0.00199 ETH already covers deploy |
 | Initial USDG reward seed | $0 minimum; $1,000 example | Optional; only for bootstrapping before customer receipts |
-| MicDrop buyback seed | $0 | Optional; hold B2B share until verified route/liquidity |
+| MicDrop buyback seed | $0 | Optional; hold B2B share until verified route/liquidity (route unset = $0 gas) |
 | VPS/R2/MiMo monthly invoice | Not verifiable from repo | Variable; read actual provider/account bills |
+
+Separate cold admin (0.005 ETH extra) is now an **optional** hardening, not a
+requirement — the owner chose single-wallet operation on 2026-10-22.
 
 No ETH/USD price conversion is shown because the budget is denominated in ETH
 and no pricing quote was captured with this measurement.
