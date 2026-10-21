@@ -1741,19 +1741,29 @@ body::before {
   }
 }
 
-/* ================= HAHA SOUNDSTAGE PRELOADER ================= */
+/* ================= HAHA 5-SHUTTER WAVE PRELOADER (FINENESS & TERA REFERENCE) ================= */
+:root {
+  --haha-pre-ink: #ffffff;
+  --haha-pre-muted: rgba(255, 255, 255, 0.55);
+  --haha-pre-muted-2: #ffc53d;
+  --haha-pre-muted-3: rgba(255, 255, 255, 0.38);
+  --haha-pre-shutter: #08080c;
+  --haha-pre-shutter-border: rgba(255, 197, 61, 0.12);
+  --haha-pre-progress: #ffc53d;
+  --haha-pre-track: rgba(255, 197, 61, 0.15);
+  --haha-pre-orbit: rgba(255, 197, 61, 0.3);
+}
+
 body.haha-preloader-pending {
   overflow: hidden !important;
 }
 
-/* Hide floating SiteNav completely while preloader is active so it NEVER covers the preloader */
 body.haha-preloader-pending header,
 body.haha-preloader-pending nav {
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;
   transform: translateY(-24px) !important;
-  transition: opacity 0.5s ease, transform 0.5s ease !important;
 }
 
 header {
@@ -1763,160 +1773,263 @@ header {
 .haha-preloader {
   position: fixed;
   inset: 0;
-  z-index: 999999 !important; /* Always on top of all DOM trees */
-  color: #ffffff;
-  cursor: pointer;
-  overflow: hidden;
+  z-index: 100000;
+  color: var(--haha-pre-ink);
   isolation: isolate;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow: hidden;
   user-select: none;
+  cursor: pointer;
 }
 
-.haha-preloader-curtain {
+.haha-load-shutters {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 20%, #101018 0%, #06060a 70%, #020204 100%);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  z-index: -1;
+}
+
+.haha-load-shutters i {
+  background: var(--haha-pre-shutter);
+  border-right: 1px solid var(--haha-pre-shutter-border);
+  position: relative;
+  transform-origin: top;
+  will-change: transform;
+}
+
+.haha-load-top,
+.haha-load-bottom {
+  position: absolute;
+  left: clamp(24px, 5vw, 48px);
+  right: clamp(24px, 5vw, 48px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  z-index: 10;
+}
+
+.haha-load-top {
+  top: clamp(20px, 3.5vh, 32px);
+}
+
+.haha-load-bottom {
+  bottom: clamp(20px, 3.5vh, 32px);
+}
+
+.haha-load-brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #ffffff;
+}
+
+.haha-load-edition {
+  color: var(--haha-pre-muted-2);
+}
+
+.haha-load-center {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(20px, 3.5vw, 36px) clamp(24px, 5vw, 48px);
-  transition: transform 0.85s cubic-bezier(0.76, 0, 0.24, 1);
-  will-change: transform;
-  border-bottom: 2px solid rgba(255, 197, 61, 0.7);
-  box-shadow: 0 20px 60px rgba(255, 197, 61, 0.3), 0 0 30px rgba(255, 197, 61, 0.15);
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  box-sizing: border-box;
+  z-index: 10;
 }
 
-.haha-preloader.haha-preloader-ready {
-  pointer-events: none;
+/* Orbiting acoustic concentric diamond mark */
+.haha-load-mark {
+  position: relative;
+  width: 136px;
+  height: 136px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 28px;
 }
 
-.haha-preloader.haha-preloader-ready .haha-preloader-curtain {
-  transform: translateY(-101%);
-}
-
-.haha-preloader-spotlight {
+.haha-load-mark::before,
+.haha-load-mark::after {
+  content: '';
   position: absolute;
-  top: -25%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 95vw;
-  max-width: 1200px;
-  height: 75vh;
-  background: radial-gradient(ellipse at center, rgba(255, 197, 61, 0.16) 0%, rgba(255, 197, 61, 0.04) 50%, transparent 75%);
-  pointer-events: none;
-  filter: blur(50px);
+  inset: 0;
+  border: 1px solid var(--haha-pre-orbit);
+  transform: rotate(45deg);
+  animation: haha-load-orbit 3.2s ease-in-out infinite alternate;
 }
 
-@keyframes goldShimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+.haha-load-mark::after {
+  inset: 15px;
+  transform: rotate(0deg);
+  opacity: 0.6;
+  border-color: rgba(255, 197, 61, 0.45);
+  animation-direction: alternate-reverse;
 }
 
-.haha-gold-shimmer {
-  background: linear-gradient(
-    90deg,
-    #ffc53d 0%,
-    #ffe89e 25%,
-    #ffffff 50%,
-    #ffe89e 75%,
-    #ffc53d 100%
-  );
-  background-size: 200% auto;
-  color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: goldShimmer 3s linear infinite;
+.haha-load-logo {
+  width: auto;
+  max-width: 90px;
+  height: 72px;
+  object-fit: contain;
+  animation: haha-load-float 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(255, 197, 61, 0.65));
 }
 
-@keyframes slideRevealUp {
+/* Massive 3D Staggered Letter Reveal */
+.haha-load-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(68px, 11vw, 144px);
+  line-height: 0.92;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  margin: 0;
+  text-align: center;
+  display: flex;
+  gap: 0.05em;
+  color: #ffffff;
+}
+
+.haha-load-title span {
+  display: inline-block;
+  animation: haha-load-letter 0.75s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+.haha-load-subtitle {
+  font-size: 11px;
+  line-height: 1.6;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin: 20px 0 8px;
+  color: var(--haha-pre-muted);
+  text-align: center;
+}
+
+.haha-load-kicker {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* 5-Step Segmented Amber Progress Track */
+.haha-load-track {
+  width: min(340px, 82vw);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.haha-load-track i {
+  height: 3px;
+  background: var(--haha-pre-track);
+  border-radius: 2px;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.haha-load-track i[data-active="true"] {
+  background: var(--haha-pre-progress);
+  box-shadow: 0 0 10px rgba(255, 197, 61, 0.6);
+}
+
+.haha-load-readout {
+  width: min(340px, 82vw);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  font-size: 11px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--haha-pre-muted-3);
+}
+
+.haha-load-percent {
+  font-variant-numeric: tabular-nums;
+  color: #ffc53d;
+  font-weight: 600;
+}
+
+.haha-load-skip {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--haha-pre-progress);
+  padding: 6px 0;
+  cursor: pointer;
+  min-height: 36px;
+}
+
+/* Keyframes */
+@keyframes haha-load-orbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(90deg); }
+}
+
+@keyframes haha-load-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-6px) scale(1.04); }
+}
+
+@keyframes haha-load-letter {
   0% {
     opacity: 0;
-    transform: translateY(35px) scale(0.97);
-    filter: blur(6px);
+    transform: translateY(35px) rotateX(35deg);
+    filter: blur(4px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
+    transform: none;
+    filter: blur(0);
   }
 }
 
-.haha-reveal-1 {
-  animation: slideRevealUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
-}
-.haha-reveal-2 {
-  animation: slideRevealUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-}
-.haha-reveal-3 {
-  animation: slideRevealUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
-}
-
-@keyframes acousticRadar {
-  0% {
-    transform: scale(0.5);
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 0.25;
-  }
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-}
-
-.haha-radar-ring-1 {
-  animation: acousticRadar 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
-}
-.haha-radar-ring-2 {
-  animation: acousticRadar 3s cubic-bezier(0.2, 0.8, 0.2, 1) 1s infinite;
-}
-.haha-radar-ring-3 {
-  animation: acousticRadar 3s cubic-bezier(0.2, 0.8, 0.2, 1) 2s infinite;
-}
-
-@keyframes laserScanline {
-  0% {
-    transform: translateY(-50vh);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.8;
-  }
-  90% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(120vh);
-    opacity: 0;
-  }
-}
-
-.haha-laser-scanline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 197, 61, 0.7) 50%, transparent 100%);
-  filter: drop-shadow(0 0 8px #ffc53d);
-  animation: laserScanline 4.5s ease-in-out infinite;
+/* Exit Transition: 5-Column Wave Venetian Shutter Lift */
+.haha-preloader.is-exiting {
   pointer-events: none;
 }
 
-@keyframes hahaEqPulse {
-  0%, 100% {
-    transform: scaleY(0.22);
-  }
-  50% {
-    transform: scaleY(1);
-  }
+.haha-preloader.is-exiting .haha-load-center,
+.haha-preloader.is-exiting .haha-load-top,
+.haha-preloader.is-exiting .haha-load-bottom {
+  opacity: 0;
+  transform: translateY(-16px);
+  transition: opacity 0.25s ease, transform 0.32s ease;
 }
 
-.haha-eq-bar {
-  transform-origin: bottom;
-  animation: hahaEqPulse 0.95s ease-in-out infinite;
+.haha-preloader.is-exiting .haha-load-shutters i {
+  transform: translateY(-101%);
+  transition-property: transform;
+  transition-duration: 0.72s;
+  transition-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+
+@media (max-width: 640px) {
+  .haha-load-top,
+  .haha-load-bottom {
+    left: 20px;
+    right: 20px;
+    font-size: 10px;
+  }
+  .haha-load-mark {
+    width: 104px;
+    height: 104px;
+    margin-bottom: 22px;
+  }
+  .haha-load-logo {
+    max-width: 68px;
+    height: 54px;
+  }
 }
 
