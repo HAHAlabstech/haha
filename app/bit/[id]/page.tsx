@@ -430,6 +430,15 @@ export default function BitPage({
                   </span>
                 </Stamp>
               ) : null}
+              {bit?.outcome ? (
+                <p className="text-xs leading-relaxed text-[#a49b8e]">
+                  {bit.outcome.result === "killed_it"
+                    ? "Payouts settle daily at 00:00 UTC — once the new epoch activates (~10 min later), claim from Tip Jar in one transaction."
+                    : (bit.retrial_round ?? 0) < 2
+                      ? "You can file one Round-2 appeal below — a fresh jury re-judges this bit."
+                      : "Final verdict after Round 2. Write a new bit to try again."}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

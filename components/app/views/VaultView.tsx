@@ -226,7 +226,7 @@ export default function VaultView() {
                 href="/vault/method"
                 className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] underline"
               >
-                Inspect Formula →
+                See How The Vault Works →
               </Link>
             </dd>
           </div>

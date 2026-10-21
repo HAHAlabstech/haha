@@ -72,6 +72,7 @@ export default function TipJarView() {
   const [claiming, setClaiming] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [claimedMicro, setClaimedMicro] = useState<string | null>(null);
 
   useEffect(() => {
     const st = getSharedWalletState();
@@ -254,8 +255,43 @@ export default function TipJarView() {
     }
   }, [account, contracts, provider, recipientOverride, reward, runtime]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!account || !reward) {
+      setClaimedMicro(null);
+      return;
+    }
+    (async () => {
+      try {
+        const activeProv = provider ?? (await resolveActiveProvider());
+        if (!activeProv) return;
+        const data = encodeFunctionData({
+          abi: tipJarAbi,
+          functionName: "cumulativeClaimed",
+          args: [account as Address],
+        });
+        const res = (await activeProv.request({
+          method: "eth_call",
+          params: [{ to: reward.tipJar as Address, data }, "latest"],
+        })) as string;
+        if (!cancelled && typeof res === "string" && res.startsWith("0x")) {
+          setClaimedMicro(BigInt(res).toString());
+        }
+      } catch {
+        if (!cancelled) setClaimedMicro(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [account, provider, reward]);
+
   const cumulativeUsdg =
     reward != null ? Number(BigInt(reward.cumulativeMicroUsdg)) / 1_000_000 : 0;
+  const fullyClaimed =
+    reward != null &&
+    claimedMicro !== null &&
+    BigInt(claimedMicro) >= BigInt(reward.cumulativeMicroUsdg || "0");
   const inEscrowUsdg = fmtUsdg(summary?.escrow?.tipJar?.microUsdg);
   const paidOutUsdg = fmtUsdg(summary?.totalPaidOutMicroUsdg);
   const micDropUsdg = fmtUsdg(summary?.escrow?.micDrop?.microUsdg);
@@ -360,38 +396,52 @@ export default function TipJarView() {
                     </p>
                   </div>
 
-                  <div className="max-w-lg">
-                    <label
-                      htmlFor="recipientOverride"
-                      className="block font-mono text-[11px] uppercase tracking-widest text-zinc-400"
-                    >
-                      Destination Wallet (optional)
-                    </label>
-                    <input
-                      id="recipientOverride"
-                      type="text"
-                      value={recipientOverride}
-                      onChange={(e) => setRecipientOverride(e.target.value)}
-                      placeholder={account}
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-[#0c0a08] px-4 py-3 font-mono text-xs text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
-                    />
-                  </div>
+                  {fullyClaimed ? (
+                    <div className="space-y-2">
+                      <Stamp tone="green">All caught up — fully claimed ✓</Stamp>
+                      <p className="text-sm leading-relaxed text-zinc-400">
+                        Everything in this cumulative allocation has already
+                        been paid to your wallet. New rewards appear here after
+                        the next daily settlement (00:00 UTC, active ~10
+                        minutes later).
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="max-w-lg">
+                        <label
+                          htmlFor="recipientOverride"
+                          className="block font-mono text-[11px] uppercase tracking-widest text-zinc-400"
+                        >
+                          Destination Wallet (optional)
+                        </label>
+                        <input
+                          id="recipientOverride"
+                          type="text"
+                          value={recipientOverride}
+                          onChange={(e) => setRecipientOverride(e.target.value)}
+                          placeholder={account}
+                          className="mt-2 w-full rounded-xl border border-white/10 bg-[#0c0a08] px-4 py-3 font-mono text-xs text-[#fff6ed] placeholder:text-zinc-600 focus:border-[#ffc53d] focus:outline-none"
+                        />
+                      </div>
 
-                  <button
-                    type="button"
-                    onClick={() => void claim()}
-                    disabled={claiming}
-                    className="pill-btn hot disabled:opacity-50 cursor-pointer"
-                    style={{ padding: "14px 28px", fontSize: "12px" }}
-                  >
-                    <span>
-                      {claiming
-                        ? "Signing EIP-712 & claiming…"
-                        : recipientOverride.trim()
-                          ? "Claim to Destination Wallet →"
-                          : "Claim USDG to This Wallet →"}
-                    </span>
-                  </button>
+                      <button
+                        type="button"
+                        onClick={() => void claim()}
+                        disabled={claiming}
+                        className="pill-btn hot disabled:opacity-50 cursor-pointer"
+                        style={{ padding: "14px 28px", fontSize: "12px" }}
+                      >
+                        <span>
+                          {claiming
+                            ? "Signing EIP-712 & claiming…"
+                            : recipientOverride.trim()
+                              ? "Claim to Destination Wallet →"
+                              : "Claim USDG to This Wallet →"}
+                        </span>
+                      </button>
+                    </>
+                  )}
 
                   {txHash ? (
                     <p
