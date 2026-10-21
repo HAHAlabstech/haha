@@ -405,21 +405,28 @@ export default function LandingShowtimeHero() {
     const colTrim = mesh(new THREE.TorusGeometry(0.34, 0.006, 8, 48), goldTrim, torso, 0, 1.01, 0);
     colTrim.rotation.x = Math.PI / 2;
 
-    // Chest Medallion with Official HAHA Logo
-    const logoTexture = new THREE.TextureLoader().load("/images/logo-transparent.png");
+    // Chest Medallion with Official HAHA Logo (Lightweight WebP, Proud mount, Zero clipping)
+    const logoTexture = new THREE.TextureLoader().load("/images/logo-transparent.webp");
     logoTexture.colorSpace = THREE.SRGBColorSpace;
+    logoTexture.generateMipmaps = true;
+    logoTexture.minFilter = THREE.LinearMipmapLinearFilter;
 
     const chestBadge = new THREE.Group();
-    chestBadge.position.set(0, 0.58, 0.542);
-    chestBadge.rotation.x = -0.15;
+    chestBadge.position.set(0, 0.60, 0.565);
+    chestBadge.rotation.x = 0.149;
     torso.add(chestBadge);
 
-    // Dark titanium backplate disc
-    const badgePlate = mesh(new THREE.CylinderGeometry(0.145, 0.145, 0.015, 48), darkMetal, chestBadge);
-    badgePlate.rotation.x = Math.PI / 2;
+    // Mechanical mounting boss connecting badge to torso
+    mesh(new THREE.CylinderGeometry(0.13, 0.14, 0.03, 32), darkMetal, chestBadge, 0, 0, -0.015).rotation.x = Math.PI / 2;
 
-    // Gold outer bezel ring
-    mesh(new THREE.TorusGeometry(0.146, 0.007, 8, 48), goldTrim, chestBadge);
+    // Dark titanium backplate disc
+    mesh(new THREE.CylinderGeometry(0.165, 0.165, 0.016, 48), darkMetal, chestBadge, 0, 0, 0).rotation.x = Math.PI / 2;
+
+    // Outer gold bezel ring
+    mesh(new THREE.TorusGeometry(0.166, 0.007, 8, 48), goldTrim, chestBadge, 0, 0, 0.008);
+
+    // Inner gold accent ring
+    mesh(new THREE.TorusGeometry(0.145, 0.004, 8, 48), goldTrim, chestBadge, 0, 0, 0.009);
 
     // Subtle warm amber backlight disk
     const badgeGlowMat = new THREE.MeshBasicMaterial({
@@ -428,17 +435,17 @@ export default function LandingShowtimeHero() {
       opacity: 0.25,
       toneMapped: false,
     });
-    const badgeGlow = mesh(new THREE.CircleGeometry(0.132, 32), badgeGlowMat, chestBadge, 0, 0, 0.009);
+    const badgeGlow = mesh(new THREE.CircleGeometry(0.142, 32), badgeGlowMat, chestBadge, 0, 0, 0.01);
 
-    // HAHA Logo Texture on raised disc
+    // HAHA Logo Texture on raised plane (fits 100% inside medallion with zero clipping)
     const logoMat = new THREE.MeshBasicMaterial({
       map: logoTexture,
       transparent: true,
-      opacity: 0.96,
+      opacity: 0.98,
       toneMapped: false,
       depthWrite: false,
     });
-    mesh(new THREE.PlaneGeometry(0.22, 0.22), logoMat, chestBadge, 0, 0, 0.011);
+    mesh(new THREE.PlaneGeometry(0.21, 0.21), logoMat, chestBadge, 0, 0, 0.012);
 
     for (const s of [-1, 1]) {
       mesh(new THREE.SphereGeometry(0.17, 24, 16), bronze, torso, s * 0.64, 0.88, 0);
