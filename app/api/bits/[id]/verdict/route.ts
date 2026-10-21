@@ -58,6 +58,7 @@ export async function POST(
         id: true,
         status: true,
         user_id: true,
+        ai_answer: { select: { id: true } },
         user: {
           select: {
             id: true,
@@ -73,11 +74,13 @@ export async function POST(
     if (bit.user.wallet.toLowerCase() !== wallet) {
       return bad("only the author can submit the verdict", 403);
     }
-    if (
-      bit.status !== "answered" &&
-      bit.status !== "screening"
-    ) {
+    if (bit.status !== "answered") {
       return bad(`cannot submit verdict when bit is ${bit.status}`, 409);
+    }
+    // `answered` is written by prescreen before the Straight Man job stores
+    // its output. Never let the author judge an answer that does not exist.
+    if (!bit.ai_answer) {
+      return bad("the Straight Man has not answered this bit yet", 409);
     }
 
     if (verdict === "got_it") {
@@ -96,8 +99,8 @@ export async function POST(
     if (!answer || answer.length > 200) {
       return bad("answer must be 1-200 chars", 400);
     }
-    if (explanation.length > 400) {
-      return bad("explanation must be <=400 chars", 400);
+    if (!explanation || explanation.length > 400) {
+      return bad("explanation must be 1-400 chars", 400);
     }
     const existing = await prisma.comedianReveal.findUnique({
       where: { bit_id: id },

@@ -58,6 +58,7 @@ export async function POST(
         id: true,
         status: true,
         user_id: true,
+        outcome: { select: { result: true } },
         user: {
           select: {
             id: true,
@@ -75,6 +76,11 @@ export async function POST(
     }
     if (bit.status !== "bombed" && bit.status !== "heckled_off") {
       return bad("only bombed or heckled_off bits can be appealed", 409);
+    }
+    // A self-conceded "Got it" also writes status=bombed, but no Outcome
+    // exists because the Crowd never voted. It must never create a retrial.
+    if (!bit.outcome || bit.outcome.result !== bit.status) {
+      return bad("no Crowd verdict exists to appeal", 409);
     }
     const prior = await prisma.appeal.findFirst({
       where: { bit_id: id },

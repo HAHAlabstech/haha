@@ -109,6 +109,11 @@ export default function CrowdJoinPage() {
   const [savedServer, setSavedServer] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [alreadyPassed, setAlreadyPassed] = useState<boolean | null>(null);
+  const [needsSignIn, setNeedsSignIn] = useState(false);
+  const [checkingSaved, setCheckingSaved] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [statusRefresh, setStatusRefresh] = useState(0);
+  const [allowQuizWithoutSession, setAllowQuizWithoutSession] = useState(false);
 
   useEffect(() => {
     const st = getSharedWalletState();
@@ -116,37 +121,53 @@ export default function CrowdJoinPage() {
     return subscribeWalletState((next) => setAccount(next.account));
   }, []);
 
-  // If this wallet already passed calibration, skip the quiz entirely
-  // (session-gated server status; no session -> quiz shown as before).
+  // Check the saved calibration result BEFORE showing ten questions again.
+  // `authenticated` is distinct from `status`: an expired session must ask
+  // the user to sign in, not silently treat them as a brand-new juror.
   useEffect(() => {
     let cancelled = false;
     if (!account) {
       setAlreadyPassed(null);
+      setNeedsSignIn(false);
+      setCheckingSaved(false);
       return;
     }
     (async () => {
+      setCheckingSaved(true);
       try {
         const st = getSharedWalletState();
         const res = await fetch(
           `/api/crowd/onboarding?wallet=${encodeURIComponent(account)}`,
-          { headers: st.sessionToken ? authHeaders(st.sessionToken) : undefined },
+          {
+            headers: st.sessionToken ? authHeaders(st.sessionToken) : undefined,
+            cache: "no-store",
+          },
         );
         const d = (await res.json().catch(() => ({}))) as {
           status?: { onboarded?: boolean } | null;
+          authenticated?: boolean;
         };
-        if (!cancelled) {
-          setAlreadyPassed(
-            d.status ? d.status.onboarded === true : null,
-          );
+        if (cancelled) return;
+        if (d.authenticated === false) {
+          setNeedsSignIn(true);
+          setAlreadyPassed(null);
+        } else {
+          setNeedsSignIn(false);
+          setAlreadyPassed(d.status ? d.status.onboarded === true : null);
         }
       } catch {
-        if (!cancelled) setAlreadyPassed(null);
+        if (!cancelled) {
+          setAlreadyPassed(null);
+          setNeedsSignIn(true);
+        }
+      } finally {
+        if (!cancelled) setCheckingSaved(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [account]);
+  }, [account, statusRefresh]);
 
   const answered =
     Object.keys(votes).length === QUIZ.length &&
@@ -182,6 +203,7 @@ export default function CrowdJoinPage() {
         }),
       });
       const d = (await res.json().catch(() => ({}))) as {
+        passed?: boolean;
         correct?: number;
         expected?: ExpectedKeyItem[];
         error?: string;
@@ -190,7 +212,13 @@ export default function CrowdJoinPage() {
         if (typeof d.correct === "number") setScore(d.correct);
         if (Array.isArray(d.expected)) setExpectedKey(d.expected);
         setGraded(true);
-        setSavedServer(true);
+        setSavedServer(d.passed === true);
+        setAlreadyPassed(d.passed === true);
+        if (d.passed !== true) {
+          setError(
+            "Your result was graded, but this attempt did not pass. Review the corrections and retake it.",
+          );
+        }
       } else {
         setError(d.error ?? "Could not record onboarding result.");
       }
@@ -202,6 +230,7 @@ export default function CrowdJoinPage() {
   }
 
   async function handleSubmit() {
+    if (saving) return;
     setError(null);
     if (account) {
       await recordPassOnServer();
@@ -236,6 +265,29 @@ export default function CrowdJoinPage() {
     }
   }
 
+  async function signInAndCheck() {
+    setError(null);
+    setSigningIn(true);
+    try {
+      const st = getSharedWalletState();
+      const siwe = await ensureSiweSession(st.provider, st.account);
+      if (!siwe.ok) {
+        setError(siwe.error ?? "Sign-in failed. Try again.");
+        return;
+      }
+      setStatusRefresh((value) => value + 1);
+    } finally {
+      setSigningIn(false);
+    }
+  }
+
+  const showSignInGate =
+    Boolean(account) &&
+    needsSignIn &&
+    !graded &&
+    !allowQuizWithoutSession &&
+    !alreadyPassed;
+
   return (
     <div className="relative min-h-screen bg-[#070709] text-white selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-clip">
       {/* Ambient Stage Lighting Glow */}
@@ -255,7 +307,15 @@ export default function CrowdJoinPage() {
         lede={`Ten cases with known answers. Score at least ${PASS_MARK} out of 10 — both the winning answer and the fairness call must be right to earn a point.`}
       />
 
-      {alreadyPassed && !graded ? (
+      {account && checkingSaved ? (
+        <Card>
+          <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+            Checking your saved calibration…
+          </p>
+        </Card>
+      ) : null}
+
+      {!checkingSaved && alreadyPassed && !graded ? (
         <Card hot>
           <p className="display-serif text-3xl text-white" role="status">
             Calibration already passed
@@ -272,7 +332,45 @@ export default function CrowdJoinPage() {
         </Card>
       ) : null}
 
-      {!(alreadyPassed && !graded) ? (
+      {!checkingSaved && showSignInGate ? (
+        <Card hot>
+          <p className="display-serif text-3xl text-white">
+            Sign in to check your saved result.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+            This wallet is connected, but its signed session is missing or
+            expired. Without it we cannot tell whether you already passed — and
+            we will not make you retake ten cases just because a session
+            expired.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              disabled={signingIn}
+              onClick={() => void signInAndCheck()}
+              className="pill-btn hot disabled:opacity-50"
+            >
+              <span>{signingIn ? "Signing in…" : "Sign In with Wallet →"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAllowQuizWithoutSession(true)}
+              className="pill-btn"
+            >
+              <span>Take quiz without saving</span>
+            </button>
+          </div>
+          {error ? (
+            <p className="mt-3 font-mono text-xs text-rose-400" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {!checkingSaved &&
+      !showSignInGate &&
+      !(alreadyPassed && !graded) ? (
         <>
           <ol className="space-y-5">
         {QUIZ.map((q, i) => {
@@ -350,12 +448,15 @@ export default function CrowdJoinPage() {
         {!graded ? (
           <button
             type="button"
-            disabled={!answered}
+            disabled={!answered || saving}
+            aria-busy={saving}
             onClick={() => void handleSubmit()}
             className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
             style={{ padding: "14px 28px", fontSize: "12px" }}
           >
-            <span>Submit Calibration Quiz →</span>
+            <span>
+              {saving ? "Grading your answers…" : "Submit Calibration Quiz →"}
+            </span>
           </button>
         ) : (
           <Card hot={score >= PASS_MARK}>
@@ -369,7 +470,7 @@ export default function CrowdJoinPage() {
               {score >= PASS_MARK
                 ? savedServer
                   ? `Recorded for ${account ? truncateAddress(account) : "your wallet"}. You can now judge live Crowd assignments!`
-                  : "You passed the calibration quiz. Connect and sign with your wallet to unlock live jury assignments."
+                  : "You passed. Save the result to your wallet before entering the jury console — otherwise it will look unpassed there."
                 : `You need at least ${PASS_MARK} to pass. Review the corrections above and retake it.`}
             </p>
 
@@ -380,8 +481,11 @@ export default function CrowdJoinPage() {
                     type="button"
                     disabled={saving}
                     onClick={() => {
-                      if (!account) setModalOpen(true);
-                      else void recordPassOnServer();
+                      if (!account) {
+                        setModalOpen(true);
+                        return;
+                      }
+                      void recordPassOnServer();
                     }}
                     className="pill-btn hot cursor-pointer"
                   >
@@ -393,10 +497,11 @@ export default function CrowdJoinPage() {
                           : "Connect Wallet to Save Pass"}
                     </span>
                   </button>
-                ) : null}
-                <Link href="/app?tab=crowd" className="pill-btn hot">
-                  <span>Enter Crowd Jury Console →</span>
-                </Link>
+                ) : (
+                  <Link href="/app?tab=crowd" className="pill-btn hot">
+                    <span>Enter Crowd Jury Console →</span>
+                  </Link>
+                )}
               </div>
             ) : (
               <button
@@ -406,6 +511,7 @@ export default function CrowdJoinPage() {
                   setFair({});
                   setGraded(false);
                   setScore(0);
+                  setSavedServer(false);
                   setExpectedKey(null);
                   setError(null);
                 }}
@@ -422,6 +528,14 @@ export default function CrowdJoinPage() {
           </Card>
         )}
       </div>
+      {error && !graded ? (
+        <p
+          className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3.5 font-mono text-xs text-rose-200"
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
       </>
       ) : null}
 

@@ -68,6 +68,7 @@ const CATEGORY_META = [
 
 const PRICE_LIST = [
   {
+    id: "snapshot",
     tag: "BATCH RELEASE",
     name: "Snapshot License",
     price: "$2,500",
@@ -75,6 +76,7 @@ const PRICE_LIST = [
     tier: "Production Model Fine-Tuning",
   },
   {
+    id: "subscription",
     tag: "LIVE STREAM",
     name: "Vault Subscription",
     price: "$1,000 / mo",
@@ -82,6 +84,7 @@ const PRICE_LIST = [
     tier: "Continuous Evaluation",
   },
   {
+    id: "eval",
     tag: "BENCHMARK",
     name: "Holdout Eval Run",
     price: "$500",
@@ -89,6 +92,7 @@ const PRICE_LIST = [
     tier: "Blind Nuance Scoring",
   },
   {
+    id: "theme_night",
     tag: "CUSTOM SET",
     name: "Sponsored Theme Night",
     price: "from $500",
@@ -136,29 +140,18 @@ export default function VaultView() {
 
   const totalVerified = summary?.verified ?? 0;
 
-  const defaultCurvePoints = [
-    { label: "W01", count: 24, cost: 2400 },
-    { label: "W02", count: 38, cost: 4200 },
-    { label: "W03", count: 52, cost: 6800 },
-    { label: "W04", count: 71, cost: 9600 },
-    { label: "W05", count: 89, cost: 12400 },
-    { label: "W06", count: 114, cost: 16800 },
-    { label: "W07", count: 142, cost: 21500 },
-    { label: "W08", count: 178, cost: 28900 },
-  ];
-
-  const chartData =
-    snapshots.length >= 4
-      ? snapshots
-          .slice(0, 8)
-          .reverse()
-          .map((s, idx) => ({
-            label: `W0${idx + 1}`,
-            count: s.entry_count,
-            cost: Number(BigInt(s.replacement_micro_usd || "0")) / 1_000_000,
-            merkle: s.merkle_root,
-          }))
-      : defaultCurvePoints;
+  // Real published snapshots only. Never draw a modeled/placeholder curve:
+  // the Vault is a provenance product, not a growth-rate promise.
+  const chartData = snapshots
+    .slice(0, 8)
+    .reverse()
+    .map((s, idx) => ({
+      label: `S${String(idx + 1).padStart(2, "0")}`,
+      count: s.entry_count,
+      cost: Number(BigInt(s.replacement_micro_usd || "0")) / 1_000_000,
+      merkle: s.merkle_root,
+    }));
+  const hasChart = chartData.length >= 2;
 
   const maxCount = Math.max(...chartData.map((d) => d.count), 200);
 
@@ -172,8 +165,10 @@ export default function VaultView() {
   const getX = (idx: number) => padX + (idx / (chartData.length - 1)) * plotW;
   const getY = (val: number) => padY + plotH - (val / maxCount) * plotH;
 
-  const points = chartData.map((d, i) => ({ x: getX(i), y: getY(d.count) }));
-  let pathD = `M ${points[0]?.x} ${points[0]?.y}`;
+  const points = hasChart
+    ? chartData.map((d, i) => ({ x: getX(i), y: getY(d.count) }))
+    : [];
+  let pathD = points[0] ? `M ${points[0].x} ${points[0].y}` : "";
   for (let i = 0; i < points.length - 1; i++) {
     const pCurrent = points[i];
     const pNext = points[i + 1];
@@ -198,8 +193,9 @@ export default function VaultView() {
             Every laugh becomes <em>permanent record.</em>
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-            Each bit that fools the Straight Man and passes a 7–9 human Crowd
-            quorum is hashed into The Joke Vault — a cryptographically anchored
+            Each bit that fools the Straight Man and passes a human Crowd
+            quorum — normally 5 blind judges, expanding to 7 when the result is
+            thin — is hashed into The Joke Vault: a cryptographically anchored
             corpus of human wit, subtext, physical common sense, and ambiguity.
           </p>
         </div>
@@ -256,16 +252,22 @@ export default function VaultView() {
             </svg>
 
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#ffc53d]">
-              Corpus Valuation · Live Metric
+              Estimated Replacement Value · Live Metric
             </span>
             <div className="mt-4 flex flex-wrap items-baseline gap-4">
               <span className="display-serif text-5xl font-light tracking-tight text-white sm:text-7xl">
                 {summary ? fmtUsd(summary.replacementMicroUsd) : "$0.00"}
               </span>
               <span className="font-mono text-xs uppercase tracking-widest text-zinc-400">
-                USDG Estimated Replacement Value
+                modeled cost to recreate — not revenue
               </span>
             </div>
+            <p className="mt-5 border-t border-white/10 pt-4 font-mono text-xs text-zinc-400">
+              Actual licensing revenue:{" "}
+              <span className="text-[#ffc53d]">
+                {summary ? fmtUsd(summary.revenueMicroUsd) : "$0.00"}
+              </span>
+            </p>
           </div>
 
           <div className="laocoon-card flex flex-col justify-between p-8">
@@ -291,35 +293,43 @@ export default function VaultView() {
       {/* Spline Growth Graph */}
       <section aria-label="Dataset trajectory">
         <SectionTitle
-          eyebrow="Growth Trajectory"
-          hint="Interactive Weekly Telemetry"
+          eyebrow="Published Snapshots"
+          hint="Real releases only · no modeled curve"
         >
           Dataset <em>Telemetry.</em>
         </SectionTitle>
         <div className="laocoon-card p-6 sm:p-8">
-          <div className="w-full overflow-x-auto">
-            <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full min-w-[700px] h-auto">
-              <defs>
-                <linearGradient id="vaultSplineGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ffc53d" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#ffc53d" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d={areaD} fill="url(#vaultSplineGrad)" />
-              <path d={pathD} fill="none" stroke="#ffc53d" strokeWidth="3" />
-              {points.map((pt, idx) => (
-                <circle
-                  key={idx}
-                  cx={pt.x}
-                  cy={pt.y}
-                  r={activeChartPoint === idx ? "7" : "4.5"}
-                  fill={activeChartPoint === idx ? "#ffd27d" : "#ffc53d"}
-                  className="cursor-pointer transition-all"
-                  onMouseEnter={() => setActiveChartPoint(idx)}
-                />
-              ))}
-            </svg>
-          </div>
+          {hasChart ? (
+            <div className="w-full overflow-x-auto">
+              <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full min-w-[700px] h-auto">
+                <defs>
+                  <linearGradient id="vaultSplineGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ffc53d" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#ffc53d" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path d={areaD} fill="url(#vaultSplineGrad)" />
+                <path d={pathD} fill="none" stroke="#ffc53d" strokeWidth="3" />
+                {points.map((pt, idx) => (
+                  <circle
+                    key={idx}
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={activeChartPoint === idx ? "7" : "4.5"}
+                    fill={activeChartPoint === idx ? "#ffd27d" : "#ffc53d"}
+                    className="cursor-pointer transition-all"
+                    onMouseEnter={() => setActiveChartPoint(idx)}
+                  />
+                ))}
+              </svg>
+            </div>
+          ) : (
+            <p className="text-sm leading-relaxed text-zinc-400">
+              {snapshots.length === 1
+                ? "One snapshot has been published. A trend line will appear after the second real snapshot — we do not invent interim points."
+                : "No Vault snapshots have been published yet. This chart stays empty until the first real weekly release; no placeholder curve is shown."}
+            </p>
+          )}
         </div>
       </section>
 
@@ -327,7 +337,7 @@ export default function VaultView() {
       <section aria-label="B2B Dataset Licensing">
         <SectionTitle
           eyebrow="ProducerGateway.sol · B2B Licensing"
-          hint="Enforced on-chain in USDG · 50% TipJar / 25% MicDrop / 25% Ops"
+          hint="Enforced on-chain in USDG · 40% Ops / 30% TipJar / 10% royalty / 20% MicDrop"
         >
           License the <em>Corpus.</em>
         </SectionTitle>
@@ -353,7 +363,7 @@ export default function VaultView() {
                   {item.tier}
                 </span>
                 <Link
-                  href="/producers"
+                  href={`/producers?plan=${encodeURIComponent(item.id)}`}
                   className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-widest text-[#ffc53d] hover:underline"
                 >
                   <span>Checkout</span>

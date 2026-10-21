@@ -13,10 +13,11 @@ runtime findings (sesi 19–21 Okt 2026, plan §8.1) into launch steps.
    the `TESTNET_MOCK_*` fallbacks in `lib/haha-contracts.ts` — every mainnet
    address MUST be explicit.
 2. **Preflight gate aborts on mismatch — let it abort.** Test 8 (19 Okt)
-   deliberately stopped at the pre-flight gate because the deploy target
-   escrow did not expose the `claimToken`/`claim()` sweep surface
-   (`contracts/script/DeployMainnet.s.sol` check #2). Do NOT weaken the
-   gate to force the deploy; swap/patch the escrow deployment instead.
+   stopped at the gate with `PreflightFailed("escrow.claimToken")`; the
+   cause was the gate's invalid `staticcall` of a state-changing function,
+   now fixed. The gate still aborts if the real escrow lacks the expected
+   selectors/views. Do NOT weaken it to force the deploy; resolve the
+   upstream surface instead.
 3. The hot operator key is ROOT/PROPOSER-capped (slash-escrow limited,
    cannot finalize roots). The cold key stays OFFLINE (veto + params).
 
@@ -41,17 +42,29 @@ no CI change needed for a chain flip.
 Sequence lives in `contracts/script/DeployMainnet.s.sol`:
 
 1. `forge build` + `forge test` green at `contracts/`.
-2. Run the read-only preflight gate against 4663 RPC
-   (`forge script DeployMainnet --fork-url $RPC_URL_MAINNET`).
-   It checks: USDG decimals == 6, escrow claim surface (`claimToken`,
-   `claim`), router/poolManager/hook/factory code presence.
-   **ABPORT here** = stop, fix the target contracts, re-run. Never bypass.
-3. Broadcast the suite (TipJar, FeeSplitter, MicDrop, CrowdStaking,
-   VaultRegistry, ProducerGateway, HAHA token setup) with the deployer key.
-4. Grant roles: TipJar `PROPOSER_ROLE` → hot operator;
-   `GUARDIAN_ROLE` → cold admin. FeeSplitter harvest executor per plan §2.2.
-5. Record every address into the VPS `.env.worker`/`.env.app` file under the
-   §10 `.env.example` block names. Do not commit real env values.
+2. Run the dry-run (NO broadcast) against 4663 RPC:
+   `forge script DeployMainnet --fork-url $RPC_URL_MAINNET`.
+   The gate checks chain id 4663, USDG decimals == 6, required code, the
+   escrow **view** surface (`pendingFees`, `pendingCreatorTax`,
+   `quoteFeeBalance`, `creatorTaxBalance`, `balanceOf`), and the presence of
+   the `claimToken(address)` + `claim()` selectors in the escrow dispatcher.
+   It deliberately does not `staticcall` a state-changing claim function.
+   **ABORT here** = inspect the target escrow/address; never bypass.
+3. Deploy simulation (still NO chain write):
+   `MAINNET_DEPLOY_CONFIRM=DEPLOY_HAHA_MAINNET_4663 forge script DeployMainnet --fork-url $RPC_URL_MAINNET`
+   Read the printed addresses and diff them against the VPS env plan.
+4. Real broadcast (only after audit/legal/sanctions/geo + 72h gate):
+   same command **plus `--broadcast`**, with a funded deployer key. This
+   deploys TipJar, FeeSplitter, MicDrop placeholder, real MicDrop,
+   VaultRegistry, ProducerGateway, and optional CrowdStaking (only when
+   `HAHA_TOKEN_ADDRESS` is already live).
+5. Phase 2, cold-admin actions after the 48h timelock:
+   - `FeeSplitter.proposeSetMicDrop(realMicDrop)` → confirm.
+   - `MicDrop.proposeHahaToken(...)` → confirm (after the Pons launch tx).
+   - `FeeSplitter.proposeSetLaunchRefs(curve, hook, poolId)` → confirm.
+6. Record every address into the VPS `.env.worker`/`.env.app` file under the
+   §10 `.env.example` block names. Do not commit real env values. Keep
+   `WORKER_CHAIN_WRITES=off` until roles are verified.
 
 ## 3. Worker bring-up
 
@@ -89,10 +102,15 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
    - `worker/jobs/fiveMinuteOps.js` — new TipJar keeper activates pending
      roots after the veto delay (nobody else activates otherwise).
    Mainnet must deploy WITH these fixes (they are in the image).
-2. **Escrow sweep-surface mismatch (OPEN — blocking gate).** The deployed
-   testnet-target escrow lacked the `claimToken` surface; preflight gate
-   aborts by design. Resolve by deploying the corrected escrow before
-   the mainnet preflight re-run.
+2. **Escrow claim-surface gate (FIXED false negative; upstream still must
+   match).** Test 8 aborted on `escrow.claimToken` because the gate used
+   `staticcall` on the state-changing `claimToken(address)` / `claim()`.
+   The EVM necessarily reverts such a call with
+   `StateChangeDuringStaticCall`, so the test could not distinguish
+   “function missing” from “function exists and writes”. The gate now uses
+   view-only staticcalls plus a dispatcher selector scan. If the selector
+   scan still fails, the target escrow genuinely does not expose the assumed
+   ABI — stop and resolve the upstream contract; do not weaken the gate.
 3. **Browser-wallet paths are chain-aware**: `lib/wallets.ts`
    `chainAddParams` already maps 4663 via `robinhoodMainnet`; SIWE verify
    does not pin chainId (domain-bound only) — safe across flips.

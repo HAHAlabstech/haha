@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { encodeFunctionData, type Address } from "viem";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
-import { CheckCircle2, ArrowUpRight, Coins } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { tipJarAbi } from "@/lib/haha-contracts";
-import type { ChainEnv, HahaRuntimeConfig } from "@/lib/haha-chains";
+import type { HahaRuntimeConfig } from "@/lib/haha-chains";
 import {
   getChainId,
   getSharedWalletState,
@@ -22,6 +22,12 @@ interface RewardInfo {
   tipJar: string;
   chainId?: number;
   epochs?: number;
+  proofEpoch?: number;
+  activeEpoch?: number | null;
+  pendingEpoch?: number | null;
+  pendingEta?: number | null;
+  rootActive?: boolean;
+  claimReady?: boolean;
 }
 
 interface TipJarSummary {
@@ -67,12 +73,23 @@ export default function TipJarView() {
   );
   const [summary, setSummary] = useState<TipJarSummary | null>(null);
   const [reward, setReward] = useState<RewardInfo | null>(null);
+  const [rewardStatus, setRewardStatus] = useState<
+    "idle" | "loading" | "empty" | "error" | "ready"
+  >("idle");
+  const [rewardError, setRewardError] = useState<string | null>(null);
   const [recipientOverride, setRecipientOverride] = useState("");
   const [loading, setLoading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txStatus, setTxStatus] = useState<
+    "idle" | "pending" | "confirmed" | "reverted" | "unknown"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
   const [claimedMicro, setClaimedMicro] = useState<string | null>(null);
+  const [claimedStatus, setClaimedStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [claimedError, setClaimedError] = useState<string | null>(null);
 
   useEffect(() => {
     const st = getSharedWalletState();
@@ -120,39 +137,141 @@ export default function TipJarView() {
   }, []);
 
   const loadReward = useCallback(async () => {
-    if (!account) return;
+    if (!account) {
+      setReward(null);
+      setRewardStatus("idle");
+      return;
+    }
     setLoading(true);
-    setError(null);
+    setRewardStatus("loading");
+    setRewardError(null);
     try {
       const r = await fetch(
         `/api/rewards/me?account=${encodeURIComponent(account)}`,
+        { cache: "no-store" },
       );
+      if (r.status === 404) {
+        setReward(null);
+        setRewardStatus("empty");
+        return;
+      }
       if (!r.ok) {
         setReward(null);
+        setRewardError(`Reward service unavailable (${r.status}).`);
+        setRewardStatus("error");
         return;
       }
       const data = (await r.json()) as RewardInfo;
       setReward(data);
-    } catch {
+      setRewardStatus("ready");
+    } catch (e) {
       setReward(null);
+      setRewardError(
+        e instanceof Error ? e.message : "Reward service unavailable.",
+      );
+      setRewardStatus("error");
     } finally {
       setLoading(false);
     }
   }, [account]);
 
   useEffect(() => {
-    if (account) void loadReward();
+    if (account) {
+      void loadReward();
+    } else {
+      setReward(null);
+      setRewardStatus("idle");
+      setClaimedMicro(null);
+      setClaimedStatus("idle");
+    }
   }, [account, loadReward]);
+
+  const loadClaimed = useCallback(async () => {
+    if (!account || !reward) {
+      setClaimedMicro(null);
+      setClaimedStatus("idle");
+      setClaimedError(null);
+      return;
+    }
+    setClaimedStatus("loading");
+    setClaimedError(null);
+    try {
+      const activeProv = provider ?? (await resolveActiveProvider());
+      if (!activeProv) {
+        setClaimedMicro(null);
+        setClaimedStatus("error");
+        setClaimedError(
+          "No wallet provider is active in this browser. Reconnect to verify the on-chain amount.",
+        );
+        return;
+      }
+      if (!provider) setProvider(activeProv);
+      const data = encodeFunctionData({
+        abi: tipJarAbi,
+        functionName: "cumulativeClaimed",
+        args: [account as Address],
+      });
+      const res = (await activeProv.request({
+        method: "eth_call",
+        params: [{ to: reward.tipJar as Address, data }, "latest"],
+      })) as string;
+      if (typeof res === "string" && res.startsWith("0x")) {
+        setClaimedMicro(BigInt(res).toString());
+        setClaimedStatus("ready");
+      } else {
+        setClaimedMicro(null);
+        setClaimedStatus("error");
+        setClaimedError("The chain returned an unreadable claim status.");
+      }
+    } catch (e) {
+      setClaimedMicro(null);
+      setClaimedStatus("error");
+      setClaimedError(
+        e instanceof Error
+          ? e.message
+          : "Could not read on-chain claim status.",
+      );
+    }
+  }, [account, provider, reward]);
+
+  useEffect(() => {
+    void loadClaimed();
+  }, [loadClaimed]);
 
   const claim = useCallback(async () => {
     const activeProv = provider ?? (await resolveActiveProvider());
-    if (!activeProv || !account || !reward) return;
+    if (!activeProv) {
+      setError("Reconnect your wallet in this browser before claiming.");
+      setModalOpen(true);
+      return;
+    }
+    if (!account || !reward) {
+      setError("Connect a wallet with a reward allocation first.");
+      return;
+    }
+    if (reward.claimReady !== true) {
+      setError(
+        "This allocation is not claimable yet. Wait for its Merkle root to activate on-chain.",
+      );
+      return;
+    }
+    if (claimedMicro === null) {
+      setError(
+        "On-chain claim status is not verified yet. Retry verification before signing.",
+      );
+      return;
+    }
+    const cumulative = BigInt(reward.cumulativeMicroUsdg);
+    if (cumulative <= BigInt(claimedMicro)) {
+      setError("Nothing left to claim for this allocation.");
+      return;
+    }
+
     setClaiming(true);
     setError(null);
     setTxHash(null);
+    setTxStatus("idle");
     try {
-      const env: ChainEnv = runtime?.chainEnv ?? "testnet";
-      void env;
       const targetChain = reward.chainId || runtime?.chainId || 46_630;
       await switchOrAddChain(activeProv, targetChain);
 
@@ -162,8 +281,6 @@ export default function TipJarView() {
         throw new Error("Invalid alternate recipient address.");
       }
       const recipient = (cleanOverride || account) as Address;
-      const cumulative = BigInt(reward.cumulativeMicroUsdg);
-      if (cumulative <= 0n) throw new Error("Nothing to claim yet.");
       const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800);
 
       const nonceHex = (await activeProv.request({
@@ -248,50 +365,70 @@ export default function TipJarView() {
         params: [{ from: account, to: tipJar, data }],
       })) as string;
       setTxHash(hash);
+      setTxStatus("pending");
+
+      // Broadcast is not success. Wait for a receipt so the UI never calls a
+      // reverted claim "paid".
+      let receipt: { status?: string } | null = null;
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, 1500));
+        receipt = (await activeProv.request({
+          method: "eth_getTransactionReceipt",
+          params: [hash],
+        })) as { status?: string } | null;
+        if (receipt) break;
+      }
+      if (!receipt) {
+        setTxStatus("unknown");
+        setError(
+          "Transaction was submitted, but confirmation timed out. Check the explorer before retrying.",
+        );
+        return;
+      }
+      if (receipt.status === "0x1") {
+        setTxStatus("confirmed");
+        await loadClaimed();
+        await loadReward();
+      } else {
+        setTxStatus("reverted");
+        setError("The claim transaction reverted. No funds moved.");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Claim failed in wallet.");
     } finally {
       setClaiming(false);
     }
-  }, [account, contracts, provider, recipientOverride, reward, runtime]);
+  }, [
+    account,
+    claimedMicro,
+    contracts,
+    loadClaimed,
+    loadReward,
+    provider,
+    recipientOverride,
+    reward,
+    runtime,
+  ]);
 
-  useEffect(() => {
-    let cancelled = false;
-    if (!account || !reward) {
-      setClaimedMicro(null);
-      return;
-    }
-    (async () => {
-      try {
-        const activeProv = provider ?? (await resolveActiveProvider());
-        if (!activeProv) return;
-        const data = encodeFunctionData({
-          abi: tipJarAbi,
-          functionName: "cumulativeClaimed",
-          args: [account as Address],
-        });
-        const res = (await activeProv.request({
-          method: "eth_call",
-          params: [{ to: reward.tipJar as Address, data }, "latest"],
-        })) as string;
-        if (!cancelled && typeof res === "string" && res.startsWith("0x")) {
-          setClaimedMicro(BigInt(res).toString());
-        }
-      } catch {
-        if (!cancelled) setClaimedMicro(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [account, provider, reward]);
-
-  const cumulativeUsdg =
-    reward != null ? Number(BigInt(reward.cumulativeMicroUsdg)) / 1_000_000 : 0;
+  const cumulativeMicro = reward
+    ? BigInt(reward.cumulativeMicroUsdg || "0")
+    : 0n;
+  const claimedKnown = claimedMicro !== null;
+  const claimedValue = claimedKnown ? BigInt(claimedMicro ?? "0") : 0n;
+  const availableMicro =
+    reward && claimedKnown
+      ? cumulativeMicro > claimedValue
+        ? cumulativeMicro - claimedValue
+        : 0n
+      : null;
+  const cumulativeUsdg = Number(cumulativeMicro) / 1_000_000;
+  const claimedUsdg = Number(claimedValue) / 1_000_000;
+  const availableUsdg =
+    availableMicro !== null ? Number(availableMicro) / 1_000_000 : null;
   const fullyClaimed =
-    reward != null &&
-    claimedMicro !== null &&
-    BigInt(claimedMicro) >= BigInt(reward.cumulativeMicroUsdg || "0");
+    reward != null && claimedKnown && cumulativeMicro <= claimedValue;
+  const walletReady = Boolean(provider);
+  const claimReady = reward?.claimReady === true;
   const inEscrowUsdg = fmtUsdg(summary?.escrow?.tipJar?.microUsdg);
   const paidOutUsdg = fmtUsdg(summary?.totalPaidOutMicroUsdg);
   const micDropUsdg = fmtUsdg(summary?.escrow?.micDrop?.microUsdg);
@@ -306,9 +443,10 @@ export default function TipJarView() {
             Trading fees pay the humans who <em>beat AI.</em>
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-            70% of creator fees and producer revenues flow into{" "}
-            <code className="font-mono text-xs text-white">TipJar.sol</code>{" "}
-            and are settled daily via cumulative Merkle trees — 80% to winning
+            70% of creator fees and 30% of producer revenue (plus a separate
+            10% contributor royalty) flow into{" "}
+            <code className="font-mono text-xs text-white">TipJar.sol</code>.
+            Payouts settle daily via cumulative Merkle trees — 80% to winning
             comedians, 20% to consensus Crowd jurors. Claim any time in a single
             transaction.
           </p>
@@ -377,24 +515,113 @@ export default function TipJarView() {
                   ↻ Refresh Proof
                 </button>
               </div>
-              {loading ? (
+              {loading ||
+              rewardStatus === "loading" ||
+              rewardStatus === "idle" ? (
                 <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
                   Querying cumulative Merkle tree…
                 </p>
-              ) : reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n ? (
+              ) : rewardStatus === "error" ? (
+                <div className="space-y-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">
+                    Rewards unavailable
+                  </p>
+                  <p className="text-sm leading-relaxed text-zinc-300">
+                    {rewardError ??
+                      "We could not load your allocation. This is not the same as having no rewards."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void loadReward()}
+                    className="pill-btn hot"
+                  >
+                    Retry reward lookup →
+                  </button>
+                </div>
+              ) : rewardStatus === "empty" || !reward ? (
+                <p className="text-sm leading-relaxed text-zinc-400">
+                  No reward allocation exists for this wallet yet. Verified
+                  stumpers and consensus Crowd votes create one after a settled
+                  epoch; a verdict alone is not a balance.
+                </p>
+              ) : (
                 <div className="space-y-5 pt-2">
-                  <div>
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
-                      Lifetime Cumulative Allocation
-                    </span>
-                    <p className="display-serif mt-1 text-5xl text-white tabular-nums">
-                      +${cumulativeUsdg.toFixed(2)}{" "}
-                      <span className="font-mono text-sm uppercase tracking-widest text-zinc-400">
-                        USDG ({reward.epochs ?? 1} epoch
-                        {(reward.epochs ?? 1) === 1 ? "" : "s"})
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div>
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
+                        Lifetime Allocation
                       </span>
-                    </p>
+                      <p className="display-serif mt-1 text-3xl text-white tabular-nums">
+                        ${cumulativeUsdg.toFixed(2)}
+                      </p>
+                      <span className="font-mono text-[10px] text-zinc-500">
+                        {reward.epochs ?? 1} epoch
+                        {(reward.epochs ?? 1) === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                        Already Claimed
+                      </span>
+                      <p className="display-serif mt-1 text-3xl text-zinc-300 tabular-nums">
+                        {claimedKnown ? `$${claimedUsdg.toFixed(2)}` : "—"}
+                      </p>
+                      <span className="font-mono text-[10px] text-zinc-500">
+                        {claimedStatus === "loading"
+                          ? "Checking on-chain…"
+                          : claimedStatus === "error"
+                            ? "Unverified"
+                            : "On-chain"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
+                        Available to Claim
+                      </span>
+                      <p className="display-serif mt-1 text-3xl text-[#ffc53d] tabular-nums">
+                        {availableUsdg !== null
+                          ? `$${availableUsdg.toFixed(2)}`
+                          : "—"}
+                      </p>
+                      <span className="font-mono text-[10px] text-zinc-500">
+                        {claimedStatus === "loading"
+                          ? "Verifying…"
+                          : "Cumulative delta"}
+                      </span>
+                    </div>
                   </div>
+
+                  {!walletReady ? (
+                    <div className="rounded-xl border border-[#ffc53d]/30 bg-[#ffc53d]/10 p-4">
+                      <p className="text-sm leading-relaxed text-zinc-200">
+                        This browser remembers the wallet address, but no wallet
+                        provider is active. We will not show a claim as
+                        successful without a signer.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setModalOpen(true)}
+                        className="pill-btn hot mt-3"
+                      >
+                        Reconnect Wallet →
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {claimedStatus === "error" ? (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <p className="font-mono text-xs text-rose-300">
+                        {claimedError ?? "Could not verify on-chain claim status."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => void loadClaimed()}
+                        className="pill-btn"
+                      >
+                        Retry verification →
+                      </button>
+                    </div>
+                  ) : null}
 
                   {fullyClaimed ? (
                     <div className="space-y-2">
@@ -406,7 +633,7 @@ export default function TipJarView() {
                         minutes later).
                       </p>
                     </div>
-                  ) : (
+                  ) : claimReady ? (
                     <>
                       <div className="max-w-lg">
                         <label
@@ -428,36 +655,83 @@ export default function TipJarView() {
                       <button
                         type="button"
                         onClick={() => void claim()}
-                        disabled={claiming}
-                        className="pill-btn hot disabled:opacity-50 cursor-pointer"
+                        disabled={
+                          claiming ||
+                          !walletReady ||
+                          claimedStatus !== "ready" ||
+                          availableMicro === null ||
+                          availableMicro <= 0n
+                        }
+                        className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                         style={{ padding: "14px 28px", fontSize: "12px" }}
                       >
                         <span>
                           {claiming
                             ? "Signing EIP-712 & claiming…"
-                            : recipientOverride.trim()
-                              ? "Claim to Destination Wallet →"
-                              : "Claim USDG to This Wallet →"}
+                            : claimedStatus !== "ready"
+                              ? "Verify on-chain claim status first"
+                              : recipientOverride.trim()
+                                ? `Claim $${(availableUsdg ?? 0).toFixed(2)} to Destination →`
+                                : `Claim $${(availableUsdg ?? 0).toFixed(2)} USDG →`}
                         </span>
                       </button>
                     </>
+                  ) : (
+                    <div className="rounded-xl border border-white/10 bg-[#070709] p-4">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
+                        Waiting for on-chain activation
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+                        {reward.activeEpoch == null
+                          ? "The on-chain root state is unavailable right now. Retry before trusting any claim state."
+                          : reward.pendingEpoch
+                            ? `A new root (#${reward.pendingEpoch}) is staged but not active yet.`
+                            : reward.rootActive === false
+                              ? "No Merkle root is active yet."
+                              : `Your proof is from epoch #${reward.proofEpoch ?? "?"}; the active root is epoch #${reward.activeEpoch}.`}
+                        {" "}The claim button appears only when the proof's root
+                        is active.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => void loadReward()}
+                        className="pill-btn mt-3"
+                      >
+                        ↻ Refresh proof &amp; root
+                      </button>
+                    </div>
                   )}
 
                   {txHash ? (
-                    <p
-                      className="font-mono text-xs text-[#ffc53d]"
+                    <div
+                      className="rounded-xl border border-[#ffc53d]/30 bg-[#ffc53d]/10 p-4"
                       role="status"
                     >
-                      Claim transaction broadcast: {txHash}
-                    </p>
+                      <p className="font-mono text-xs text-[#ffc53d]">
+                        {txStatus === "confirmed"
+                          ? "Claim confirmed on-chain."
+                          : txStatus === "reverted"
+                            ? "Claim reverted — no funds moved."
+                            : txStatus === "unknown"
+                              ? "Claim submitted; confirmation still pending."
+                              : "Claim submitted — waiting for confirmation…"}
+                      </p>
+                      <a
+                        href={
+                          runtime?.explorerUrl
+                            ? `${runtime.explorerUrl.replace(/\/+$/, "")}/tx/${txHash}`
+                            : undefined
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-zinc-300 underline"
+                      >
+                        {txHash.slice(0, 14)}…{txHash.slice(-8)}
+                        <ArrowUpRight className="h-3 w-3" />
+                      </a>
+                    </div>
                   ) : null}
                 </div>
-              ) : (
-                <p className="text-sm leading-relaxed text-zinc-400">
-                  No claimable rewards yet. Verified stumpers and consensus
-                  Crowd votes in a settled epoch automatically appear here with
-                  their Merkle proof.
-                </p>
               )}
               {error ? (
                 <p

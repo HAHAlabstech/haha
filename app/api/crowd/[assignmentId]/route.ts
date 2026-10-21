@@ -16,6 +16,15 @@ const MAX_BODY_BYTES = 64 * 1024;
 const VOTES_TO_DECIDE = 5;
 const EXTENSION_VOTES = 2;
 
+// Canonical Crowd daily ballot quota per tier (plan §4.2). Enforced here so
+// a browser cannot bypass the UI by replaying POSTs with a valid session.
+const CROWD_DAILY_QUOTA: Record<string, number> = {
+  walk_in: 15,
+  regular: 30,
+  front_row: 50,
+  critic: 80,
+};
+
 // POST /api/crowd/[assignmentId] {wallet, vote: A|B|both_right|both_wrong, fairness: fair|unfair}
 // Canonical tally (plan §4.4, mirrors worker/lib/quorum.js): both_right counts
 // for AI ONLY, win = comedian/total; thin zones expand to 7 before final.
@@ -66,7 +75,14 @@ export async function POST(
     const assignment = await prisma.crowdAssignment.findUnique({
       where: { id: assignmentId },
       include: {
-        juror: { select: { id: true, wallet: true, crowd_tier: true } },
+        juror: {
+          select: {
+            id: true,
+            wallet: true,
+            crowd_tier: true,
+            onboarding_passed: true,
+          },
+        },
         bit: {
           select: {
             id: true,
@@ -92,6 +108,26 @@ export async function POST(
     if (assignment.vote != null) return bad("already voted", 409);
     if (assignment.expires_at.getTime() < Date.now()) {
       return bad("assignment expired", 410);
+    }
+    if (!assignment.juror.onboarding_passed) {
+      return bad("calibration required before voting", 403);
+    }
+    if (assignment.bit.user_id === assignment.juror.id) {
+      return bad("you cannot vote on your own bit", 403);
+    }
+
+    const startOfUtcDay = new Date();
+    startOfUtcDay.setUTCHours(0, 0, 0, 0);
+    const votesToday = await prisma.crowdAssignment.count({
+      where: {
+        juror_id: assignment.juror.id,
+        is_plant: false,
+        voted_at: { gte: startOfUtcDay },
+      },
+    });
+    const quota = CROWD_DAILY_QUOTA[assignment.juror.crowd_tier] ?? 15;
+    if (votesToday >= quota) {
+      return bad(`daily ballot quota reached (${quota})`, 429);
     }
 
     const weight = TIER_WEIGHT[assignment.juror.crowd_tier] ?? 1.0;

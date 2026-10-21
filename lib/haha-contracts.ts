@@ -182,6 +182,27 @@ export const tipJarAbi = [
   },
   {
     type: "function",
+    name: "pendingEpoch",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "pendingEta",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "rootDelay",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
     name: "proposeRoot",
     stateMutability: "nonpayable",
     inputs: [

@@ -24,6 +24,7 @@ export async function GET(req: Request) {
   try {
     const prisma = getPrisma();
     let status: { onboarded: boolean; crowd_tier: string | null } | null = null;
+    let authenticated = false;
     const wallet = (new URL(req.url).searchParams.get("wallet") ?? "")
       .toLowerCase()
       .trim();
@@ -31,6 +32,7 @@ export async function GET(req: Request) {
       const gate = await requireWalletSession(req, prisma, wallet).catch(
         () => ({ ok: false } as const),
       );
+      authenticated = gate.ok;
       if (gate.ok) {
         const u = await prisma.user.findUnique({
           where: { wallet },
@@ -56,7 +58,7 @@ export async function GET(req: Request) {
       },
     });
     return NextResponse.json(
-      { items: bank, status },
+      { items: bank, status, authenticated },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {

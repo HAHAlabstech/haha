@@ -27,13 +27,20 @@ export async function GET(
     if (!bit) {
       return NextResponse.json({ error: "bit not found" }, { status: 404 });
     }
+    // Progress belongs to the ACTIVE round. A retrial must never show
+    // round-1 votes under a round-2 denominator.
+    const activeRound = Math.max(1, bit.retrial_round || 1);
     const [votes, assignedCount] = await Promise.all([
       prisma.crowdAssignment.findMany({
-        where: { bit_id: id, vote: { not: null } },
+        where: {
+          bit_id: id,
+          round: activeRound,
+          vote: { not: null },
+        },
         select: { vote: true, fairness: true, vote_weight: true, round: true },
       }),
       prisma.crowdAssignment.count({
-        where: { bit_id: id },
+        where: { bit_id: id, round: activeRound },
       }),
     ]);
     const byChoice: Record<string, number> = {
@@ -84,7 +91,7 @@ export async function GET(
         crowd: {
           assigned: Math.max(5, assignedCount),
           voted: votes.length,
-          round: Math.max(1, bit.retrial_round || 1),
+          round: activeRound,
         },
         votes: {
           count: votes.length,

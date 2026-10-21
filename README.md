@@ -77,7 +77,9 @@ print/commit). ChainId jawab `0xb626`.
 
 ## DILARANG
 
-- broadcast mainnet tanpa lulus `docs/MAINNET-HANDOFF.md` §2 — Test 8
-  (escrow `claimToken` mismatch) masih OPEN.
+- broadcast mainnet tanpa lulus `docs/MAINNET-HANDOFF.md` §2. Gate
+  `claimToken` sudah diperbaiki (view-only + selector scan), tetapi deploy
+  nyata tetap menunggu audit/legal/sanctions/geo dan verifikasi escrow
+  upstream. Tidak ada broadcast dalam sesi ini.
 - commit `.env*`, `next-env.d.ts`, gambar hasil QA di root repo.
 - membangun Merkle tree manual untuk klaim (punya server yang menulis).

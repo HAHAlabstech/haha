@@ -58,6 +58,10 @@ export default function CrowdView() {
   const [modalOpen, setModalOpen] = useState(false);
   const [stakeInfo, setStakeInfo] = useState<StakeCheckInfo | null>(null);
   const [assignment, setAssignment] = useState<AssignmentPayload | null>(null);
+  const [queueState, setQueueState] = useState<
+    "idle" | "loading" | "ready" | "empty" | "error" | "locked"
+  >("idle");
+  const [queueError, setQueueError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedVote, setSelectedVote] = useState<VoteOpt | null>(null);
   const [selectedFair, setSelectedFair] = useState<FairOpt | null>(null);
@@ -74,24 +78,61 @@ export default function CrowdView() {
   const loadQueue = useCallback(async (wallet: string) => {
     setLoading(true);
     setError(null);
+    setQueueError(null);
+    setQueueState("loading");
     try {
-      const [scRes, nextRes] = await Promise.all([
-        fetch(`/api/crowd/stake-check?wallet=${encodeURIComponent(wallet)}`),
-        fetch(`/api/crowd/next?wallet=${encodeURIComponent(wallet)}`),
-      ]);
+      const scRes = await fetch(
+        `/api/crowd/stake-check?wallet=${encodeURIComponent(wallet)}`,
+        { cache: "no-store" },
+      );
+      let standing: StakeCheckInfo | null = null;
       if (scRes.ok) {
-        setStakeInfo((await scRes.json()) as StakeCheckInfo);
-      }
-      if (nextRes.ok) {
-        const a = (await nextRes.json()) as AssignmentPayload;
-        setAssignment(a);
-        setSelectedVote(null);
-        setSelectedFair(null);
+        standing = (await scRes.json()) as StakeCheckInfo;
+        setStakeInfo(standing);
       } else {
+        setStakeInfo(null);
         setAssignment(null);
+        setQueueError("Could not verify your juror standing.");
+        setQueueState("error");
+        return;
       }
-    } catch {
+
+      // Never draw a ballot for an uncalibrated or unrecognized juror.
+      if (standing.onboarding_passed !== true) {
+        setAssignment(null);
+        setQueueState("locked");
+        return;
+      }
+
+      const nextRes = await fetch(
+        `/api/crowd/next?wallet=${encodeURIComponent(wallet)}`,
+        { cache: "no-store" },
+      );
+      if (nextRes.status === 404) {
+        setAssignment(null);
+        setQueueState("empty");
+        return;
+      }
+      if (!nextRes.ok) {
+        const data = (await nextRes.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        setAssignment(null);
+        setQueueError(data.error ?? `Jury queue unavailable (${nextRes.status}).`);
+        setQueueState("error");
+        return;
+      }
+      const a = (await nextRes.json()) as AssignmentPayload;
+      setAssignment(a);
+      setSelectedVote(null);
+      setSelectedFair(null);
+      setQueueState("ready");
+    } catch (e) {
       setAssignment(null);
+      setQueueError(
+        e instanceof Error ? e.message : "Jury queue unavailable.",
+      );
+      setQueueState("error");
     } finally {
       setLoading(false);
     }
@@ -179,16 +220,26 @@ export default function CrowdView() {
           </div>
           <div>
             <dt>Crowd Tier</dt>
-            <dd className="uppercase">{stakeInfo?.crowd_tier ?? "walk_in"}</dd>
+            <dd className="uppercase">
+              {account ? (stakeInfo?.crowd_tier ?? "checking…") : "—"}
+            </dd>
           </div>
           <div>
-            <dt>Gate Mode</dt>
-            <dd className="uppercase">{stakeInfo?.mode ?? "allowlist"}</dd>
+            <dt>Access</dt>
+            <dd>
+              {account && stakeInfo
+                ? stakeInfo.mode === "staked"
+                  ? "Staked $HAHA"
+                  : "Calibration + allowlist"
+                : "—"}
+            </dd>
           </div>
           <div>
             <dt>Calibration</dt>
             <dd>
-              {stakeInfo?.onboarding_passed ? (
+              {!account ? (
+                <span className="font-mono text-xs text-zinc-400">—</span>
+              ) : stakeInfo?.onboarding_passed ? (
                 <span className="text-[#ffc53d] font-mono text-xs">
                   Passed (8+/10)
                 </span>
@@ -210,7 +261,8 @@ export default function CrowdView() {
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-300">
                   Pass the 10-case blind quiz (8/10 required, ~5 minutes, retakes
-                  allowed) to unlock juror ballots and earn 20% of the tip pool.
+                  allowed) to unlock juror ballots and share in the 20% juror
+                  pool when the Crowd reaches consensus.
                 </p>
               </div>
               <Link
@@ -252,7 +304,7 @@ export default function CrowdView() {
                 <span>Connect Wallet →</span>
               </button>
             </div>
-          ) : loading ? (
+          ) : loading || queueState === "idle" ? (
             <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
               Scanning blind juror queue…
             </p>
@@ -351,30 +403,67 @@ export default function CrowdView() {
                 </span>
               </button>
             </div>
+          ) : queueState === "error" ? (
+            <div className="space-y-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">
+                Jury queue unavailable
+              </p>
+              <p className="text-base text-zinc-300">
+                {queueError ??
+                  "We could not load the jury queue. This is not an empty queue."}
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => void loadQueue(account)}
+                  className="pill-btn hot cursor-pointer"
+                >
+                  <span>Retry Queue →</span>
+                </button>
+                <Link href="/crowd/join" className="pill-btn">
+                  <span>Review Calibration</span>
+                </Link>
+              </div>
+            </div>
+          ) : queueState === "locked" ? (
+            <div className="space-y-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
+                Calibration required
+              </p>
+              <p className="text-base text-zinc-300">
+                Pass the 10-case calibration quiz and save it to this wallet
+                before drawing blind ballots.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link href="/crowd/join" className="pill-btn hot">
+                  <span>Start Calibration Quiz →</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void loadQueue(account)}
+                  className="pill-btn cursor-pointer"
+                >
+                  <span>↻ Check Again</span>
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-3">
-              {stakeInfo?.onboarding_passed ? (
-                <p className="text-base text-zinc-300">
-                  You&apos;re all set — no cases waiting right now. Fresh blind
-                  ballots land as comedians submit; check back in a few minutes.
-                </p>
-              ) : (
-                <p className="text-base text-zinc-300">
-                  Complete the calibration quiz above to unlock juror ballots.
-                  New cases land as comedians submit — check back in a few
-                  minutes.
-                </p>
-              )}
+              <p className="text-base text-zinc-300">
+                {stakeInfo?.onboarding_passed
+                  ? "You're all set — no cases waiting right now. Fresh blind ballots land as comedians submit; check back in a few minutes."
+                  : "Complete the calibration quiz above to unlock juror ballots."}
+              </p>
               <div className="flex flex-wrap gap-3 pt-2">
                 {stakeInfo?.onboarding_passed === true ? (
                   <Link href="/crowd/join" className="pill-btn cursor-pointer">
                     <span>Review Calibration Quiz →</span>
                   </Link>
-                ) : !stakeInfo ? (
+                ) : (
                   <Link href="/crowd/join" className="pill-btn hot">
                     <span>Start Calibration Quiz →</span>
                   </Link>
-                ) : null}
+                )}
                 <button
                   type="button"
                   onClick={() => void loadQueue(account)}

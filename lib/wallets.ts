@@ -483,7 +483,15 @@ export function authHeaders(
   token?: string | null,
 ): Record<string, string> {
   const t = token ?? getSharedWalletState().sessionToken;
-  return t ? { "x-haha-session": t } : {};
+  if (!t) return {};
+  // Never shadow a valid HttpOnly cookie with a stale localStorage token:
+  // the server prioritizes the explicit header and would return 401.
+  const parts = t.split(".");
+  const expiresAt = parts.length === 4 ? Number(parts[2]) : NaN;
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now() + 30_000) {
+    return {};
+  }
+  return { "x-haha-session": t };
 }
 
 /**

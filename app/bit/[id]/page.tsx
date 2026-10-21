@@ -34,6 +34,7 @@ interface BitPayload {
     answer: string;
     explanation: string;
   } | null;
+  has_reveal?: boolean;
   outcome?: {
     result: string;
     comedian_votes: number;
@@ -69,6 +70,8 @@ function stageIndexForStatus(status?: string): number {
     case "bombed":
     case "heckled_off":
       return 3;
+    case "rejected_prescreen":
+      return -1;
     default:
       return 0;
   }
@@ -82,7 +85,10 @@ export default function BitPage({
   const { id } = use(params);
   const [bit, setBit] = useState<BitPayload | null>(null);
   const [loading, setLoading] = useState(true);
-  const [, setAccount] = useState<string | null>(null);
+  const [loadState, setLoadState] = useState<
+    "loading" | "ready" | "missing" | "error"
+  >("loading");
+  const [account, setAccount] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const [missedMode, setMissedMode] = useState(false);
@@ -109,12 +115,23 @@ export default function BitPage({
 
   const loadBit = useCallback(async () => {
     try {
-      const res = await fetch(`/api/bits/${encodeURIComponent(id)}`);
-      if (!res.ok) return;
+      const res = await fetch(`/api/bits/${encodeURIComponent(id)}`, {
+        cache: "no-store",
+      });
+      if (res.status === 404) {
+        setBit(null);
+        setLoadState("missing");
+        return;
+      }
+      if (!res.ok) {
+        setLoadState((previous) => (previous === "ready" ? previous : "error"));
+        return;
+      }
       const data = (await res.json()) as BitPayload;
       setBit(data);
+      setLoadState("ready");
     } catch {
-      // ignore transient errors
+      setLoadState((previous) => (previous === "ready" ? previous : "error"));
     } finally {
       setLoading(false);
     }
@@ -123,9 +140,12 @@ export default function BitPage({
   useEffect(() => {
     void loadBit();
     const timer = window.setInterval(() => {
+      // Keep polling through `answered` until the Straight Man answer exists:
+      // prescreen writes `answered` before the straightman job stores output.
       if (
         !bit ||
         bit.status === "screening" ||
+        (bit.status === "answered" && !bit.ai_answer) ||
         bit.status === "in_crowd" ||
         bit.status === "disputed"
       ) {
@@ -261,7 +281,22 @@ export default function BitPage({
   }
 
   const currentStage = stageIndexForStatus(bit?.status);
-  const canVerdict = bit?.status === "answered";
+  const isAuthor = Boolean(
+    account &&
+      bit?.user?.wallet &&
+      account.toLowerCase() === bit.user.wallet.toLowerCase(),
+  );
+  const hasAiAnswer = Boolean(bit?.ai_answer);
+  const canVerdict =
+    isAuthor && bit?.status === "answered" && hasAiAnswer;
+  const revealLocked = Boolean(bit?.has_reveal) && !bit?.comedian_reveal;
+  const selfConceded = bit?.status === "bombed" && !bit?.outcome;
+  const hasCrowdVerdict = Boolean(bit?.outcome);
+  const canAppeal =
+    isAuthor &&
+    hasCrowdVerdict &&
+    (bit?.status === "bombed" || bit?.status === "heckled_off") &&
+    (bit.retrial_round ?? 0) < 2;
   const votedCount = bit?.crowd?.voted ?? bit?.outcome?.juror_count ?? 0;
   const assignedCount = Math.max(5, bit?.crowd?.assigned ?? 5);
   const progressPct = Math.min(
@@ -271,6 +306,73 @@ export default function BitPage({
   const confPct = bit?.ai_answer
     ? Math.round((bit.ai_answer.confidence ?? 0.96) * 100)
     : 97;
+
+  if (loading && !bit) {
+    return (
+      <div className="relative min-h-screen bg-[#070709] text-white">
+        <div className="mx-auto max-w-[860px] px-6 pt-32">
+          <Card>
+            <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+              Loading bit dossier…
+            </p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadState === "missing") {
+    return (
+      <div className="relative min-h-screen bg-[#070709] text-white">
+        <div className="mx-auto max-w-[860px] px-6 pt-32 pb-16 space-y-6">
+          <p className="eyebrow">Bit Dossier</p>
+          <h1 className="display-serif text-5xl text-white">
+            This bit <em>does not exist.</em>
+          </h1>
+          <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
+            The link may be mistyped, or the bit may have been removed. Nothing
+            is processing under this ID.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/app?tab=stage" className="pill-btn hot">
+              Take the Stage →
+            </Link>
+            <Link href="/app?tab=crowd" className="pill-btn">
+              Judge in the Crowd →
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadState === "error" && !bit) {
+    return (
+      <div className="relative min-h-screen bg-[#070709] text-white">
+        <div className="mx-auto max-w-[860px] px-6 pt-32 pb-16 space-y-6">
+          <p className="eyebrow">Bit Dossier</p>
+          <h1 className="display-serif text-5xl text-white">
+            We could not <em>load this bit.</em>
+          </h1>
+          <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
+            This is a connection problem, not a missing bit. Retry before
+            assuming anything about its status.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              setLoadState("loading");
+              void loadBit();
+            }}
+            className="pill-btn hot"
+          >
+            Retry loading →
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-[#070709] text-white selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-clip">
@@ -330,6 +432,51 @@ export default function BitPage({
               Fresh seats re-judged this bit after the Round 1 verdict was appealed
             </span>
           </div>
+        ) : null}
+
+        {bit?.status === "rejected_prescreen" ? (
+          <section aria-label="Prescreen result">
+            <Card hot>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">
+                Bit not accepted · prescreen
+              </p>
+              {bit.reject_reason === "crisis_support" ? (
+                <div className="mt-3 space-y-2 text-sm leading-relaxed text-zinc-300">
+                  <p className="font-semibold text-white">
+                    You are not alone. This bit was not sent to the Stage.
+                  </p>
+                  <p>
+                    If you or someone you know is going through a difficult
+                    time or having thoughts of self-harm, free confidential
+                    support is available right now: call or text{" "}
+                    <span className="font-mono font-semibold text-white">
+                      988
+                    </span>{" "}
+                    (US &amp; Canada) or visit{" "}
+                    <a
+                      href="https://findahelpline.com"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline"
+                    >
+                      findahelpline.com
+                    </a>{" "}
+                    worldwide.
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                  {bit.reject_reason
+                    ? `Reason: ${bit.reject_reason.replace(/_/g, " ")}.`
+                    : "The prescreen could not accept this bit."}{" "}
+                  Nothing was sent to the Crowd and no reward was created.
+                </p>
+              )}
+              <Link href="/app?tab=stage" className="pill-btn hot mt-5">
+                Write another bit →
+              </Link>
+            </Card>
+          </section>
         ) : null}
 
         {/* 3-Screen Stage / Straight Man / Crowd Flow */}
@@ -402,12 +549,23 @@ export default function BitPage({
                     {bit.comedian_reveal.explanation}
                   </p>
                 </div>
+              ) : revealLocked ? (
+                <p className="text-sm text-zinc-400">
+                  Reveal locked. Waiting for the blind Crowd to finish
+                  judging.
+                </p>
+              ) : bit?.status === "answered" && hasAiAnswer ? (
+                <p className="text-sm text-zinc-400">
+                  Waiting for the performer&apos;s call. The reveal stays
+                  hidden until the Crowd needs it.
+                </p>
               ) : (
                 <p className="text-sm text-zinc-400">
-                  Awaiting comedian reveal or verdict below.
+                  No reveal has been sent yet.
                 </p>
               )}
 
+              {!selfConceded && bit?.status !== "rejected_prescreen" ? (
               <div className="space-y-2.5 pt-3">
                 <div className="confidence">
                   <span>Quorum Progress</span>
@@ -436,13 +594,25 @@ export default function BitPage({
                 {bit?.outcome ? (
                   <p className="text-xs leading-relaxed text-zinc-400">
                     {bit.outcome.result === "killed_it"
-                      ? "Payouts settle daily at 00:00 UTC — once the new epoch activates (~10 min later), claim from Tip Jar in one transaction."
+                      ? "This is a Crowd verdict, not a paid balance yet. Rewards settle at 00:00 UTC; check Tip Jar after the new root activates."
                       : (bit.retrial_round ?? 0) < 2
-                        ? "You can file one Round-2 appeal below — a fresh jury re-judges this bit."
-                        : "Final verdict after Round 2. Write a new bit to try again."}
+                        ? "This is a Crowd verdict. If you disagree, you can file one Round-2 appeal below."
+                        : "Final verdict after Round 2. No further appeal is available for this bit."}
+                  </p>
+                ) : selfConceded ? (
+                  <p className="text-xs leading-relaxed text-zinc-400">
+                    You conceded that the Straight Man understood. No Crowd
+                    vote was held, so there is nothing to appeal and no reward
+                    from this bit.
+                  </p>
+                ) : bit?.status === "disputed" || bit?.status === "in_crowd" ? (
+                  <p className="text-xs leading-relaxed text-zinc-400">
+                    A blind Crowd is judging. Five votes decide; a thin result
+                    expands to seven. You do not need to keep this tab open.
                   </p>
                 ) : null}
               </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -478,88 +648,196 @@ export default function BitPage({
           </section>
         ) : null}
 
-        {/* Verdict Action Panel */}
-        <section aria-label="Verdict">
+        {/* Next action — exactly one primary action for this state. */}
+        <section aria-label="Next action">
           <SectionTitle
-            eyebrow="Comedian Call"
-            hint="Available once the Straight Man answers"
+            eyebrow="Next step"
+            hint={
+              canVerdict
+                ? "Your call as the performer"
+                : "The page updates automatically"
+            }
           >
-            Did the Straight Man <em>get the joke?</em>
+            {canVerdict ? (
+              <>
+                Did the Straight Man <em>get the joke?</em>
+              </>
+            ) : hasCrowdVerdict ? (
+              <>
+                The Crowd has <em>decided.</em>
+              </>
+            ) : (
+              <>
+                What happens <em>next.</em>
+              </>
+            )}
           </SectionTitle>
-          <Card hot={canVerdict}>
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                disabled={!canVerdict || submittingVerdict}
-                onClick={() => void submitVerdict("got_it")}
-                className="pill-btn disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-1.5"
-              >
-                <Bot className="w-3.5 h-3.5 text-zinc-400" />
-                <span>Got it (AI Understood)</span>
-              </button>
-              <button
-                type="button"
-                disabled={!canVerdict || submittingVerdict}
-                onClick={() => setMissedMode((v) => !v)}
-                className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-1.5"
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span>Missed it (Send to Crowd)</span>
-              </button>
-            </div>
 
-            {missedMode && canVerdict ? (
-              <div className="mt-6 space-y-4 border-t border-white/10 pt-5">
-                <div>
-                  <label className="font-mono text-xs uppercase tracking-widest text-[#ffc53d]">
-                    Your Real Answer / Punchline (max 200 chars)
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={200}
-                    value={revealAnswer}
-                    onChange={(e) => setRevealAnswer(e.target.value)}
-                    placeholder="What was the real punchline, subtext, or outcome?"
-                    className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white placeholder:text-zinc-500 focus:border-[#ffc53d] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="font-mono text-xs uppercase tracking-widest text-[#ffc53d]">
-                    Why the Straight Man Missed It (max 400 chars)
-                  </label>
-                  <textarea
-                    rows={3}
-                    maxLength={400}
-                    value={revealExplanation}
-                    onChange={(e) => setRevealExplanation(e.target.value)}
-                    placeholder="Explain it clearly for the blind Crowd jury…"
-                    className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white placeholder:text-zinc-500 focus:border-[#ffc53d] focus:outline-none"
-                  />
-                </div>
+          {bit?.status === "screening" ||
+          (bit?.status === "answered" && !hasAiAnswer) ? (
+            <Card hot>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
+                Straight Man is working
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                The bit passed prescreen. Its literal answer is still being
+                written and stored. This page will keep checking; you do not
+                need to reload.
+              </p>
+            </Card>
+          ) : null}
+
+          {canVerdict ? (
+            <Card hot>
+              <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
-                  disabled={
-                    submittingVerdict ||
-                    !revealAnswer.trim() ||
-                    !revealExplanation.trim()
-                  }
-                  onClick={() => void submitVerdict("missed_it")}
-                  className="pill-btn hot disabled:opacity-40"
+                  disabled={submittingVerdict}
+                  onClick={() => void submitVerdict("got_it")}
+                  className="pill-btn disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-1.5"
                 >
-                  <span>
-                    {submittingVerdict
-                      ? "Locking reveal & assigning Crowd…"
-                      : "Lock Reveal & Send to Crowd →"}
-                  </span>
+                  <Bot className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Got it (AI Understood)</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={submittingVerdict}
+                  onClick={() => setMissedMode((v) => !v)}
+                  className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-1.5"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Missed it (Send to Crowd)</span>
                 </button>
               </div>
-            ) : null}
 
-            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500">
-              “Missed it” locks your reveal and dispatches the bit to a blind
-              human Crowd quorum.
-            </p>
-          </Card>
+              {missedMode ? (
+                <div className="mt-6 space-y-4 border-t border-white/10 pt-5">
+                  <div>
+                    <label
+                      htmlFor="reveal-answer"
+                      className="font-mono text-xs uppercase tracking-widest text-[#ffc53d]"
+                    >
+                      Your Real Answer / Punchline (max 200 chars)
+                    </label>
+                    <input
+                      id="reveal-answer"
+                      type="text"
+                      maxLength={200}
+                      value={revealAnswer}
+                      onChange={(e) => setRevealAnswer(e.target.value)}
+                      placeholder="What was the real punchline, subtext, or outcome?"
+                      className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white placeholder:text-zinc-500 focus:border-[#ffc53d] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="reveal-explanation"
+                      className="font-mono text-xs uppercase tracking-widest text-[#ffc53d]"
+                    >
+                      Why the Straight Man Missed It (max 400 chars)
+                    </label>
+                    <textarea
+                      id="reveal-explanation"
+                      rows={3}
+                      maxLength={400}
+                      value={revealExplanation}
+                      onChange={(e) => setRevealExplanation(e.target.value)}
+                      placeholder="Explain it clearly for the blind Crowd jury…"
+                      className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white placeholder:text-zinc-500 focus:border-[#ffc53d] focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    disabled={
+                      submittingVerdict ||
+                      !revealAnswer.trim() ||
+                      !revealExplanation.trim()
+                    }
+                    onClick={() => void submitVerdict("missed_it")}
+                    className="pill-btn hot disabled:opacity-40"
+                  >
+                    <span>
+                      {submittingVerdict
+                        ? "Locking reveal & assigning Crowd…"
+                        : "Lock Reveal & Send to Crowd →"}
+                    </span>
+                  </button>
+                </div>
+              ) : null}
+
+              <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500">
+                “Missed it” locks your reveal and dispatches the bit to a blind
+                human Crowd quorum. “Got it” closes it with no Crowd vote.
+              </p>
+            </Card>
+          ) : null}
+
+          {bit?.status === "answered" && hasAiAnswer && !isAuthor ? (
+            <Card>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
+                Spectator view
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                Only the performer can decide whether the Straight Man
+                understood. The reveal and Crowd ballot stay hidden.
+              </p>
+            </Card>
+          ) : null}
+
+          {(revealLocked ||
+            bit?.status === "disputed" ||
+            bit?.status === "in_crowd") &&
+          !hasCrowdVerdict ? (
+            <Card hot>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
+                Waiting for the Crowd
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                Your reveal is locked. Five blind jurors decide; a thin result
+                expands to seven. You can close this tab — the verdict will be
+                here when you return.
+              </p>
+            </Card>
+          ) : null}
+
+          {selfConceded ? (
+            <Card>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400">
+                Closed · no Crowd vote
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                You said the Straight Man understood. There is no Crowd verdict
+                to appeal and no reward from this bit. Write a new bit when you
+                want another attempt.
+              </p>
+            </Card>
+          ) : null}
+
+          {hasCrowdVerdict && bit?.outcome ? (
+            <Card hot={bit.outcome.result === "killed_it"}>
+              <div className="flex flex-wrap items-center gap-3">
+                <Stamp tone={bit.outcome.result === "killed_it" ? "green" : "red"}>
+                  {bit.outcome.result.replace(/_/g, " ").toUpperCase()}
+                </Stamp>
+                <span className="font-mono text-xs text-zinc-400">
+                  Win {(bit.outcome.win_strength * 100).toFixed(0)}% · Fair{" "}
+                  {(bit.outcome.fair_ratio * 100).toFixed(0)}%
+                </span>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-zinc-300">
+                {bit.outcome.result === "killed_it"
+                  ? "The Crowd sided with you. Rewards settle daily at 00:00 UTC and appear in Tip Jar after the new root activates. A verdict is not a paid balance by itself."
+                  : (bit.retrial_round ?? 0) < 2
+                    ? "The Crowd did not side with you. If you believe the blind jury missed context, you can file one Round-2 appeal below."
+                    : "The Round-2 Crowd verdict is final. No further appeal is available for this bit."}
+              </p>
+              {bit.outcome.result === "killed_it" ? (
+                <Link href="/app?tab=tipjar" className="pill-btn hot mt-5">
+                  Check Tip Jar →
+                </Link>
+              ) : null}
+            </Card>
+          ) : null}
         </section>
 
         {/* Progress Stepper */}
@@ -584,8 +862,8 @@ export default function BitPage({
           </div>
         </section>
 
-        {/* Appeal Panel */}
-        {bit?.status === "bombed" && (bit.retrial_round ?? 0) < 2 ? (
+        {/* Appeal Panel — only a Crowd loss can be appealed. */}
+        {canAppeal ? (
           <section aria-label="Appeal">
             <SectionTitle
               eyebrow="Retrial"

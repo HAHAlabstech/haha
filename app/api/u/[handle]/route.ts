@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { bad, getPrisma, jsonBig } from "@/lib/server";
+import {
+  bad,
+  getPrisma,
+  jsonBig,
+  requireWalletSession,
+} from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/u/[handle] -> lookup user profile by handle or wallet address, along with stats and recent public non-holdout bits.
 export async function GET(
-  _req: Request,
+  req: Request,
   ctx: { params: Promise<{ handle: string }> },
 ) {
   const { handle: rawHandle } = await ctx.params;
@@ -47,6 +52,11 @@ export async function GET(
       );
     }
 
+    const auth = await requireWalletSession(req, prisma, user.wallet).catch(
+      () => ({ ok: false } as const),
+    );
+    const isOwner = auth.ok === true;
+
     const [bitsCount, killedItCount, crowdVotesCount, rewardAgg, recentBits] =
       await Promise.all([
         prisma.bit.count({ where: { user_id: user.id } }),
@@ -64,14 +74,18 @@ export async function GET(
           _sum: { amount_micro_usdg: true },
         }),
         prisma.bit.findMany({
-          where: {
-            user_id: user.id,
-            is_holdout: false,
-            share_public: true,
-            status: { in: ["killed_it", "bombed", "in_crowd", "answered"] },
-          },
+          where: isOwner
+            ? { user_id: user.id }
+            : {
+                user_id: user.id,
+                is_holdout: false,
+                share_public: true,
+                status: {
+                  in: ["killed_it", "bombed", "in_crowd", "answered"],
+                },
+              },
           orderBy: { created_at: "desc" },
-          take: 10,
+          take: isOwner ? 20 : 10,
           select: {
             id: true,
             category: true,
@@ -79,6 +93,7 @@ export async function GET(
             question: true,
             stage: true,
             status: true,
+            reject_reason: true,
             created_at: true,
             outcome: {
               select: {
@@ -95,6 +110,7 @@ export async function GET(
     return jsonBig({
       ok: true,
       found: true,
+      is_owner: isOwner,
       profile: {
         wallet: user.wallet,
         handle: user.handle,

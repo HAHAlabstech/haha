@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Check,
   ChevronDown,
@@ -8,6 +9,7 @@ import {
   ExternalLink,
   LogOut,
   RefreshCw,
+  UserRound,
   Wallet as WalletIcon,
 } from "lucide-react";
 import WalletModal from "@/components/WalletModal";
@@ -210,6 +212,17 @@ export default function WalletMenu() {
               </div>
             )}
           </div>
+
+          {/* Owner recovery: pending/rejected bits live on the profile. */}
+          <Link
+            role="menuitem"
+            href={`/u/${encodeURIComponent(account)}`}
+            onClick={() => setMenuOpen(false)}
+            className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+          >
+            <UserRound className={iconClass} aria-hidden />
+            <span>My bits &amp; profile</span>
+          </Link>
 
           {/* Copy address */}
           <button

@@ -142,6 +142,15 @@ export default function ProducersPage() {
     });
   }, []);
 
+  // Preserve a plan chosen on the Vault page. Validate the query value so a
+  // malformed/unknown ?plan never silently changes what the buyer is seeing.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("plan");
+    if (requested && PLANS.some((p) => p.id === requested)) {
+      setPlanId(requested);
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/config")
       .then((r) => (r.ok ? r.json() : null))

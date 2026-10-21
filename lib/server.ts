@@ -118,17 +118,28 @@ export async function requireWalletSession(
 ): Promise<{ ok: true } | { ok: false; response: NextResponse }> {
   const w = wallet.toLowerCase();
   const rawToken = extractRawToken(req);
-  if (rawToken) {
-    const v = verifySignedSessionToken(rawToken, w);
-    if (v.ok) return { ok: true };
+  if (!rawToken) {
+    // A browser-supplied wallet address is NOT proof of ownership. A server
+    // session row alone must never authorize a wallet-bound mutation: the
+    // caller has to present the signed session token (cookie or header).
+    return {
+      ok: false,
+      response: bad("active SIWE session required — sign in first", 401),
+    };
+  }
+  const v = verifySignedSessionToken(rawToken, w);
+  if (!v.ok) {
     return {
       ok: false,
       response: bad("invalid or expired session token", 401),
     };
   }
+  // Keep the DB row check as a revocation gate, not as an authentication
+  // substitute. The signed token already proves wallet ownership.
   const session = await prisma.siweSession.findFirst({
     where: {
       wallet: w,
+      nonce: v.nonce,
       revoked_at: null,
       expires_at: { gt: new Date() },
     },
@@ -137,7 +148,7 @@ export async function requireWalletSession(
   if (!session) {
     return {
       ok: false,
-      response: bad("active SIWE session required — sign in first", 401),
+      response: bad("session revoked or expired — sign in again", 401),
     };
   }
   return { ok: true };

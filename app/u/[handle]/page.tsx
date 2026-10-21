@@ -4,10 +4,11 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
-import { truncateAddress } from "@/lib/wallets";
+import { authHeaders, truncateAddress } from "@/lib/wallets";
 
 interface UserProfileResponse {
   found: boolean;
+  is_owner?: boolean;
   profile: {
     wallet: string | null;
     handle: string;
@@ -30,6 +31,7 @@ interface UserProfileResponse {
     question: string;
     stage: string;
     status: string;
+    reject_reason?: string | null;
     created_at: string;
   }[];
 }
@@ -60,7 +62,10 @@ export default function ProfilePage({
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/u/${encodeURIComponent(display)}`)
+    fetch(`/api/u/${encodeURIComponent(display)}`, {
+      headers: authHeaders(),
+      cache: "no-store",
+    })
       .then((r) => (r.ok ? r.json() : null))
       .then((res) => {
         if (!cancelled && res?.profile) {
@@ -144,7 +149,14 @@ export default function ProfilePage({
       </section>
 
       <section aria-label="Recent bits">
-        <SectionTitle eyebrow="Stage Archive" hint="Public bits only">
+        <SectionTitle
+          eyebrow="Stage Archive"
+          hint={
+            data?.is_owner
+              ? "Your full archive · pending and rejected included"
+              : "Public bits only"
+          }
+        >
           Recent <em>Performances.</em>
         </SectionTitle>
         {data && data.recent_bits.length > 0 ? (
@@ -165,6 +177,11 @@ export default function ProfilePage({
                   <p className="mt-3 font-mono text-xs text-zinc-400">
                     {b.question}
                   </p>
+                  {b.reject_reason ? (
+                    <p className="mt-2 font-mono text-[10px] text-rose-300">
+                      {b.reject_reason.replace(/_/g, " ")}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
                   <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#ffc53d]">

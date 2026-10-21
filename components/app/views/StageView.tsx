@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, Disclaimer, Stamp } from "@/components/ui";
@@ -16,6 +16,18 @@ import {
 
 const SCENARIO_MAX = 600;
 const QUESTION_MAX = 200;
+const DRAFT_PREFIX = "haha_stage_draft_v1";
+
+interface StageDraft {
+  category: CategoryId;
+  stageKind: StageKind;
+  scenario: string;
+  question: string;
+}
+
+function draftKey(account: string | null): string {
+  return `${DRAFT_PREFIX}:${account ? account.toLowerCase() : "guest"}`;
+}
 
 type CategoryId = "punchline" | "subtext" | "irl" | "double_meaning";
 type StageKind = "open_mic" | "pro";
@@ -119,6 +131,9 @@ export default function StageView() {
   const [crisisSupport, setCrisisSupport] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [calibrated, setCalibrated] = useState<boolean | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const hydratedAccount = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     if (
@@ -138,6 +153,95 @@ export default function StageView() {
     if (st.account) setAccount(st.account);
     return subscribeWalletState((next) => setAccount(next.account));
   }, []);
+
+  // Local draft: scoped to the connected wallet, with a one-time migration
+  // from the pre-connect guest draft. No draft is ever sent to the server.
+  useEffect(() => {
+    if (hydratedAccount.current === account) return;
+    hydratedAccount.current = account;
+    setDraftReady(false);
+    const fallbackPrompt =
+      CATEGORIES.find((c) => c.id === initialCategory)?.prompt ??
+      "Why is this funny? / What's the punchline?";
+    try {
+      let raw = window.localStorage.getItem(draftKey(account));
+      if (!raw && account) {
+        const guestRaw = window.localStorage.getItem(draftKey(null));
+        if (guestRaw) {
+          window.localStorage.setItem(draftKey(account), guestRaw);
+          window.localStorage.removeItem(draftKey(null));
+          raw = guestRaw;
+        }
+      }
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<StageDraft>;
+        if (
+          parsed &&
+          typeof parsed.scenario === "string" &&
+          typeof parsed.question === "string"
+        ) {
+          const validCategory = CATEGORIES.some((c) => c.id === parsed.category);
+          setCategory(validCategory ? (parsed.category as CategoryId) : initialCategory);
+          setStageKind(parsed.stageKind === "pro" ? "pro" : "open_mic");
+          setScenario(parsed.scenario.slice(0, SCENARIO_MAX));
+          setQuestion(parsed.question.slice(0, QUESTION_MAX) || fallbackPrompt);
+          setDraftSaved(
+            parsed.scenario.trim().length > 0 ||
+              parsed.question.trim() !== fallbackPrompt,
+          );
+        }
+      } else {
+        setCategory(initialCategory);
+        setStageKind("open_mic");
+        setScenario("");
+        setQuestion(fallbackPrompt);
+        setDraftSaved(false);
+      }
+    } catch {
+      // Storage can be disabled/private; the Stage still works.
+    } finally {
+      setDraftReady(true);
+    }
+  }, [account, initialCategory]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    try {
+      const fallbackPrompt =
+        CATEGORIES.find((c) => c.id === category)?.prompt ?? "";
+      const hasContent =
+        scenario.trim().length > 0 ||
+        (question.trim().length > 0 && question.trim() !== fallbackPrompt);
+      if (!hasContent) {
+        window.localStorage.removeItem(draftKey(account));
+        setDraftSaved(false);
+        return;
+      }
+      const draft: StageDraft = { category, stageKind, scenario, question };
+      window.localStorage.setItem(draftKey(account), JSON.stringify(draft));
+      setDraftSaved(true);
+    } catch {
+      // ignore storage errors
+    }
+  }, [account, category, draftReady, question, scenario, stageKind]);
+
+  function discardDraft() {
+    try {
+      window.localStorage.removeItem(draftKey(account));
+    } catch {
+      // ignore storage errors
+    }
+    const fallbackPrompt =
+      CATEGORIES.find((c) => c.id === initialCategory)?.prompt ?? "";
+    setCategory(initialCategory);
+    setStageKind("open_mic");
+    setScenario("");
+    setQuestion(fallbackPrompt);
+    setIdeaIndex(0);
+    setDraftSaved(false);
+    setError(null);
+    setCreatedBitId(null);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -230,6 +334,13 @@ export default function StageView() {
       }
       const newBitId = data.bitId ?? data.id;
       if (newBitId) {
+        try {
+          window.localStorage.removeItem(draftKey(account));
+          window.localStorage.removeItem(draftKey(null));
+        } catch {
+          // ignore storage errors
+        }
+        setDraftSaved(false);
         setCreatedBitId(newBitId);
         router.push(`/bit/${encodeURIComponent(newBitId)}`);
       }
@@ -265,7 +376,7 @@ export default function StageView() {
           </div>
           <div>
             <dt>Quorum</dt>
-            <dd>7–9 staked human judges</dd>
+            <dd>5 blind human judges, expanding to 7 if the result is thin</dd>
           </div>
           <div>
             <dt>Performer</dt>
@@ -337,8 +448,8 @@ export default function StageView() {
                 </p>
                 <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">
                   <strong className="text-white">Judge the Crowd</strong> —
-                  pass the 10-case calibration quiz (8/10) to earn 20% of the tip
-                  pool as a juror.
+                  pass the 10-case calibration quiz (8/10) to share in the 20%
+                  juror pool when the Crowd reaches consensus.
                 </p>
               </div>
               <Link
@@ -471,6 +582,19 @@ export default function StageView() {
                 <ArrowUpRight className="w-3 h-3" />
               </Link>
             </div>
+
+            {draftSaved ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+                <span>Draft saved locally</span>
+                <button
+                  type="button"
+                  onClick={discardDraft}
+                  className="underline transition hover:text-[#ffc53d]"
+                >
+                  Discard draft
+                </button>
+              </div>
+            ) : null}
 
             {crisisSupport ? (
               <div

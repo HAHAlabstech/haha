@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
-import { getServerContracts } from "@/lib/haha-contracts";
+import { createPublicClient, http } from "viem";
+import { getChainForEnv } from "@/lib/haha-chains";
+import {
+  getServerContracts,
+  isDeployed,
+  tipJarAbi,
+} from "@/lib/haha-contracts";
+import { readChainEnv } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/rewards/me?account=0x... (alias: ?wallet=0x...)
-// Returns aggregate cumulative micro-USDG + latest Merkle proof for TipJar.claim().
-// Aggregation is cross-epoch AND cross-role per wallet (matches the Merkle leaf).
-// 404 when no rewards yet or DB unreachable — the page treats that as empty state.
+// Returns aggregate cumulative micro-USDG + the latest Merkle proof for
+// TipJar.claim(). Aggregation is cross-epoch AND cross-role per wallet
+// (matches the Merkle leaf). The response also reports which epoch the proof
+// belongs to and which epoch is active on-chain, so the UI never presents a
+// proof for a pending/unactivated root as immediately claimable.
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const raw = searchParams.get("account") ?? searchParams.get("wallet") ?? "";
@@ -16,7 +25,9 @@ export async function GET(req: Request) {
   }
   try {
     const { PrismaClient } = await import("@prisma/client");
-    const g = globalThis as unknown as { __hahaPrisma?: InstanceType<typeof PrismaClient> };
+    const g = globalThis as unknown as {
+      __hahaPrisma?: InstanceType<typeof PrismaClient>;
+    };
     g.__hahaPrisma ??= new PrismaClient();
     const prisma = g.__hahaPrisma;
     const user = await prisma.user.findUnique({
@@ -29,27 +40,109 @@ export async function GET(req: Request) {
     const rewards = await prisma.reward.findMany({
       where: { user_id: user.id },
       orderBy: [{ created_at: "asc" }],
-      select: { amount_micro_usdg: true, merkle_proof: true, epoch_id: true },
+      select: {
+        amount_micro_usdg: true,
+        merkle_proof: true,
+        epoch_id: true,
+        created_at: true,
+        epoch: { select: { epoch_number: true } },
+      },
     });
     if (rewards.length === 0) {
       return NextResponse.json({ error: "no rewards" }, { status: 404 });
     }
     let cumulative = 0n;
     for (const r of rewards) cumulative += BigInt(r.amount_micro_usdg);
-    const latest = rewards[rewards.length - 1] as (typeof rewards)[number];
+
+    // Reward rows are per (epoch, role); the proof to use is the one from the
+    // highest epoch, never whichever row happens to be last by created_at.
+    let latest = rewards[0]!;
+    for (const r of rewards) {
+      if (r.epoch.epoch_number >= latest.epoch.epoch_number) latest = r;
+    }
     const proof =
       latest.merkle_proof != null &&
       typeof latest.merkle_proof === "object" &&
       Array.isArray((latest.merkle_proof as { proof?: unknown }).proof)
         ? ((latest.merkle_proof as { proof: string[] }).proof as `0x${string}`[])
         : [];
-    const { tipJar } = getServerContracts();
+
+    const chainEnv = readChainEnv();
+    const chain = getChainForEnv(chainEnv);
+    const contracts = getServerContracts();
+    let activeEpoch: number | null = null;
+    let pendingEpoch: number | null = null;
+    let pendingEta: number | null = null;
+    let rootActive = false;
+    try {
+      if (isDeployed(contracts, "tipJar")) {
+        const override =
+          chainEnv === "mainnet"
+            ? process.env.RPC_URL_MAINNET?.trim()
+            : process.env.RPC_URL_TESTNET?.trim();
+        const rpcUrl =
+          override && override.length > 0
+            ? override
+            : (chain.rpcUrls.default.http[0] as string);
+        const client = createPublicClient({ chain, transport: http(rpcUrl) });
+        const [currentEpoch, merkleRoot, pending, eta] = await Promise.all([
+          client.readContract({
+            address: contracts.tipJar,
+            abi: tipJarAbi,
+            functionName: "currentEpoch",
+          }),
+          client.readContract({
+            address: contracts.tipJar,
+            abi: tipJarAbi,
+            functionName: "merkleRoot",
+          }),
+          client.readContract({
+            address: contracts.tipJar,
+            abi: tipJarAbi,
+            functionName: "pendingEpoch",
+          }),
+          client.readContract({
+            address: contracts.tipJar,
+            abi: tipJarAbi,
+            functionName: "pendingEta",
+          }),
+        ]);
+        activeEpoch = Number(currentEpoch);
+        rootActive =
+          merkleRoot !==
+          "0x0000000000000000000000000000000000000000000000000000000000000000";
+        const pendingNumber = Number(pending);
+        pendingEpoch = pendingNumber > 0 ? pendingNumber : null;
+        const etaNumber = Number(eta);
+        pendingEta = etaNumber > 0 ? etaNumber : null;
+      }
+    } catch {
+      // Chain read is best-effort. The UI shows "verification unavailable"
+      // rather than claiming the allocation is claimable.
+    }
+
+    const proofEpoch = latest.epoch.epoch_number;
+    // A Merkle proof is only valid against the root it was built for. Do not
+    // offer a claim when the current proof is older than the active root.
+    const claimReady =
+      activeEpoch !== null &&
+      rootActive &&
+      proofEpoch === activeEpoch &&
+      pendingEpoch === null;
+
     return NextResponse.json(
       {
         cumulativeMicroUsdg: cumulative.toString(),
         proof,
-        tipJar,
+        proofEpoch,
+        tipJar: contracts.tipJar,
+        chainId: chain.id,
         epochs: rewards.length,
+        activeEpoch,
+        pendingEpoch,
+        pendingEta,
+        rootActive,
+        claimReady,
       },
       { headers: { "Cache-Control": "no-store" } },
     );
