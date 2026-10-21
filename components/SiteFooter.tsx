@@ -94,6 +94,12 @@ export default function SiteFooter() {
             >
               FAQ
             </Link>
+            <Link
+              href="/producers"
+              className="hover:text-[#ffc53d] transition-colors"
+            >
+              For Producers
+            </Link>
             <Link href="/app?tab=stage" className="hover:text-[#ffc53d] transition-colors">
               App Console
             </Link>

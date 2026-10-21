@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, decodeEventLog, http } from "viem";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getChainForEnv } from "@/lib/haha-chains";
@@ -23,6 +23,29 @@ const PLAN_MICRO_USD: Record<string, bigint> = {
   pro: 199_000_000n,
   enterprise: 999_000_000n,
 };
+
+/** Canonical plan ids enforced by ProducerGateway.planPriceMicro. Aliases are legacy. */
+const PLAN_TYPE: Record<string, number> = {
+  snapshot: 0,
+  subscription: 1,
+  eval: 2,
+  theme_night: 3,
+};
+
+const PRODUCER_PURCHASE_EVENT = {
+  type: "event",
+  name: "ProducerPurchase",
+  inputs: [
+    { name: "orderId", type: "bytes32", indexed: true },
+    { name: "batchId", type: "bytes32", indexed: true },
+    { name: "buyer", type: "address", indexed: true },
+    { name: "planType", type: "uint8", indexed: false },
+    { name: "operatorShare", type: "uint256", indexed: false },
+    { name: "tipJarGeneralShare", type: "uint256", indexed: false },
+    { name: "royaltyShare", type: "uint256", indexed: false },
+    { name: "micDropShare", type: "uint256", indexed: false },
+  ],
+} as const;
 
 async function buildDownloadUrl(
   producerId: string,
@@ -129,9 +152,47 @@ export async function POST(req: Request) {
     ) {
       return bad("transaction target does not match ProducerGateway", 402);
     }
+    if (isDeployed(contracts, "producerGateway")) {
+      const expectedType = PLAN_TYPE[plan];
+      if (expectedType === undefined) {
+        return bad("plan cannot be verified on-chain", 400);
+      }
+      const gatewayLog = receipt.logs.find(
+        (l) =>
+          l.address.toLowerCase() === contracts.producerGateway.toLowerCase(),
+      );
+      if (!gatewayLog) {
+        return bad("ProducerPurchase event not found in transaction", 402);
+      }
+      let decoded: ReturnType<typeof decodeEventLog>;
+      try {
+        decoded = decodeEventLog({
+          abi: [PRODUCER_PURCHASE_EVENT],
+          data: gatewayLog.data,
+          topics: gatewayLog.topics,
+        });
+      } catch {
+        return bad("invalid ProducerPurchase event", 402);
+      }
+      const ev = decoded.args as {
+        planType: number;
+        operatorShare: bigint;
+        tipJarGeneralShare: bigint;
+        royaltyShare: bigint;
+        micDropShare: bigint;
+      };
+      if (Number(ev.planType) !== expectedType) {
+        return bad("payment plan does not match the activated plan", 402);
+      }
+      const paid =
+        ev.operatorShare + ev.tipJarGeneralShare + ev.royaltyShare + ev.micDropShare;
+      if (paid < price) {
+        return bad("payment amount is below the plan price", 402);
+      }
+    }
     verified = true;
   } catch {
-    if (process.env.ALLOW_UNVERIFIED_PRODUCER_TX === "false") {
+    if (process.env.ALLOW_UNVERIFIED_PRODUCER_TX !== "true") {
       return bad("unable to verify payment transaction on-chain", 402);
     }
     verified = false;
