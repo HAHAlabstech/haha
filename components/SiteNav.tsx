@@ -20,19 +20,26 @@ export default function SiteNav() {
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 20);
+      const hero = document.querySelector(".haha-runway");
+      if (hero) {
+        const rect = hero.getBoundingClientRect();
+        // Keep navbar completely transparent while inside hero area; activate bg only once exited
+        setScrolled(rect.bottom <= 80);
+      } else {
+        setScrolled(window.scrollY > 20);
+      }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [pathname]);
 
   return (
     <>
       {/* Top Floating Glass Navigation Bar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-[clamp(16px,4vw,48px)] py-4 ${
-          scrolled
+          scrolled || mobileMenuOpen
             ? "bg-[#070709]/85 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl py-3"
             : "bg-transparent"
         }`}
@@ -46,7 +53,7 @@ export default function SiteNav() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/logo-transparent.png"
+              src="/images/logo-transparent.webp"
               alt="HAHA Logo"
               className="h-8 w-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow-[0_0_12px_rgba(255,197,61,0.35)]"
             />
