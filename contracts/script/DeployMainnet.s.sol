@@ -35,8 +35,7 @@ contract DeployMainnet is Script {
     uint256 internal constant MAINNET_CHAIN_ID = 4663;
     uint256 internal constant TIPJAR_ROOT_DELAY = 24 hours;
     uint256 internal constant TIMELOCK = 48 hours;
-    bytes32 internal constant DEPLOY_PHRASE_HASH =
-        keccak256("DEPLOY_HAHA_MAINNET_4663");
+    bytes32 internal constant DEPLOY_PHRASE_HASH = keccak256("DEPLOY_HAHA_MAINNET_4663");
 
     function run() external {
         Preflight memory p = _preflight();
@@ -96,19 +95,13 @@ contract DeployMainnet is Script {
         // View surface only. These are safe under staticcall.
         _mustRespond(p.escrow, abi.encodeWithSignature("pendingFees(address)", address(this)), "escrow.pendingFees");
         _mustRespond(
-            p.escrow,
-            abi.encodeWithSignature("pendingCreatorTax(address)", address(this)),
-            "escrow.pendingCreatorTax"
+            p.escrow, abi.encodeWithSignature("pendingCreatorTax(address)", address(this)), "escrow.pendingCreatorTax"
         );
         _mustRespond(
-            p.escrow,
-            abi.encodeWithSignature("quoteFeeBalance(address)", address(this)),
-            "escrow.quoteFeeBalance"
+            p.escrow, abi.encodeWithSignature("quoteFeeBalance(address)", address(this)), "escrow.quoteFeeBalance"
         );
         _mustRespond(
-            p.escrow,
-            abi.encodeWithSignature("creatorTaxBalance(address)", address(this)),
-            "escrow.creatorTaxBalance"
+            p.escrow, abi.encodeWithSignature("creatorTaxBalance(address)", address(this)), "escrow.creatorTaxBalance"
         );
         _mustRespond(p.escrow, abi.encodeWithSignature("balanceOf(address)", address(this)), "escrow.balanceOf");
 
