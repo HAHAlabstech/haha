@@ -562,7 +562,7 @@
        THE UPGRADED BROADCAST RIBBON HOLO-MICROPHONE (FOR OPTIONS 1, 2, 3)
        ========================================================================= */
     const mic = new THREE.Group();
-    mic.position.set(0.72, 0.22, 0.85);
+    mic.position.set(0.60, 0.22, 0.68);
     scene.add(mic);
 
     const micBase = addMesh(new THREE.CylinderGeometry(0.28, 0.32, 0.06, 8), chassisMat, mic, 0, 0.03, 0);
@@ -823,16 +823,16 @@
     addLimb([0, 0, 0], [-0.03, -0.03, 0.04], 0.013, armorMat, rightThumb1);
     addLimb([-0.03, -0.03, 0.04], [-0.04, -0.06, 0.06], 0.011, chromeMat, rightThumb1);
 
-    // Initial seated arm poses
-    leftShoulder1.rotation.set(0.48, 0.12, -0.22);
-    leftUpperArm1.rotation.set(0.15, 0, 0);
-    leftForearm1.rotation.set(0.68, 0, 0);
-    leftHand1.rotation.set(-0.35, 0, 0);
+    // Initial seated arm poses (Forward-reaching anatomical posture)
+    leftShoulder1.rotation.set(-0.10, 0.12, 0.46);
+    leftUpperArm1.rotation.set(-0.05, 0, 0);
+    leftForearm1.rotation.set(-0.55, 0.05, -0.12);
+    leftHand1.rotation.set(0.18, 0, 0);
 
-    rightShoulder1.rotation.set(0.62, -0.25, 0.22);
-    rightUpperArm1.rotation.set(0.2, 0, 0);
-    rightForearm1.rotation.set(0.85, 0, 0);
-    rightHand1.rotation.set(0.18, 0, 0);
+    rightShoulder1.rotation.set(-0.45, -0.08, -0.05);
+    rightUpperArm1.rotation.set(-0.10, 0, 0);
+    rightForearm1.rotation.set(-0.85, 0.12, 0.05);
+    rightHand1.rotation.set(0.20, 0, 0);
 
     const headPivot1 = new THREE.Group();
     headPivot1.position.y = 1.24;
@@ -1299,17 +1299,17 @@
           torso1.rotation.y = standProgress > 0.8 ? Math.sin(walkCycle) * 0.12 : 0;
 
           if (typeof leftShoulder1 !== "undefined") {
-            leftShoulder1.rotation.x = THREE.MathUtils.lerp(0.48, -0.32, standEase) - leftStride * 0.18;
+            leftShoulder1.rotation.x = THREE.MathUtils.lerp(-0.10, -0.32, standEase) - leftStride * 0.18;
             leftShoulder1.rotation.y = THREE.MathUtils.lerp(0.12, 0.35, standEase);
-            leftShoulder1.rotation.z = THREE.MathUtils.lerp(-0.22, -0.52, standEase);
-            leftUpperArm1.rotation.x = THREE.MathUtils.lerp(0.15, 0.42, standEase);
-            leftForearm1.rotation.x = THREE.MathUtils.lerp(0.68, 0.28, standEase);
-            leftHand1.rotation.x = THREE.MathUtils.lerp(-0.35, 0.12, standEase);
+            leftShoulder1.rotation.z = THREE.MathUtils.lerp(0.46, -0.52, standEase);
+            leftUpperArm1.rotation.x = THREE.MathUtils.lerp(-0.05, 0.42, standEase);
+            leftForearm1.rotation.x = THREE.MathUtils.lerp(-0.55, 0.28, standEase);
+            leftHand1.rotation.x = THREE.MathUtils.lerp(0.18, 0.12, standEase);
 
-            rightShoulder1.rotation.x = THREE.MathUtils.lerp(0.62, 0.38, standEase) + rightStride * 0.12;
-            rightUpperArm1.rotation.x = THREE.MathUtils.lerp(0.2, 0.35, standEase);
-            rightForearm1.rotation.x = THREE.MathUtils.lerp(0.85, 0.65, standEase);
-            rightHand1.rotation.x = THREE.MathUtils.lerp(0.18, 0.12, standEase);
+            rightShoulder1.rotation.x = THREE.MathUtils.lerp(-0.45, 0.38, standEase) + rightStride * 0.12;
+            rightUpperArm1.rotation.x = THREE.MathUtils.lerp(-0.10, 0.35, standEase);
+            rightForearm1.rotation.x = THREE.MathUtils.lerp(-0.85, 0.65, standEase);
+            rightHand1.rotation.x = THREE.MathUtils.lerp(0.20, 0.12, standEase);
           }
         }
         if (torso2) torso2.rotation.x = -standEase * 0.12;

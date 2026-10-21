@@ -418,7 +418,7 @@ export default function LandingShowtimeHero() {
     // VINTAGE STUDIO RIBBON HOLO-MICROPHONE
     // =========================================================
     const mic = new THREE.Group();
-    mic.position.set(0.72, 0, 0.85);
+    mic.position.set(0.60, 0, 0.68);
     rig.add(mic);
 
     const micBase = mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.06, 8), chassisMat, mic, 0, 0.03, 0);
@@ -677,16 +677,18 @@ export default function LandingShowtimeHero() {
     limb([0, 0, 0], [0.03, -0.03, -0.03], 0.012, armorMat, rightThumb);
     limb([0.03, -0.03, -0.03], [0.05, -0.05, -0.06], 0.010, chromeMat, rightThumb);
 
-    // Initial seated arm poses
-    leftShoulder.rotation.set(0.38, 0.08, -0.16);
-    leftUpperArm.rotation.set(0.08, 0, 0);
-    leftForearm.rotation.set(0.55, 0, 0);
-    leftHand.rotation.set(-0.25, 0, 0);
+    // Initial seated arm poses (Forward-reaching anatomical posture)
+    // Left Arm: gracefully draped over the left thigh / knee
+    leftShoulder.rotation.set(-0.10, 0.12, 0.46);
+    leftUpperArm.rotation.set(-0.05, 0, 0);
+    leftForearm.rotation.set(-0.55, 0.05, -0.12);
+    leftHand.rotation.set(0.18, 0, 0);
 
-    rightShoulder.rotation.set(0.35, -0.10, 0.14);
-    rightUpperArm.rotation.set(0.12, 0, 0);
-    rightForearm.rotation.set(0.55, 0, 0);
-    rightHand.rotation.set(0.10, 0, 0);
+    // Right Arm: reaching forward to grip the vertical microphone stand
+    rightShoulder.rotation.set(-0.45, -0.08, -0.05);
+    rightUpperArm.rotation.set(-0.10, 0, 0);
+    rightForearm.rotation.set(-0.85, 0.12, 0.05);
+    rightHand.rotation.set(0.20, 0, 0);
 
     // Head Assembly
     const headPivot = new THREE.Group();
