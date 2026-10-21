@@ -122,7 +122,7 @@ export default function LandingShowtimeHero() {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 2.2;
+    renderer.toneMappingExposure = 1.15;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color("#000000");
@@ -191,10 +191,10 @@ export default function LandingShowtimeHero() {
     bg.renderOrder = -10;
     camera.add(bg);
 
-    // 2. CHIAROSCURO LIGHTING RIG
-    scene.add(new THREE.AmbientLight("#ffffff", 0.12));
+    // 2. CHIAROSCURO LIGHTING RIG (Balanced cinematic contrast, zero glare)
+    scene.add(new THREE.AmbientLight("#ffffff", 0.06));
 
-    const keyLight = new THREE.SpotLight("#ffffff", 22);
+    const keyLight = new THREE.SpotLight("#ffffff", 13);
     keyLight.position.set(4, 6, 3);
     keyLight.angle = Math.PI / 4;
     keyLight.penumbra = 0.9;
@@ -205,19 +205,13 @@ export default function LandingShowtimeHero() {
     keyLight.shadow.bias = -0.001;
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight("#ffc53d", 14);
+    const rimLight = new THREE.DirectionalLight("#ffc53d", 6.5);
     rimLight.position.set(-5, 3, -4);
     scene.add(rimLight);
 
-    const fillLight = new THREE.DirectionalLight("#fff3e6", 0.9);
+    const fillLight = new THREE.DirectionalLight("#fff3e6", 0.4);
     fillLight.position.set(-2, -4, 2);
     scene.add(fillLight);
-
-    const topSpot = new THREE.SpotLight("#ffc53d", 9, 8, Math.PI / 5, 0.7);
-    topSpot.position.set(0, 5, 0.5);
-    topSpot.target.position.set(0, 0.8, 0);
-    scene.add(topSpot);
-    scene.add(topSpot.target);
 
     // 3. APPLAUSE SPARKS (450 particles)
     const sparkCount = 450;
@@ -280,44 +274,41 @@ export default function LandingShowtimeHero() {
 
     // 4. THE STRAIGHT MAN, CAST IN LUXURY PHYSICAL BRONZE (ELEVATED ORIGINAL STATUE)
     const bronze = new THREE.MeshPhysicalMaterial({
-      color: 0xc48c54,
-      roughness: 0.35,
+      color: 0xb07d46,
+      roughness: 0.44,
       metalness: 0.88,
-      clearcoat: 0.38,
-      clearcoatRoughness: 0.22,
-      reflectivity: 0.9,
+      clearcoat: 0.18,
+      clearcoatRoughness: 0.35,
+      reflectivity: 0.7,
       envMap: envTex,
-      envMapIntensity: 0.75,
+      envMapIntensity: 0.5,
     });
     const darkMetal = new THREE.MeshPhysicalMaterial({
       color: 0x221a14,
-      roughness: 0.3,
-      metalness: 0.95,
-      clearcoat: 0.25,
-      clearcoatRoughness: 0.28,
-      reflectivity: 0.85,
+      roughness: 0.42,
+      metalness: 0.92,
+      clearcoat: 0.12,
+      clearcoatRoughness: 0.35,
+      reflectivity: 0.6,
       envMap: envTex,
-      envMapIntensity: 0.6,
+      envMapIntensity: 0.4,
     });
     const goldTrim = new THREE.MeshPhysicalMaterial({
       color: 0xffc53d,
-      roughness: 0.16,
-      metalness: 0.96,
-      clearcoat: 0.55,
-      clearcoatRoughness: 0.1,
-      reflectivity: 1.0,
+      roughness: 0.24,
+      metalness: 0.92,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.2,
+      reflectivity: 0.85,
       envMap: envTex,
-      envMapIntensity: 1.3,
+      envMapIntensity: 0.8,
     });
-    const glass = new THREE.MeshPhysicalMaterial({
-      color: 0x050508,
-      roughness: 0.05,
-      metalness: 0.15,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.04,
-      reflectivity: 0.98,
+    const glass = new THREE.MeshStandardMaterial({
+      color: 0x060608,
+      roughness: 0.08,
+      metalness: 0.2,
       envMap: envTex,
-      envMapIntensity: 1.4,
+      envMapIntensity: 0.7,
     });
     const lamp = new THREE.MeshBasicMaterial({ color: 0xfff2dc, toneMapped: false });
     const amber = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
@@ -414,11 +405,40 @@ export default function LandingShowtimeHero() {
     const colTrim = mesh(new THREE.TorusGeometry(0.34, 0.006, 8, 48), goldTrim, torso, 0, 1.01, 0);
     colTrim.rotation.x = Math.PI / 2;
 
-    const chest = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
-    const cl = mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.03, 24), chest, torso, 0, 0.62, 0.565);
-    cl.rotation.x = Math.PI / 2 - 0.13;
-    const cBezel = mesh(new THREE.TorusGeometry(0.063, 0.007, 8, 32), goldTrim, torso, 0, 0.62, 0.57);
-    cBezel.rotation.x = Math.PI / 2 - 0.13;
+    // Chest Medallion with Official HAHA Logo
+    const logoTexture = new THREE.TextureLoader().load("/images/logo-transparent.png");
+    logoTexture.colorSpace = THREE.SRGBColorSpace;
+
+    const chestBadge = new THREE.Group();
+    chestBadge.position.set(0, 0.58, 0.542);
+    chestBadge.rotation.x = -0.15;
+    torso.add(chestBadge);
+
+    // Dark titanium backplate disc
+    const badgePlate = mesh(new THREE.CylinderGeometry(0.145, 0.145, 0.015, 48), darkMetal, chestBadge);
+    badgePlate.rotation.x = Math.PI / 2;
+
+    // Gold outer bezel ring
+    mesh(new THREE.TorusGeometry(0.146, 0.007, 8, 48), goldTrim, chestBadge);
+
+    // Subtle warm amber backlight disk
+    const badgeGlowMat = new THREE.MeshBasicMaterial({
+      color: 0xffb13b,
+      transparent: true,
+      opacity: 0.25,
+      toneMapped: false,
+    });
+    const badgeGlow = mesh(new THREE.CircleGeometry(0.132, 32), badgeGlowMat, chestBadge, 0, 0, 0.009);
+
+    // HAHA Logo Texture on raised disc
+    const logoMat = new THREE.MeshBasicMaterial({
+      map: logoTexture,
+      transparent: true,
+      opacity: 0.96,
+      toneMapped: false,
+      depthWrite: false,
+    });
+    mesh(new THREE.PlaneGeometry(0.22, 0.22), logoMat, chestBadge, 0, 0, 0.011);
 
     for (const s of [-1, 1]) {
       mesh(new THREE.SphereGeometry(0.17, 24, 16), bronze, torso, s * 0.64, 0.88, 0);
@@ -762,8 +782,9 @@ export default function LandingShowtimeHero() {
       mouthR.rotation.z = Math.sin(Math.min(1, st.smile) * Math.PI) * 0.22;
 
       // Glowing amber chest indicator pulse
-      const pulse = 0.8 + 0.2 * (Math.sin(time * 2.2) * 0.5 + 0.5);
-      cl.scale.setScalar(pulse);
+      const pulse = 0.85 + 0.15 * (Math.sin(time * 2.2) * 0.5 + 0.5);
+      badgeGlow.scale.setScalar(pulse);
+      badgeGlowMat.opacity = 0.18 + 0.15 * pulse + st.boost * 0.45;
 
       shaderUniforms.uTime.value = time;
       shaderUniforms.uMouse.value.set(st.mouseX, -st.mouseY);
@@ -780,6 +801,7 @@ export default function LandingShowtimeHero() {
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("resize", onResize);
+      logoTexture.dispose();
       renderer.dispose();
       pmrem.dispose();
       envTex.dispose();
