@@ -226,7 +226,7 @@ export default function VaultView() {
                 href="/vault/method"
                 className="font-mono text-xs uppercase tracking-widest text-[#ffc53d] underline"
               >
-                See How The Vault Works →
+                Methodology &amp; Preliminary Pricing →
               </Link>
             </dd>
           </div>

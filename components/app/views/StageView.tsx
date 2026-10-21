@@ -261,7 +261,7 @@ export default function StageView() {
           </div>
           <div>
             <dt>Pro Stage</dt>
-            <dd>Free in beta · 2.5× reward · full playbook</dd>
+            <dd>2.5× reward · full playbook</dd>
           </div>
           <div>
             <dt>Quorum</dt>
@@ -464,10 +464,10 @@ export default function StageView() {
               </button>
 
               <Link
-                href="/producers"
+                href="/seasons"
                 className="font-mono text-[11px] uppercase tracking-[0.15em] text-zinc-400 underline hover:text-[#ffc53d] flex items-center gap-1"
               >
-                <span>Why is Pro free? Beta economics explained →</span>
+                <span>What changes on Pro Stage?</span>
                 <ArrowUpRight className="w-3 h-3" />
               </Link>
             </div>

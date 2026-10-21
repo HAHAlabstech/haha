@@ -55,9 +55,13 @@ export default function AppHeader({
               <span className="font-display font-bold text-base tracking-[0.2em]">HAHA</span>
             </Link>
 
-            <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-zinc-400">
+            <Link
+              href="/seasons"
+              className="hidden sm:inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-zinc-400 transition hover:bg-white/10 hover:text-white"
+              title="Season 01 rules & disclosures"
+            >
               Season 01
-            </span>
+            </Link>
 
             <Link
               href="/"
