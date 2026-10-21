@@ -949,142 +949,23 @@ export default function LandingShowtimeHero() {
       if (posAttr) posAttr.needsUpdate = true;
       st.boost = Math.max(0, st.boost - dt * 1.2);
 
-      // =========================================================================
-      // SCROLL-DRIVEN CHOREOGRAPHY SEQUENCE:
-      // 1. Duduk di Takhta (0.00 -> 0.15)
-      // 2. Bangkit Berdiri (0.15 -> 0.35)
-      // 3. Ambil Microphone dari Stand (0.35 -> 0.50)
-      // 4. Putar Badan ke Kiri & Melangkah Maju ke Kiri (0.50 -> 0.85)
-      //    (Kamera melihat profil badan samping robot yang sedang melangkah!)
-      // =========================================================================
+      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.75)
+      const orbitT = Math.min(1, scroll / 0.75);
+      const phi = orbitT * Math.PI * 2;
+      const y = 0.35 + Math.sin(orbitT * Math.PI) * 0.8;
+      const radius = (4.2 - Math.sin(orbitT * Math.PI) * 0.6) * (portrait ? 1.7 : 1);
+      targetPos.set(radius * Math.sin(phi), y, radius * Math.cos(phi));
+      const tp = Math.min(1, orbitT / 0.28);
+      const ease = (Math.cos(tp * Math.PI) + 1) * 0.5;
 
-      // Stand interpolation
-      const pStand = Math.max(0, Math.min(1, (scroll - 0.15) / 0.20));
-      const standEase = pStand * pStand * (3 - 2 * pStand);
-
-      // Mic grab interpolation
-      const pMic = Math.max(0, Math.min(1, (scroll - 0.35) / 0.15));
-      const micEase = pMic * pMic * (3 - 2 * pMic);
-
-      // Walk forward to the left interpolation
-      const pWalk = Math.max(0, Math.min(1, (scroll - 0.50) / 0.35));
-      const walkEase = pWalk * pWalk * (3 - 2 * pWalk);
-
-      // Robot Base Translation
-      const walkSteps = pWalk * Math.PI * 6.5;
-      const walkBob = pWalk > 0 ? Math.abs(Math.sin(walkSteps * 2)) * 0.045 : 0;
-      bot.position.y = standEase * 0.48 + walkBob;
-      bot.position.z = standEase * 0.42;
-      bot.position.x = -walkEase * 1.85; // Moves across the stage to the left
-
-      // Turning body to face left (-Math.PI / 2)
-      // (Kamera melihat badan samping profil robot yang melangkah nyata!)
-      const turnEase = Math.min(1, pWalk * 2.2);
-      const bodyTurn = turnEase * turnEase * (3 - 2 * turnEase) * (-Math.PI / 2);
-      bot.rotation.y = bodyTurn;
-
-      // Head keeps dynamic eye on audience while walking to the left
-      const headLookAudience = Math.sin(turnEase * Math.PI) * 0.45;
-      headPivot.rotation.y = headLookAudience + st.mouseX * 0.1;
-
-      // Legs Kinematics
-      if (pWalk <= 0) {
-        // Seated to Standing
-        leftThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase);
-        leftThigh.rotation.z = 0;
-        leftCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase);
-        leftFoot.rotation.x = 0;
-
-        rightThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase);
-        rightThigh.rotation.z = 0;
-        rightCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase);
-        rightFoot.rotation.x = 0;
-
-        torso.rotation.x = -standEase * 0.06;
-      } else {
-        // Natural forward stride in facing direction (towards stage left!)
-        const stride = Math.sin(walkSteps);
-        const lStride = stride;
-        const rStride = -stride;
-
-        leftThigh.rotation.x = -lStride * 0.48;
-        leftCalf.rotation.x = lStride < 0 ? -lStride * 0.65 : 0.08;
-        leftFoot.rotation.x = lStride > 0 ? -lStride * 0.22 : lStride * 0.18;
-
-        rightThigh.rotation.x = -rStride * 0.48;
-        rightCalf.rotation.x = rStride < 0 ? -rStride * 0.65 : 0.08;
-        rightFoot.rotation.x = rStride > 0 ? -rStride * 0.22 : rStride * 0.18;
-
-        torso.rotation.x = -0.06 + Math.abs(stride) * 0.02;
-        torso.rotation.z = -Math.sin(walkSteps) * 0.035;
-      }
-
-      // Arms & Hands Choreography (Natural, Unbent Joints)
-      const armSwing = pWalk > 0 ? Math.sin(walkSteps) * 0.24 : 0;
-      leftShoulder.rotation.x = THREE.MathUtils.lerp(0.38, -0.08, standEase) - armSwing;
-      leftShoulder.rotation.y = THREE.MathUtils.lerp(0.08, 0.22, standEase);
-      leftShoulder.rotation.z = THREE.MathUtils.lerp(-0.16, -0.28, standEase);
-      leftUpperArm.rotation.x = THREE.MathUtils.lerp(0.08, 0.15, standEase);
-      leftForearm.rotation.x = THREE.MathUtils.lerp(0.55, 0.32, standEase);
-      leftHand.rotation.x = THREE.MathUtils.lerp(-0.25, 0.05, standEase);
-
-      // Right Arm (Microphone Arm):
-      if (scroll < 0.35) {
-        rightShoulder.rotation.x = THREE.MathUtils.lerp(0.35, 0.42, standEase);
-        rightShoulder.rotation.y = THREE.MathUtils.lerp(-0.10, -0.15, standEase);
-        rightShoulder.rotation.z = THREE.MathUtils.lerp(0.14, 0.18, standEase);
-        rightUpperArm.rotation.x = 0.12;
-        rightForearm.rotation.x = THREE.MathUtils.lerp(0.55, 0.45, standEase);
-        rightHand.rotation.x = 0.10;
-      } else if (scroll < 0.50) {
-        // Reaching and taking mic
-        rightShoulder.rotation.x = THREE.MathUtils.lerp(0.42, 0.68, micEase);
-        rightShoulder.rotation.y = THREE.MathUtils.lerp(-0.15, -0.28, micEase);
-        rightShoulder.rotation.z = THREE.MathUtils.lerp(0.18, 0.24, micEase);
-        rightUpperArm.rotation.x = THREE.MathUtils.lerp(0.12, 0.22, micEase);
-        rightForearm.rotation.x = THREE.MathUtils.lerp(0.45, 0.72, micEase);
-        rightHand.rotation.x = THREE.MathUtils.lerp(0.10, 0.18, micEase);
-      } else {
-        // Walking while holding mic up in hand
-        rightShoulder.rotation.x = 0.55 + Math.sin(walkSteps * 0.5) * 0.05;
-        rightShoulder.rotation.y = -0.22;
-        rightShoulder.rotation.z = 0.20;
-        rightUpperArm.rotation.x = 0.25;
-        rightForearm.rotation.x = 0.88;
-        rightHand.rotation.x = 0.15;
-      }
-
-      // Mic follow & hold
-      if (pMic < 0.85) {
-        mic.position.set(0.68, 0, 0.78);
-        mic.rotation.set(0, 0, 0);
-      } else {
-        // Follows the walking robot seamlessly
-        mic.position.x = bot.position.x + 0.45;
-        mic.position.y = bot.position.y * 0.3;
-        mic.position.z = bot.position.z + 0.35;
-        mic.rotation.y = bot.rotation.y * 0.7;
-      }
-
-      // =========================================================================
-      // CINEMATIC AUDITORIUM STAGE CAMERA (FRONT PROSCENIUM - NO 360 SPIN!)
-      // Focuses on the stage and frames the robot's profile as it strides across
-      // =========================================================================
-      const stageT = Math.min(1, scroll / 0.75);
-      const camArc = (stageT - 0.2) * 0.18;
-      const camY = (portrait ? 0.65 : 0.42) + stageT * 0.32;
-      const camDist = (portrait ? 6.2 : 3.9) - stageT * 0.35;
-
-      targetPos.set(Math.sin(camArc) * camDist, camY, Math.cos(camArc) * camDist);
-      const lookY = portrait ? -1.1 : (0.22 + stageT * 0.28);
-      // Camera smoothly pans to track robot's position
-      lookAt.set(bot.position.x * 0.55, lookY, bot.position.z * 0.3);
-
-      // Subtle horizontal shift for text readability in hero chapter 0
-      const shift = portrait ? 0 : Math.max(-0.22, Math.min(0.22, 0.16 * (1 - stageT)));
+      const g = (c: number, w = 0.1) => Math.exp(-Math.pow((orbitT - c) / w, 2));
+      const shift = portrait
+        ? 0
+        : Math.max(-0.28, Math.min(0.28, 0.17 * ease + 0.27 * g(0.34) - 0.2 * g(0.62) + 0.2 * g(0.95, 0.12)));
       camera.setViewOffset(sizes.width, sizes.height, -shift * sizes.width, 0, sizes.width, sizes.height);
+      lookAt.set(0, portrait ? -1.75 : -0.15, 0);
 
-      // Dojang Exit: Camera pushes through towards/past the robot into the dark stage light
+      // Dojang Exit: Camera pushes through towards/past the statue into the dark stage light
       if (q > 0) {
         const forward = new THREE.Vector3().subVectors(lookAt, targetPos).normalize();
         const pushDist = q * q * 5.4;
