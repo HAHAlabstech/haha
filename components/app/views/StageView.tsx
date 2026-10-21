@@ -118,6 +118,7 @@ export default function StageView() {
   const [createdBitId, setCreatedBitId] = useState<string | null>(null);
   const [crisisSupport, setCrisisSupport] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [calibrated, setCalibrated] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (
@@ -137,6 +138,31 @@ export default function StageView() {
     if (st.account) setAccount(st.account);
     return subscribeWalletState((next) => setAccount(next.account));
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!account) {
+      setCalibrated(null);
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/crowd/stake-check?wallet=${encodeURIComponent(account)}`,
+          { cache: "no-store" },
+        );
+        const d = (await res.json().catch(() => ({}))) as {
+          onboarding_passed?: boolean;
+        };
+        if (!cancelled) setCalibrated(d.onboarding_passed === true);
+      } catch {
+        if (!cancelled) setCalibrated(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [account]);
 
   const ideas = useMemo(() => IDEAS[category], [category]);
   const idea = ideas[ideaIndex % ideas.length] ?? "";
@@ -295,6 +321,37 @@ export default function StageView() {
           })}
         </div>
       </section>
+
+      {account && calibrated === false ? (
+        <section aria-label="First time guide">
+          <Card>
+            <div className="flex flex-wrap items-start justify-between gap-5">
+              <div className="max-w-2xl">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
+                  First time here? Two ways to play
+                </p>
+                <p className="mt-2.5 text-sm leading-relaxed text-zinc-300">
+                  <strong className="text-[#fff6ed]">1 · Perform a bit</strong> —
+                  write a setup below and see if the Straight Man gets the joke.
+                  Free, takes about a minute.
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">
+                  <strong className="text-[#fff6ed]">2 · Judge the Crowd</strong> —
+                  pass the 10-case calibration quiz (8/10) to earn 20% of the tip
+                  pool as a juror.
+                </p>
+              </div>
+              <Link
+                href="/crowd/join"
+                className="pill-btn hot"
+                style={{ padding: "13px 24px", fontSize: "12px" }}
+              >
+                <span>Start Calibration Quiz →</span>
+              </Link>
+            </div>
+          </Card>
+        </section>
+      ) : null}
 
       {/* Main Stage Editor + Inspiration Drawer */}
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">

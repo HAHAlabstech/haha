@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
+import { Card, Disclaimer, SectionTitle } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
 import { CheckCircle2, XCircle, ArrowUpRight, Users, ShieldCheck } from "lucide-react";
 import {
@@ -194,17 +194,37 @@ export default function CrowdView() {
                   <span>Passed (8+/10)</span>
                 </span>
               ) : (
-                <Link
-                  href="/crowd/join"
-                  className="font-mono text-xs text-[#ffc53d] underline"
-                >
-                  Take Quiz →
-                </Link>
+                <span className="font-mono text-xs text-rose-300">Not passed</span>
               )}
             </dd>
           </div>
         </dl>
       </div>
+
+      {account && stakeInfo && !stakeInfo.onboarding_passed ? (
+        <section aria-label="Calibration required">
+          <Card hot>
+            <div className="flex flex-wrap items-center justify-between gap-5 py-1">
+              <div className="max-w-2xl">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
+                  Juror access · Calibration required
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+                  Pass the 10-case blind quiz (8/10 required, ~5 minutes, retakes
+                  allowed) to unlock juror ballots and earn 20% of the tip pool.
+                </p>
+              </div>
+              <Link
+                href="/crowd/join"
+                className="pill-btn hot"
+                style={{ padding: "13px 26px", fontSize: "12px" }}
+              >
+                <span>Start Calibration Quiz →</span>
+              </Link>
+            </div>
+          </Card>
+        </section>
+      ) : null}
 
       {/* Active Case */}
       <section aria-label="Current assignment">
@@ -345,33 +365,29 @@ export default function CrowdView() {
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
-              <p className="text-base text-zinc-300">
-                No live assignment waiting in your queue right now. To receive
-                blind ballots, make sure you have completed all three steps:
-              </p>
-              <ol className="list-decimal space-y-1.5 pl-5 text-sm text-zinc-400">
-                <li>Sign in with your wallet via SIWE.</li>
-                <li>
-                  Hold the minimum <code className="text-[#efe8dc]">$HAHA</code>{" "}
-                  stake in <code className="text-[#efe8dc]">CrowdStaking</code>{" "}
-                  (or allowlist during beta).
-                </li>
-                <li>
-                  Pass the 10-case calibration quiz (8/10 required){" "}
-                  {stakeInfo?.onboarding_passed ? (
-                    <Stamp tone="green">Passed</Stamp>
-                  ) : null}
-                </li>
-              </ol>
+            <div className="space-y-3">
+              {stakeInfo?.onboarding_passed ? (
+                <p className="text-base text-zinc-300">
+                  You&apos;re all set — no cases waiting right now. Fresh blind
+                  ballots land as comedians submit; check back in a few minutes.
+                </p>
+              ) : (
+                <p className="text-base text-zinc-300">
+                  Complete the calibration quiz above to unlock juror ballots.
+                  New cases land as comedians submit — check back in a few
+                  minutes.
+                </p>
+              )}
               <div className="flex flex-wrap gap-3 pt-2">
-                <Link href="/crowd/join" className="pill-btn hot">
-                  <span>
-                    {stakeInfo?.onboarding_passed
-                      ? "Review Calibration Quiz →"
-                      : "Start Calibration Quiz (8/10) →"}
-                  </span>
-                </Link>
+                {stakeInfo?.onboarding_passed === true ? (
+                  <Link href="/crowd/join" className="pill-btn cursor-pointer">
+                    <span>Review Calibration Quiz →</span>
+                  </Link>
+                ) : !stakeInfo ? (
+                  <Link href="/crowd/join" className="pill-btn hot">
+                    <span>Start Calibration Quiz →</span>
+                  </Link>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => void loadQueue(account)}
