@@ -123,12 +123,45 @@ export default function CrowdJoinPage() {
   const [saving, setSaving] = useState(false);
   const [savedServer, setSavedServer] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [alreadyPassed, setAlreadyPassed] = useState<boolean | null>(null);
 
   useEffect(() => {
     const st = getSharedWalletState();
     if (st.account) setAccount(st.account);
     return subscribeWalletState((next) => setAccount(next.account));
   }, []);
+
+  // If this wallet already passed calibration, skip the quiz entirely
+  // (session-gated server status; no session -> quiz shown as before).
+  useEffect(() => {
+    let cancelled = false;
+    if (!account) {
+      setAlreadyPassed(null);
+      return;
+    }
+    (async () => {
+      try {
+        const st = getSharedWalletState();
+        const res = await fetch(
+          `/api/crowd/onboarding?wallet=${encodeURIComponent(account)}`,
+          { headers: st.sessionToken ? authHeaders(st.sessionToken) : undefined },
+        );
+        const d = (await res.json().catch(() => ({}))) as {
+          status?: { onboarded?: boolean } | null;
+        };
+        if (!cancelled) {
+          setAlreadyPassed(
+            d.status ? d.status.onboarded === true : null,
+          );
+        }
+      } catch {
+        if (!cancelled) setAlreadyPassed(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [account]);
 
   const score = QUIZ.reduce((n, q, i) => {
     const okVote = votes[i] === q.correct;
@@ -139,7 +172,7 @@ export default function CrowdJoinPage() {
     Object.keys(votes).length === QUIZ.length &&
     Object.keys(fair).length === QUIZ.length;
 
-  async function recordPassOnServer(computedScore: number) {
+  async function recordPassOnServer() {
     const st = getSharedWalletState();
     if (!st.account) return;
     setSaving(true);
@@ -158,10 +191,10 @@ export default function CrowdJoinPage() {
         },
         body: JSON.stringify({
           wallet: siwe.wallet ?? st.account,
-          // Route contract: grade the calibration by correct/total (>=10 items).
-          // "score" alone was ignored by /api/crowd/onboarding -> always 400.
-          correct: computedScore,
-          total: QUIZ.length,
+          // Route contract: the server grades the calibration against its own
+          // key — the page ships per-item answers only (the forgeable
+          // correct/total self-report path was removed).
+          answers: QUIZ.map((_, i) => votes[i]),
         }),
       });
       if (res.ok) {
@@ -180,7 +213,7 @@ export default function CrowdJoinPage() {
   async function handleSubmit() {
     setGraded(true);
     if (account) {
-      await recordPassOnServer(score);
+      await recordPassOnServer();
     }
   }
 
@@ -203,7 +236,26 @@ export default function CrowdJoinPage() {
         lede={`Ten cases with known answers. Score at least ${PASS_MARK} out of 10 — both the winning answer and the fairness call must be right to earn a point.`}
       />
 
-      <ol className="space-y-5">
+      {alreadyPassed && !graded ? (
+        <Card hot>
+          <p className="display-serif text-3xl text-[#fff6ed]" role="status">
+            Calibration already passed ✓
+          </p>
+          <p className="mt-2 text-sm text-[#a49b8e]">
+            This wallet{account ? ` (${truncateAddress(account)})` : ""} is
+            already calibrated into the Crowd — no need to retake the quiz.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/app?tab=crowd" className="pill-btn hot">
+              <span>Enter Crowd Jury Console →</span>
+            </Link>
+          </div>
+        </Card>
+      ) : null}
+
+      {!(alreadyPassed && !graded) ? (
+        <>
+          <ol className="space-y-5">
         {QUIZ.map((q, i) => {
           const v = votes[i];
           const f = fair[i];
@@ -321,7 +373,7 @@ export default function CrowdJoinPage() {
                     disabled={saving}
                     onClick={() => {
                       if (!account) setModalOpen(true);
-                      else void recordPassOnServer(score);
+                      else void recordPassOnServer();
                     }}
                     className="pill-btn hot"
                   >
@@ -359,6 +411,8 @@ export default function CrowdJoinPage() {
           </Card>
         )}
       </div>
+      </>
+      ) : null}
 
       <WalletModal
         open={modalOpen}
@@ -367,7 +421,7 @@ export default function CrowdJoinPage() {
           const w = accs[0] ?? null;
           setAccount(w);
           if (w && graded && score >= PASS_MARK) {
-            void recordPassOnServer(score);
+            void recordPassOnServer();
           }
         }}
       />

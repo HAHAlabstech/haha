@@ -1,17 +1,46 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
-import { bad, getPrisma } from "@/lib/server";
+import { bad, getPrisma, requireWalletSession } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
 const MAX_BODY_BYTES = 64 * 1024;
 const PASS_RATIO = 0.8;
 
-// GET /api/crowd/onboarding -> returns up to 10 calibration items from is_plant_bank
-// (without exposing plant_correct_pos).
-export async function GET() {
+// Calibration answer key — server-side only. The UI quiz (static cases in
+// app/crowd/join/page.tsx) renders these same 10 items; grading here must
+// match exactly what the user sees. Never ship this to the client bundle.
+const CALIB_KEY: Array<"A" | "B"> = [
+  "B", "B", "B", "B", "B", "B", "B", "A", "B", "B",
+];
+
+
+// GET /api/crowd/onboarding[?wallet=0x..] -> calibration items + (session-gated)
+// status { onboarded, crowd_tier } so an already-passed juror skips the quiz.
+export async function GET(req: Request) {
   try {
     const prisma = getPrisma();
+    let status: { onboarded: boolean; crowd_tier: string | null } | null = null;
+    const wallet = (new URL(req.url).searchParams.get("wallet") ?? "")
+      .toLowerCase()
+      .trim();
+    if (/^0x[0-9a-f]{40}$/.test(wallet)) {
+      const gate = await requireWalletSession(req, prisma, wallet).catch(
+        () => ({ ok: false } as const),
+      );
+      if (gate.ok) {
+        const u = await prisma.user.findUnique({
+          where: { wallet },
+          select: { onboarding_passed: true, crowd_tier: true },
+        });
+        status = u
+          ? {
+              onboarded: u.onboarding_passed === true,
+              crowd_tier: u.crowd_tier ?? null,
+            }
+          : { onboarded: false, crowd_tier: null };
+      }
+    }
     const bank = await prisma.bit.findMany({
       where: { is_plant_bank: true },
       orderBy: { created_at: "asc" },
@@ -24,7 +53,7 @@ export async function GET() {
       },
     });
     return NextResponse.json(
-      { items: bank },
+      { items: bank, status },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {
@@ -32,9 +61,9 @@ export async function GET() {
   }
 }
 
-// POST /api/crowd/onboarding {wallet, answers?: (number | "A" | "B")[], correct?: number, total?: number}
-// Grades against the plant bank (is_plant_bank). Pass >= 8/10 equivalent
-// (correct/total >= 0.8). Numeric answers map 0 -> "A", 1 (or non-zero) -> "B".
+// POST /api/crowd/onboarding {wallet, answers: (number | "A" | "B")[]}
+// Grades against the server-side CALIB_KEY (matches the UI quiz cases).
+// Session required; pass ratio 0.8. The forgeable correct/total path was removed.
 export async function POST(req: Request) {
   let raw: string;
   try {
@@ -57,46 +86,35 @@ export async function POST(req: Request) {
 
   try {
     const prisma = getPrisma();
-    const bank = await prisma.bit.findMany({
-      where: { is_plant_bank: true },
-      orderBy: { created_at: "asc" },
-      take: 10,
-      select: { id: true, plant_correct_pos: true },
-    });
 
-    let correct = 0;
-    let total = bank.length;
+    // Session must prove the wallet: the quiz result is keyed to a signed
+    // account, not to a self-asserted body field.
+    const gate = await requireWalletSession(req, prisma, wallet);
+    if (!gate.ok) return gate.response;
 
-    if (Array.isArray(b.answers) && bank.length > 0) {
-      const answers = b.answers as unknown[];
-      if (answers.length !== bank.length) {
-        return bad(`expected ${bank.length} answers`, 400);
-      }
-      for (let i = 0; i < bank.length; i++) {
-        const a = answers[i];
-        let picked: "A" | "B";
-        if (typeof a === "number") {
-          picked = a === 0 ? "A" : "B";
-        } else if (a === "A" || a === "B") {
-          picked = a;
-        } else {
-          return bad("answers must be numbers (0/1) or 'A'/'B'", 400);
-        }
-        const expected = bank[i]?.plant_correct_pos ?? "A";
-        if (picked === expected) correct++;
-      }
-    } else if (
-      typeof b.correct === "number" &&
-      typeof b.total === "number" &&
-      b.total >= 10
-    ) {
-      correct = Math.max(0, Math.min(b.total, Math.floor(b.correct)));
-      total = Math.floor(b.total);
-    } else if (bank.length === 0) {
-      return bad("onboarding bank empty", 503);
-    } else {
+    // Grade ONLY the per-item answers against the server-side key above.
+    // The legacy correct/total self-report path is removed — it was forgeable.
+    if (!Array.isArray(b.answers)) {
       return bad("answers must be an array", 400);
     }
+    const answers = b.answers as unknown[];
+    if (answers.length !== CALIB_KEY.length) {
+      return bad(`expected ${CALIB_KEY.length} answers`, 400);
+    }
+    let correct = 0;
+    for (let i = 0; i < CALIB_KEY.length; i++) {
+      const a = answers[i];
+      let picked: "A" | "B";
+      if (typeof a === "number") {
+        picked = a === 0 ? "A" : "B";
+      } else if (a === "A" || a === "B") {
+        picked = a;
+      } else {
+        return bad("answers must be numbers (0/1) or 'A'/'B'", 400);
+      }
+      if (picked === CALIB_KEY[i]) correct++;
+    }
+    const total = CALIB_KEY.length;
 
     const passed = total > 0 && correct / total >= PASS_RATIO;
 
