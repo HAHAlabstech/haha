@@ -1,9 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Mic, Users, Database, ArrowUpRight } from "lucide-react";
+import { scrollToId } from "@/components/landing/SmoothScroll";
 
 export default function SiteFooter() {
+  const pathname = usePathname();
+
+  const handleFooterNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("/#") && pathname === "/") {
+      e.preventDefault();
+      const id = href.replace("/#", "");
+      if (scrollToId(id)) {
+        window.history.pushState(null, "", href);
+      }
+    }
+  };
   return (
     <footer className="relative z-10 border-t border-white/[0.08] bg-[#070709] px-[clamp(20px,4vw,56px)] pb-12 pt-20">
       <div className="mx-auto max-w-[1440px]">
@@ -46,23 +59,39 @@ export default function SiteFooter() {
           <div className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/logo-transparent.png"
+              src="/images/logo-transparent.webp"
               alt="HAHA Logo"
               className="h-5 w-auto object-contain filter drop-shadow-[0_0_4px_rgba(255,197,61,0.5)]"
             />
             <span>&copy; HAHA &middot; Season 01 &middot; The Straight Man &amp; The Joke Vault</span>
           </div>
           <nav className="flex flex-wrap gap-5" aria-label="Footer">
-            <Link href="/#how-it-works" className="hover:text-[#ffc53d] transition-colors">
+            <Link
+              href="/#how-it-works"
+              onClick={(e) => handleFooterNav(e, "/#how-it-works")}
+              className="hover:text-[#ffc53d] transition-colors cursor-pointer"
+            >
               How It Works
             </Link>
-            <Link href="/#waveform" className="hover:text-[#ffc53d] transition-colors">
+            <Link
+              href="/#waveform"
+              onClick={(e) => handleFooterNav(e, "/#waveform")}
+              className="hover:text-[#ffc53d] transition-colors cursor-pointer"
+            >
               The Science
             </Link>
-            <Link href="/#vault" className="hover:text-[#ffc53d] transition-colors">
+            <Link
+              href="/#vault"
+              onClick={(e) => handleFooterNav(e, "/#vault")}
+              className="hover:text-[#ffc53d] transition-colors cursor-pointer"
+            >
               Joke Vault
             </Link>
-            <Link href="/#faq" className="hover:text-[#ffc53d] transition-colors">
+            <Link
+              href="/#faq"
+              onClick={(e) => handleFooterNav(e, "/#faq")}
+              className="hover:text-[#ffc53d] transition-colors cursor-pointer"
+            >
               FAQ
             </Link>
             <Link href="/app?tab=stage" className="hover:text-[#ffc53d] transition-colors">

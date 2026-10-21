@@ -47,7 +47,7 @@ export default function AppHeader({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/logo-transparent.png"
+                src="/images/logo-transparent.webp"
                 alt="HAHA Logo"
                 className="h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow-[0_0_8px_rgba(255,197,61,0.35)]"
               />

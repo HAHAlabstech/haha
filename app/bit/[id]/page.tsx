@@ -273,7 +273,14 @@ export default function BitPage({
     : 97;
 
   return (
-    <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-12">
+    <div className="relative min-h-screen bg-[#070709] text-white selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-clip">
+      {/* Ambient Stage Lighting Glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-radial from-[#ffc53d]/06 via-[#ffc53d]/01 to-transparent blur-[160px] rounded-full z-0"
+      />
+
+      <div className="relative z-10 mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-12">
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-6 border-b border-[#efe8dc]/12 pb-8">
         <div>
@@ -644,6 +651,7 @@ export default function BitPage({
         onConnected={(accs) => setAccount(accs[0] ?? null)}
       />
       <Disclaimer />
+      </div>
     </div>
   );
 }

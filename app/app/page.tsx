@@ -17,7 +17,7 @@ export default function AppPage() {
           <div className="flex flex-col items-center gap-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/logo-transparent.png"
+              src="/images/logo-transparent.webp"
               alt="HAHA Logo"
               className="h-16 w-auto object-contain filter drop-shadow-[0_0_20px_rgba(255,197,61,0.5)] animate-pulse"
             />

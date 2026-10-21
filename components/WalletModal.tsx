@@ -213,7 +213,7 @@ export default function WalletModal({
           <div className="flex min-w-0 items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/logo-transparent.png"
+              src="/images/logo-transparent.webp"
               alt="HAHA Logo"
               className="h-10 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(255,197,61,0.4)]"
             />

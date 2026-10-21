@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Mic, ArrowUpRight, Menu, X } from "lucide-react";
 import WalletMenu from "./WalletMenu";
+import { scrollToId } from "@/components/landing/SmoothScroll";
 
 const NAV_LINKS = [
   { href: "/#how-it-works", label: "How It Works" },
@@ -33,6 +34,20 @@ export default function SiteNav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [pathname]);
+
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    if (href.startsWith("/#") && pathname === "/") {
+      e.preventDefault();
+      const id = href.replace("/#", "");
+      if (scrollToId(id)) {
+        window.history.pushState(null, "", href);
+        setMobileMenuOpen(false);
+      }
+    }
+  };
 
   return (
     <>
@@ -74,7 +89,8 @@ export default function SiteNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-1.5 rounded-full font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="px-4 py-1.5 rounded-full font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
               >
                 {link.label}
               </Link>
@@ -119,8 +135,8 @@ export default function SiteNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="px-4 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider text-zinc-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
               >
                 {link.label}
               </Link>
