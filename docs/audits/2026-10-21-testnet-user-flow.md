@@ -141,6 +141,7 @@ Additional source-risk closures:
 - `heckled_off` is appealable; self-conceded `bombed` is not (server enforced).
 - Rejected prescreen renders the rejection reason; `crisis_support` renders a support panel instead of a generic rejection.
 - Crowd vote POST enforces onboarding, own-bit exclusion, and daily tier quota server-side.
+- `GET /api/crowd/next` is now session-gated. A no-credential request returned **401**; a calibrated wallet with an expired session saw the explicit `Sign in to load ballots` card, not an empty queue. This closes the blind-ballot read leak (the route previously returned A/B candidate text for any caller-supplied wallet).
 - Settlement now writes the proof epoch and refreshes every reward row for a wallet, so a wallet with no new reward still receives a current proof.
 - Holdout share-card branch still seals category-only content and uses the separate `sealed-bit-*` key.
 - Mainnet preflight no longer `staticcall`s the state-changing `claimToken/claim`; it checks view endpoints plus dispatcher selectors. Foundry: **66 tests passed**, including 4 dedicated preflight/selector tests against a mock chain `4663`. Dry-run deploy code is complete; **no mainnet broadcast was made**.
