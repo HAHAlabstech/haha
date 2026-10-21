@@ -45,9 +45,10 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
 2. Run the dry-run (NO broadcast) against 4663 RPC:
    `forge script DeployMainnet --fork-url $RPC_URL_MAINNET`.
    The gate checks chain id 4663, USDG decimals == 6, required code, the
-   escrow **view** surface (`pendingFees`, `pendingCreatorTax`,
-   `quoteFeeBalance`, `creatorTaxBalance`, `balanceOf`), and the presence of
-   the `claimToken(address)` + `claim()` selectors in the escrow dispatcher.
+   live escrow **claim ledger** (`balanceOf`, `balanceOfToken`), and the
+   presence of the `claimToken(address)` + `claim()` selectors in the escrow
+   dispatcher. The live Pons V2 escrow deliberately has **no** pending-fee
+   views; FeeSplitter sweeps the curve/hook, then quotes `balanceOfToken`.
    It deliberately does not `staticcall` a state-changing claim function.
    **ABORT here** = inspect the target escrow/address; never bypass.
 3. Deploy simulation (still NO chain write):
@@ -88,19 +89,28 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
 
 ### 2.1 Code verification (21 Oct 2026)
 
-- `forge test` in `contracts/`: **66 passed, 0 failed**.
+- `forge test` in `contracts/`: **68 passed, 0 failed**.
 - `DeployMainnet.t.sol` proves:
   - the old `staticcall` of `claimToken(address)` reverts by design (the Test 8 false negative);
   - the selector scan finds the real state-changing claim surface;
   - `_preflight()` passes on a mock chain id `4663` with 6-decimal USDG and the
-    expected view/claim surface;
+    live-shaped claim ledger;
   - `_preflight()` aborts on the wrong chain id.
+- `FeeSplitter.t.sol` includes a `LiveShapeEscrow` regression with **no**
+  pending-fee views, proving the splitter only relies on
+  `balanceOfToken`/`claimToken` (the real Pons V2 surface).
+- `scripts/preflight-mainnet.mjs` ran **read-only against real 4663**:
+  chain id, USDG 6dp, all candidate code, `claim`/`claimToken` selectors, and
+  the `balanceOfToken(address,address)` ledger call all passed.
 - The script **cannot broadcast** without both `--broadcast` and
   `MAINNET_DEPLOY_CONFIRM=DEPLOY_HAHA_MAINNET_4663`. No mainnet transaction was
   signed or sent in this pass.
-- The real 4663 dry-run remains pending because it requires the final mainnet
-  RPC/address set and is part of the external launch window. Do not treat the
-  mock preflight as a substitute for that dry-run.
+- A full `forge script --fork-url` simulation was attempted, but the public
+  4663 RPC does not serve the historical state needed by the fork (error
+  `historical state ... is not available`). It failed before any broadcast.
+  The Node gate and direct view calls above are the real-chain interface proof;
+  the full fork dry-run still needs an archive-capable RPC and the external
+  launch window. Do not treat the mock preflight as a substitute.
 
 ## 3. Worker bring-up
 

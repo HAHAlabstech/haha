@@ -139,18 +139,18 @@ Additional source-risk closures:
 - `answered` without an AI answer keeps polling and cannot be judged; verdict API now requires `status=answered` **and** a stored `ai_answer`.
 - Verdict `missed_it` now requires a 1–400 character explanation, matching the UI.
 - `heckled_off` is appealable; self-conceded `bombed` is not (server enforced).
-- Rejected prescreen renders the rejection reason; `crisis_support` renders a support panel instead of a generic rejection.
+- Rejected prescreen renders the rejection reason; `crisis_support` renders a support panel instead of a generic rejection. A live duplicate reject (`cmvi3f32g000gqn01x2aj5hyj`, `duplicate sim=1.000`) confirmed the non-crisis branch end-to-end.
 - Crowd vote POST enforces onboarding, own-bit exclusion, and daily tier quota server-side.
 - `GET /api/crowd/next` is now session-gated. A no-credential request returned **401**; a calibrated wallet with an expired session saw the explicit `Sign in to load ballots` card, not an empty queue. This closes the blind-ballot read leak (the route previously returned A/B candidate text for any caller-supplied wallet).
 - Settlement now writes the proof epoch and refreshes every reward row for a wallet, so a wallet with no new reward still receives a current proof.
 - Holdout share-card branch still seals category-only content and uses the separate `sealed-bit-*` key.
-- Mainnet preflight no longer `staticcall`s the state-changing `claimToken/claim`; it checks view endpoints plus dispatcher selectors. Foundry: **66 tests passed**, including 4 dedicated preflight/selector tests against a mock chain `4663`. Dry-run deploy code is complete; **no mainnet broadcast was made**.
+- Mainnet preflight no longer `staticcall`s the state-changing `claimToken/claim`; it checks the live per-token claim ledger (`balanceOf`/`balanceOfToken`) plus dispatcher selectors. The live Pons V2 escrow has no pending-fee views; `FeeSplitter` now sweeps curve/hook then quotes `balanceOfToken`, covered by a no-pending-view regression test. Foundry: **68 tests passed**, including 4 dedicated preflight/selector tests against a mock chain `4663`. `scripts/preflight-mainnet.mjs` also passed **read-only on real 4663** (chain, USDG 6dp, code, claim selectors, ledger call). The full forge fork simulation was attempted but the public RPC lacks historical state; it failed before any broadcast. Dry-run deploy code is complete; **no mainnet broadcast was made**.
 
 ### Remaining evidence boundaries (do not overclaim)
 
 - No paid claim transaction was executed in this pass. The operator allocation is already fully claimed on-chain, and the QA provider intentionally denies `eth_sendTransaction`. Receipt polling/revert handling is implemented but only read-path/claim-ready states were browser-tested.
 - No new daily settlement was forced. The current active root was verified cryptographically against the stored proof; the next settlement will exercise the refreshed-proof write.
-- No controlled rejected-prescreen/crisis fixture was created in this pass.
+- A real duplicate bit (`cmvi3f32g000gqn01x2aj5hyj`) was rejected by the live prescreen with `duplicate sim=1.000`; the UI showed the reason, no AI answer, no verdict buttons, and no Crowd copy. No self-harm/crisis content was submitted deliberately; that UI branch is covered by code inspection/mock only, not a live fixture.
 - No live juror ballot was cast, so the new server quota path was not exercised end-to-end; the uncalibrated gate and queue failure states were.
 - Mainnet remains **prepared, not deployed**. External audit/legal/sanctions/geo, kill-switch, takedown/GDPR, invoice/KYC, Pons V2 audit, and backup/restore drill gates are still outside code.
-- Mainnet dry-run against the real 4663 RPC was not performed in this pass because no broadcast/real-address verification was authorized; the gate logic is unit-tested against mocks.
+- Real 4663 read-only preflight passed (chain, USDG, code, claim selectors, `balanceOfToken`). A full `forge script --fork-url` simulation was attempted but the public RPC lacks historical state; it failed before any broadcast. An archive-capable RPC is still required for the full fork dry-run.

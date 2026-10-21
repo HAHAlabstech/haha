@@ -5,8 +5,8 @@
 //
 // Checks (plan §5.2 + §8 Test 8):
 //   1. USDG.decimals() == 6
-//   2. Fee-escrow claim selectors present (claim / claimToken) + sweep fns
-//      (sweepFees / sweepPoolFees) + pending view fns
+//   2. Fee-escrow claim selectors present (claim / claimToken) + per-token
+//      claim ledger (balanceOfToken); sweep fns are advisory
 //   3. Router + PoolManager + hook + factory addresses are contracts
 //   4. Launch economics: pairToken == USDG, creatorTaxBps == 200 (K2 locked),
 //      buybackEnabled == false (else sweep needs the Pons operator), exempt
@@ -32,8 +32,13 @@ const USDG_ABI = [
   { name: "decimals", type: "function", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] },
 ];
 const ESCROW_ABI = [
-  { name: "quoteFeeBalance", type: "function", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] },
-  { name: "creatorTaxBalance", type: "function", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] },
+  {
+    name: "balanceOfToken",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ type: "address" }, { type: "address" }],
+    outputs: [{ type: "uint256" }],
+  },
 ];
 
 const failures = [];
@@ -70,6 +75,19 @@ for (const [fn, sel] of Object.entries(SELECTORS)) {
   // unless it is a claim selector (claim path is mandatory).
   const mandatory = fn.startsWith("claim");
   check(`escrow exposes ${fn} (${sel})${mandatory ? "" : " [advisory]"}`, present || !mandatory, fn);
+}
+// The live Pons V2 escrow has no pending-fee views. FeeSplitter quotes the
+// per-token claim ledger instead, so prove that exact view actually answers.
+try {
+  await client.readContract({
+    address: getAddress(CANDIDATES.ponsFeeEscrow),
+    abi: ESCROW_ABI,
+    functionName: "balanceOfToken",
+    args: ["0x0000000000000000000000000000000000000000", getAddress(CANDIDATES.usdg)],
+  });
+  check("escrow.balanceOfToken(address,address) answers", true);
+} catch {
+  check("escrow.balanceOfToken(address,address) answers", false);
 }
 
 // 4. Launch economics are read from the fee-splitter + Pons launch policy

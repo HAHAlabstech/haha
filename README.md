@@ -78,8 +78,9 @@ print/commit). ChainId jawab `0xb626`.
 ## DILARANG
 
 - broadcast mainnet tanpa lulus `docs/MAINNET-HANDOFF.md` §2. Gate
-  `claimToken` sudah diperbaiki (view-only + selector scan), tetapi deploy
-  nyata tetap menunggu audit/legal/sanctions/geo dan verifikasi escrow
-  upstream. Tidak ada broadcast dalam sesi ini.
+  `claimToken` sudah diperbaiki (claim-ledger + selector scan); interface
+  escrow live sudah diverifikasi read-only di 4663, tetapi full fork dry-run
+  masih butuh RPC archive-capable dan deploy nyata tetap menunggu
+  audit/legal/sanctions/geo. Tidak ada broadcast dalam sesi ini.
 - commit `.env*`, `next-env.d.ts`, gambar hasil QA di root repo.
 - membangun Merkle tree manual untuk klaim (punya server yang menulis).

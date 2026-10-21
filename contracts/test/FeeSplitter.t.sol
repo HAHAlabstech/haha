@@ -3,7 +3,44 @@ pragma solidity 0.8.24;
 
 import {HahaSetup} from "./helpers/HahaSetup.sol";
 import {FeeSplitter} from "../src/FeeSplitter.sol";
+import {MockUSDG} from "../src/mocks/MockUSDG.sol";
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
+
+/// @dev Mainnet-shaped escrow: only the live Pons V2 claim ledger, deliberately
+///      no pending-fee views or sweep methods. A FeeSplitter that calls the old
+///      mock-only surface must fail this test.
+contract LiveShapeEscrow {
+    MockUSDG public immutable usdg;
+    mapping(address => uint256) public credit;
+
+    constructor(MockUSDG usdg_) {
+        usdg = usdg_;
+    }
+
+    function fund(address recipient, uint256 amount) external {
+        usdg.mint(address(this), amount);
+        credit[recipient] += amount;
+    }
+
+    function balanceOf(address) external pure returns (uint256) {
+        return 0;
+    }
+
+    function balanceOfToken(address recipient, address token) external view returns (uint256) {
+        return token == address(usdg) ? credit[recipient] : 0;
+    }
+
+    function claim() external pure returns (uint256) {
+        return 0;
+    }
+
+    function claimToken(address token) external returns (uint256 amount) {
+        require(token == address(usdg), "only-usdg");
+        amount = credit[msg.sender];
+        credit[msg.sender] = 0;
+        if (amount > 0) usdg.transfer(msg.sender, amount);
+    }
+}
 
 contract FeeSplitterTest is HahaSetup {
     function test_HarvestAndSplit_Exact70_30Micro() public {
@@ -51,9 +88,8 @@ contract FeeSplitterTest is HahaSetup {
 
     function test_HarvestStale_Gated24h() public {
         // Fresh splitter (no time elapsed since lastHarvest): gate holds.
-        FeeSplitter fresh = new FeeSplitter(
-            address(usdg), address(escrow), address(tipJar), placeholderDrop, admin, keeper, 48 hours
-        );
+        FeeSplitter fresh =
+            new FeeSplitter(address(usdg), address(escrow), address(tipJar), placeholderDrop, admin, keeper, 48 hours);
         vm.expectRevert(FeeSplitter.NotStaleYet.selector);
         fresh.harvestStale(5_000_000_000, 200);
         // Bound splitter (48h elapsed in setUp): stale path works.
@@ -150,5 +186,35 @@ contract FeeSplitterTest is HahaSetup {
         uint256 processed = pending > max ? max : pending;
         assertEq(usdg.balanceOf(address(tipJar)) + usdg.balanceOf(placeholderDrop), processed);
         assertEq(usdg.balanceOf(address(splitter)), pending - processed);
+    }
+
+    function test_LiveShapeEscrow_HarvestWithoutPendingViews() public {
+        LiveShapeEscrow liveEscrow = new LiveShapeEscrow(usdg);
+        FeeSplitter liveSplitter = new FeeSplitter(
+            address(usdg), address(liveEscrow), address(tipJar), placeholderDrop, admin, keeper, 48 hours
+        );
+        liveEscrow.fund(address(liveSplitter), 1_000_000_000);
+
+        uint256 tipBefore = usdg.balanceOf(address(tipJar));
+        uint256 dropBefore = usdg.balanceOf(placeholderDrop);
+        vm.prank(keeper);
+        liveSplitter.harvestAndSplit(0, block.timestamp + 1 hours);
+
+        assertEq(usdg.balanceOf(address(tipJar)) - tipBefore, 700_000_000, "live escrow tip 70%");
+        assertEq(usdg.balanceOf(placeholderDrop) - dropBefore, 300_000_000, "live escrow drop 30%");
+        assertEq(liveEscrow.credit(address(liveSplitter)), 0, "live escrow drained");
+    }
+
+    function test_LiveShapeEscrow_StaleQuoteUsesClaimableLedger() public {
+        LiveShapeEscrow liveEscrow = new LiveShapeEscrow(usdg);
+        FeeSplitter liveSplitter = new FeeSplitter(
+            address(usdg), address(liveEscrow), address(tipJar), placeholderDrop, admin, keeper, 48 hours
+        );
+        liveEscrow.fund(address(liveSplitter), 1_000_000_000);
+        vm.warp(block.timestamp + 24 hours + 1);
+
+        uint256 tipBefore = usdg.balanceOf(address(tipJar));
+        liveSplitter.harvestStale(5_000_000_000, 0);
+        assertEq(usdg.balanceOf(address(tipJar)) - tipBefore, 700_000_000, "stale live escrow tip");
     }
 }

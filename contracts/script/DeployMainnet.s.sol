@@ -92,18 +92,14 @@ contract DeployMainnet is Script {
             revert PreflightFailed("USDG.decimals != 6");
         }
 
-        // View surface only. These are safe under staticcall.
-        _mustRespond(p.escrow, abi.encodeWithSignature("pendingFees(address)", address(this)), "escrow.pendingFees");
-        _mustRespond(
-            p.escrow, abi.encodeWithSignature("pendingCreatorTax(address)", address(this)), "escrow.pendingCreatorTax"
-        );
-        _mustRespond(
-            p.escrow, abi.encodeWithSignature("quoteFeeBalance(address)", address(this)), "escrow.quoteFeeBalance"
-        );
-        _mustRespond(
-            p.escrow, abi.encodeWithSignature("creatorTaxBalance(address)", address(this)), "escrow.creatorTaxBalance"
-        );
+        // View surface only. These are safe under staticcall. The live Pons V2
+        // escrow exposes a claim ledger per token; it has NO pending-fee views.
         _mustRespond(p.escrow, abi.encodeWithSignature("balanceOf(address)", address(this)), "escrow.balanceOf");
+        _mustRespond(
+            p.escrow,
+            abi.encodeWithSignature("balanceOfToken(address,address)", address(this), p.usdg),
+            "escrow.balanceOfToken"
+        );
 
         // State-changing claim surface cannot be staticcalled. Verify the
         // selectors exist in the deployed dispatcher instead.

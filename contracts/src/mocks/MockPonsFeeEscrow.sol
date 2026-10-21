@@ -8,7 +8,7 @@ import {MockUSDG} from "./MockUSDG.sol";
 
 /// @notice Testnet-only Pons V2 fee escrow stand-in.
 /// @dev Lifecycle per recipient: pending (pre-sweep, hook-side) ->
-///      sweepFees/sweepPoolFees -> claimable -> claimToken(USDC).
+///      sweepFees/sweepPoolFees -> claimable -> claimToken(USDG).
 ///      `claim()` is the native/base variant and is a safe no-op when no
 ///      native fees were simulated. These mocks prove ACCOUNTING only —
 ///      the Uniswap v4 hook path must be fork-tested against mainnet.
@@ -84,8 +84,8 @@ contract MockPonsFeeEscrow is IPonsFeeEscrow {
         emit Swept(recipient, 0, tax);
     }
 
-    function claim() external {
-        uint256 amount = claimableNative[msg.sender];
+    function claim() external returns (uint256 amount) {
+        amount = claimableNative[msg.sender];
         claimableNative[msg.sender] = 0;
         if (amount > 0) {
             (bool ok,) = msg.sender.call{value: amount}("");
@@ -93,9 +93,9 @@ contract MockPonsFeeEscrow is IPonsFeeEscrow {
         }
     }
 
-    function claimToken(address token) external {
+    function claimToken(address token) external returns (uint256 amount) {
         require(token == address(usdg), "only-usdg");
-        uint256 amount = claimableFee[msg.sender] + claimableTax[msg.sender];
+        amount = claimableFee[msg.sender] + claimableTax[msg.sender];
         require(amount > 0, "nothing-to-claim");
         claimableFee[msg.sender] = 0;
         claimableTax[msg.sender] = 0;

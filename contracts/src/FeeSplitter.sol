@@ -18,7 +18,7 @@ import {IPonsCurve, IPonsHook} from "./interfaces/IPonsSweep.sol";
 ///         against Pons docs 16 Okt 2026; the escrow only holds claimable
 ///         balances). Curve/hook refs + poolId are bound via 48h timelock
 ///         after the $HAHA launch is verified (confirmSetLaunchRefs), then
-///         `claimToken(USDC)` pulls USDG strictly from escrow.
+///         `claimToken(USDG)` pulls USDG strictly from escrow.
 /// @dev All splits are micro-exact: tipShare = total * 70 / 100 (floor),
 ///      dropShare = total - tipShare, so tipShare + dropShare == total always.
 ///      Gas is funded out-of-band from the 40% B2B ops share — this contract
@@ -111,13 +111,10 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
     }
 
     /// @notice Keeper harvest: sweep escrow, claim USDG, split 70/30 exact.
-    function harvestAndSplit(uint256 minUsdgOut, uint256 deadline)
-        external
-        onlyRole(KEEPER_ROLE)
-        nonReentrant
-    {
+    function harvestAndSplit(uint256 minUsdgOut, uint256 deadline) external onlyRole(KEEPER_ROLE) nonReentrant {
         if (block.timestamp > deadline) revert DeadlineExpired();
-        _sweepAndClaim();
+        _sweep();
+        _claim();
         uint256 total = usdg.balanceOf(address(this));
         if (total < minUsdgOut) revert BelowMinOut();
         _split(total);
@@ -130,10 +127,13 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
         if (block.timestamp <= lastHarvest + STALE_AFTER) revert NotStaleYet();
         if (maxAmountMicro > MAX_STALE_AMOUNT_MICRO) revert StaleAmountTooLarge();
         if (minOutBps > MAX_MIN_OUT_BPS) revert MinOutBpsTooLarge();
-        uint256 quoted = feeEscrow.pendingFees(address(this)) + feeEscrow.pendingCreatorTax(address(this))
-            + feeEscrow.quoteFeeBalance(address(this)) + feeEscrow.creatorTaxBalance(address(this));
+        // Sweep first so the live escrow's per-token claim ledger reflects the
+        // pending curve/hook fees. The live escrow has NO pending-fee views,
+        // so quote the claimable USDG balance after sweeps, before claiming.
+        _sweep();
+        uint256 quoted = feeEscrow.balanceOfToken(address(this), address(usdg));
         uint256 before = usdg.balanceOf(address(this));
-        _sweepAndClaim();
+        _claim();
         uint256 balance = usdg.balanceOf(address(this));
         // Slippage guard on the newly received delta (not the capped amount):
         // a cap that processes less than quoted pending is legitimate.
@@ -211,7 +211,10 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
 
     /// @notice Bind the $HAHA launch sweep refs after post-launch verification
     ///         (Lampiran A). Zero curve/hook pre-launch: sweeps are skipped.
-    function proposeSetLaunchRefs(address curve_, address hook_, bytes32 poolId_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function proposeSetLaunchRefs(address curve_, address hook_, bytes32 poolId_)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         pendingSweepCurve = curve_;
         pendingSweepHook = hook_;
         pendingSweepPoolId = poolId_;
@@ -234,20 +237,23 @@ contract FeeSplitter is AccessControl, ReentrancyGuard {
 
     // ---- internals ----
 
-    /// @dev Sweep-then-claim. Sweeps live on the curve (pre-graduation) and the
-    ///      hook (post-graduation) with min-outs of 0 (buyback OFF, HAHA pair
-    ///      is USDG so no conversion leg exists); each is best-effort since
-    ///      only one applies per graduation state. The escrow token claim is
-    ///      best-effort on an EMPTY escrow so leftover balances stay
-    ///      harvestable, while `minUsdgOut` (keeper) and the received-vs-quoted
-    ///      check (stale) still enforce value.
-    function _sweepAndClaim() internal {
+    /// @dev Sweep the curve (pre-graduation) and the hook (post-graduation)
+    ///      with min-outs of 0 (buyback OFF, HAHA pair is USDG so no
+    ///      conversion leg exists). Each is best-effort since only one applies
+    ///      per graduation state.
+    function _sweep() internal {
         if (address(sweepCurve) != address(0)) {
             try sweepCurve.sweepFees(0) {} catch {}
         }
         if (address(sweepHook) != address(0)) {
             try sweepHook.sweepPoolFees(sweepPoolId, 0, 0) {} catch {}
         }
+    }
+
+    /// @dev Claim the escrow's USDG ledger. Best-effort on an empty escrow so
+    ///      leftover balances stay harvestable; `minUsdgOut` (keeper) and the
+    ///      received-vs-quoted check (stale) still enforce value.
+    function _claim() internal {
         try feeEscrow.claimToken(address(usdg)) {} catch {}
         // Native/base variant, best-effort (USDG-only escrows: no-op).
         try feeEscrow.claim() {} catch {}
