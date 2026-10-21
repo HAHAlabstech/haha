@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import LandingShowtimeHero from "@/components/landing/LandingShowtimeHero";
 import SmoothScroll from "@/components/landing/SmoothScroll";
+import ArrivalPreloader from "@/components/ArrivalPreloader";
 import HumorSpectrogram from "@/components/landing/HumorSpectrogram";
 import ProtocolFacts from "@/components/landing/ProtocolFacts";
 import ProcessPipeline from "@/components/landing/ProcessPipeline";
@@ -48,6 +49,7 @@ export default function HomePage() {
 
   return (
     <main className="relative min-h-screen bg-[#070709] text-[#f4f4f7] selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-clip">
+      <ArrivalPreloader />
       <SmoothScroll />
       {/* =========================================================================
           FULL SCROLL-DRIVEN 360° 3D SHOWTIME HERO RUNWAY

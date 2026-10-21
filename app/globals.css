@@ -1740,3 +1740,93 @@ body::before {
     gap: 2rem;
   }
 }
+
+/* ================= ARRIVAL PRELOADER (KENTIR-STYLE EDITORIAL SPLASH) ================= */
+body.arrival-pending {
+  overflow: hidden !important;
+}
+
+.arrival {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  color: #18191c;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+  animation: arrivalFailsafe 0.5s 4s forwards;
+}
+
+.arrival-paper {
+  position: absolute;
+  inset: 0;
+  background: #ece4d4;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 5vw 27px;
+  transition: transform 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+  will-change: transform;
+}
+
+.arrival.arrival-ready .arrival-paper {
+  transform: translateY(-101%);
+}
+
+.arrival-statement > span {
+  display: block;
+  position: relative;
+  white-space: nowrap;
+  padding: 0 9px 12px 0;
+  animation: arrivalType 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.arrival-redaction {
+  position: absolute;
+  inset: 0 -18px -5px -3px;
+  background: #18191c;
+  color: #fae8a4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  transform-origin: left;
+  animation: arrivalSeal 1.15s 0.25s cubic-bezier(0.76, 0, 0.24, 1) both;
+  overflow: hidden;
+}
+
+@keyframes arrivalType {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes arrivalSeal {
+  0%, 12% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes arrivalStamp {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes arrivalFailsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
