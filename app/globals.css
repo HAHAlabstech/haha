@@ -1741,7 +1741,7 @@ body::before {
   }
 }
 
-/* ================= HAHA EDITORIAL MANIFESTO PRELOADER ================= */
+/* ================= HAHA EDITORIAL ARRIVAL PRELOADER (KENTIR STANDARD) ================= */
 body.haha-preloader-pending {
   overflow: hidden !important;
 }
@@ -1758,61 +1758,66 @@ header {
   transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.haha-manifesto-preloader {
+.arrival {
   position: fixed;
   inset: 0;
   z-index: 100000;
   color: #ffffff;
-  isolation: isolate;
+  pointer-events: none;
   overflow: hidden;
+  isolation: isolate;
   user-select: none;
+  animation: arrivalFailsafe 0.5s 4s forwards;
+}
+
+.arrival-paper {
+  position: absolute;
+  inset: 0;
+  background: #08080c;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 4vw, 36px) clamp(24px, 5vw, 60px) clamp(20px, 3.5vw, 32px);
+  transition: transform 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+  will-change: transform;
+  border-bottom: 2px solid #ffc53d;
+  box-shadow: 0 16px 50px rgba(255, 197, 61, 0.25);
+  pointer-events: auto;
   cursor: pointer;
 }
 
-.haha-manifesto-paper {
-  position: absolute;
-  inset: 0;
-  background: #070709;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(24px, 4vw, 44px) clamp(24px, 5vw, 64px);
-  border-bottom: 2px solid #ffc53d;
-  box-shadow: 0 15px 50px rgba(255, 197, 61, 0.2);
-  transition: transform 0.82s cubic-bezier(0.76, 0, 0.24, 1);
-  will-change: transform;
-}
-
-.haha-manifesto-preloader.is-exiting .haha-manifesto-paper {
+.arrival.arrival-ready .arrival-paper {
   transform: translateY(-101%);
 }
 
-.haha-manifesto-preloader.is-exiting {
-  pointer-events: none;
+.arrival-statement > span {
+  display: block;
+  position: relative;
+  white-space: nowrap;
+  padding: 0 10px 14px 0;
+  line-height: 1.08;
+  animation: arrivalType 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) both;
 }
 
-.haha-manifesto-line-1 {
-  animation: manifestoSlide 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
-}
-
-.haha-manifesto-line-2 {
-  animation: manifestoSlide 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
-}
-
-.haha-seal-badge {
+.arrival-redaction {
+  position: absolute;
+  inset: 0 -16px 0 -4px;
+  background: #ffc53d;
+  color: #08080c;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
   transform-origin: left;
-  animation: sealPop 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
-  box-shadow: 0 0 20px rgba(255, 197, 61, 0.45);
+  animation: arrivalSeal 1.15s 0.25s cubic-bezier(0.76, 0, 0.24, 1) both;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 0 25px rgba(255, 197, 61, 0.45);
 }
 
-.haha-manifesto-line-3 {
-  animation: manifestoSlide 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
-}
-
-@keyframes manifestoSlide {
+@keyframes arrivalType {
   from {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -1820,14 +1825,19 @@ header {
   }
 }
 
-@keyframes sealPop {
-  0% {
-    opacity: 0;
-    transform: scaleX(0.2) scaleY(0.8);
+@keyframes arrivalSeal {
+  0%, 12% {
+    transform: scaleX(0);
   }
   100% {
-    opacity: 1;
-    transform: scale(1);
+    transform: scaleX(1);
+  }
+}
+
+@keyframes arrivalFailsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
   }
 }
 
