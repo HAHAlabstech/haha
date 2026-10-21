@@ -58,10 +58,30 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
    deploys TipJar, FeeSplitter, MicDrop placeholder, real MicDrop,
    VaultRegistry, ProducerGateway, and optional CrowdStaking (only when
    `HAHA_TOKEN_ADDRESS` is already live).
-5. Phase 2, cold-admin actions after the 48h timelock:
-   - `FeeSplitter.proposeSetMicDrop(realMicDrop)` → confirm.
-   - `MicDrop.proposeHahaToken(...)` → confirm (after the Pons launch tx).
-   - `FeeSplitter.proposeSetLaunchRefs(curve, hook, poolId)` → confirm.
+5. Phase 2, cold-admin actions after the 48h timelock (run from the offline
+   cold key; the hot operator cannot call `DEFAULT_ADMIN_ROLE` setters):
+   ```bash
+   # Rotate the temporary MicDrop sink to the real MicDrop
+   cast send "$FEE_SPLITTER" "proposeSetMicDrop(address)" "$MICDROP" --private-key "$COLD_PK"
+   # wait 48h, then:
+   cast send "$FEE_SPLITTER" "confirmSetMicDrop()" --private-key "$COLD_PK"
+
+   # After the Pons $HAHA launch tx (launchTxHash is bytes32, feeRecipient = FeeSplitter)
+   cast send "$MICDROP" "proposeHahaToken(address,bytes32,address,address,uint256,bool,uint256)" \
+     "$HAHA_TOKEN" "$PONS_LAUNCH_TX_HASH" "$FEE_SPLITTER" "$USDG" 200 false 0 \
+     --private-key "$COLD_PK"
+   # wait 48h, then:
+   cast send "$MICDROP" "confirmHahaToken()" --private-key "$COLD_PK"
+
+   # Bind the real Pons curve/hook/pool for sweeps
+   cast send "$FEE_SPLITTER" "proposeSetLaunchRefs(address,address,bytes32)" \
+     "$PONS_CURVE" "$PONS_HOOK" "$PONS_POOL_ID" --private-key "$COLD_PK"
+   # wait 48h, then:
+   cast send "$FEE_SPLITTER" "confirmSetLaunchRefs()" --private-key "$COLD_PK"
+   ```
+   Keep `COLD_PK` offline; never paste it into `.env` or CI. Do not open
+   creator-fee inflow/public launch until the MicDrop rotation is confirmed —
+   during the 48h window the 30% split sits in the temporary MicDrop sink.
 6. Record every address into the VPS `.env.worker`/`.env.app` file under the
    §10 `.env.example` block names. Do not commit real env values. Keep
    `WORKER_CHAIN_WRITES=off` until roles are verified.
