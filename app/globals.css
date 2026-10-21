@@ -1140,9 +1140,10 @@ body::before {
 }
 
 .screen {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  background: linear-gradient(180deg, #16120e, #0f0c09);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)), #0c0c12;
+  box-shadow: 0 30px 60px -25px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.09);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1150,13 +1151,13 @@ body::before {
 }
 
 .screen:hover {
-  border-color: rgba(255, 177, 59, 0.35);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 197, 61, 0.35);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
 .screen-bar {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--line);
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1164,7 +1165,7 @@ body::before {
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--bone-dim);
+  color: #71717a;
 }
 
 .screen-bar .dots {
@@ -1176,7 +1177,7 @@ body::before {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--line-strong);
+  background: rgba(255, 255, 255, 0.16);
   display: inline-block;
 }
 
@@ -1191,20 +1192,20 @@ body::before {
 
 .screen-body .quote {
   font-family: var(--serif);
-  font-weight: 300;
+  font-weight: 400;
   font-size: 21px;
-  line-height: 1.32;
-  color: var(--bone-bright);
+  line-height: 1.38;
+  color: #f4f4f5;
 }
 
 .screen-body .ai {
   font-family: var(--mono);
   font-size: 12.5px;
   line-height: 1.65;
-  color: #bfb5a5;
+  color: #a1a1aa;
   padding: 14px 16px;
-  border-left: 2px solid var(--bone-faint);
-  background: rgba(255, 255, 255, 0.02);
+  border-left: 2px solid #ffc53d;
+  background: rgba(7, 7, 9, 0.8);
 }
 
 .confidence {
@@ -1409,11 +1410,13 @@ body::before {
   .haha-spec-pin {
     position: sticky;
     top: 0;
+    width: 100%;
     height: 100vh;
     display: flex;
     align-items: center;
     padding-top: calc(var(--topbar-height, 68px) + 0.5rem);
     padding-bottom: 2rem;
+    padding-inline: clamp(20px, 4vw, 56px);
     overflow: clip;
     background: transparent;
   }
@@ -1426,18 +1429,20 @@ body::before {
     width: 100%;
     max-width: 1440px;
     margin-inline: auto;
-    padding-inline: clamp(20px, 4vw, 56px);
+    padding-inline: 0;
   }
 
   .haha-spec-copy {
-    opacity: clamp(0, calc((var(--zk) - 0.2) * 1.4), 1);
-    transform: scale(calc(0.78 + 0.22 * var(--zk)));
+    transform-origin: left center;
+    opacity: clamp(0, calc((var(--zk) - 0.15) * 1.4), 1);
+    transform: scale(calc(0.92 + 0.08 * var(--zk)));
     will-change: transform, opacity;
   }
 
   .haha-spec-stage {
-    opacity: clamp(0, calc((var(--zk) - 0.2) * 1.4), 1);
-    transform: scale(calc(0.48 + 0.52 * var(--zk)));
+    transform-origin: right center;
+    opacity: clamp(0, calc((var(--zk) - 0.15) * 1.4), 1);
+    transform: scale(calc(0.92 + 0.08 * var(--zk)));
     will-change: transform, opacity;
   }
 
@@ -1470,6 +1475,9 @@ body::before {
     display: grid;
     grid-template-columns: 1fr;
     gap: 3rem;
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
   }
 
   .haha-spec-copy,
@@ -1678,8 +1686,6 @@ body::before {
 .haha-pipe-stage {
   position: relative;
   width: 100%;
-  max-width: 1440px;
-  margin-inline: auto;
   padding: 4rem clamp(20px, 4vw, 56px);
 }
 .haha-pipe-runway[data-mode="pinned"] .haha-pipe-stage {
@@ -1691,6 +1697,17 @@ body::before {
   justify-content: space-between;
   padding: calc(var(--lp-nav-h, 76px) + 0.5rem) clamp(20px, 4vw, 56px) 1.2rem;
   overflow: clip;
+}
+.haha-pipe-inner {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1440px;
+  height: 100%;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .haha-pipe-scenes {
@@ -1706,8 +1723,8 @@ body::before {
 
 .haha-pipe-scene {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6.5fr);
-  gap: clamp(2rem, 5vw, 5rem);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: clamp(2.5rem, 5vw, 5rem);
   align-items: center;
   height: 100%;
 }
@@ -1723,14 +1740,14 @@ body::before {
   pointer-events: auto;
 }
 .haha-pipe-runway[data-mode="pinned"] .haha-pipe-copy {
-  transform: translateY(calc(var(--d, 0) * -36px));
+  transform: translateY(calc(var(--d, 0) * -28px));
   filter: blur(calc((1 - var(--v, 0)) * 3px));
   will-change: transform, filter;
 }
 .haha-pipe-runway[data-mode="pinned"] .haha-pipe-visual {
-  transform: perspective(1200px) translateX(calc(var(--d, 0) * 70px)) rotateY(calc(var(--d, 0) * -16deg)) scale(calc(0.92 + var(--v, 0) * 0.08));
+  transform: perspective(1200px) translateX(calc(var(--d, 0) * 40px)) rotateY(calc(var(--d, 0) * -10deg)) scale(calc(0.95 + var(--v, 0) * 0.05));
   filter: blur(calc((1 - var(--v, 0)) * 3px));
-  transform-origin: 40% 50%;
+  transform-origin: right center;
   will-change: transform, filter;
 }
 

@@ -3,10 +3,6 @@
 import { useEffect } from "react";
 import type Lenis from "lenis";
 
-/* Smooth wheel scrolling for the landing page, inspired by Dojang's smooth-scroll.tsx.
-   Eases mouse wheel steps into continuous 60/120fps motion so scroll-driven 3D and CSS
-   timelines glide smoothly without coarse stepping. */
-
 const SMOOTH = true;
 let lenis: Lenis | null = null;
 let wake: () => void = () => {};
@@ -17,19 +13,45 @@ const reducedMotion = () =>
 
 const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
 
+function computeTargetScrollY(el: HTMLElement, id: string): number {
+  const rect = el.getBoundingClientRect();
+  const baseTop = rect.top + window.scrollY;
+  const isDesktopPinned = window.matchMedia(
+    "(min-width: 1024px) and (min-height: 680px)",
+  ).matches;
+
+  // #waveform (01 — The Science) overlaps the hero by -160vh and zooms in over 60vh (--lp-zin).
+  // Scrolling +65vh into #waveform lands right where --zk === 1 and Step 01 is active.
+  if (id === "waveform" && isDesktopPinned) {
+    return baseTop + window.innerHeight * 0.65;
+  }
+
+  // #how-it-works (03 — The Protocol Workflow) uses a sticky 100vh stage inside a 340vh runway.
+  // Landing at baseTop aligns the sticky stage flush with the viewport top.
+  if (id === "how-it-works") {
+    return baseTop;
+  }
+
+  return Math.max(0, baseTop - 72);
+}
+
 /* Scrolls to an element by id smoothly using Lenis */
 export function scrollToId(id: string): boolean {
-  if (typeof document === "undefined") return false;
+  if (typeof document === "undefined" || typeof window === "undefined") {
+    return false;
+  }
   const el = document.getElementById(id);
   if (!el) return false;
+  const targetY = computeTargetScrollY(el, id);
+
   if (lenis) {
-    lenis.scrollTo(el, { duration: 1.2, offset: -88, easing: easeOutQuart });
+    lenis.scrollTo(targetY, { duration: 1.15, easing: easeOutQuart });
     wake();
     return true;
   }
-  el.scrollIntoView({
+  window.scrollTo({
+    top: targetY,
     behavior: reducedMotion() ? "auto" : "smooth",
-    block: "start",
   });
   return true;
 }
@@ -88,7 +110,11 @@ export default function SmoothScroll() {
           const path = href.slice(0, hashIndex);
           const hash = href.slice(hashIndex + 1);
           if (!hash) return;
-          if (path === "" || path === "/" || (typeof window !== "undefined" && path === window.location.pathname)) {
+          if (
+            path === "" ||
+            path === "/" ||
+            (typeof window !== "undefined" && path === window.location.pathname)
+          ) {
             const el = document.getElementById(hash);
             if (el) {
               e.preventDefault();
@@ -111,7 +137,9 @@ export default function SmoothScroll() {
           window.removeEventListener("wheel", wake);
           window.removeEventListener("keydown", wake);
           window.removeEventListener("scroll", wake);
-          document.removeEventListener("click", onAnchorClick, { capture: true });
+          document.removeEventListener("click", onAnchorClick, {
+            capture: true,
+          });
           if (raf) cancelAnimationFrame(raf);
           raf = 0;
           l.destroy();

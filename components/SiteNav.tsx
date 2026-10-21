@@ -8,9 +8,10 @@ import WalletMenu from "./WalletMenu";
 import { scrollToId } from "@/components/landing/SmoothScroll";
 
 const NAV_LINKS = [
-  { href: "/#how-it-works", label: "How It Works" },
   { href: "/#waveform", label: "The Science" },
+  { href: "/#how-it-works", label: "How It Works" },
   { href: "/#vault", label: "Joke Vault" },
+  { href: "/#telemetry", label: "Live Feed" },
   { href: "/#faq", label: "FAQ" },
 ];
 
@@ -24,7 +25,6 @@ export default function SiteNav() {
       const hero = document.querySelector(".haha-runway");
       if (hero) {
         const rect = hero.getBoundingClientRect();
-        // Keep navbar completely transparent while inside hero area; activate bg only once exited
         setScrolled(rect.bottom <= 80);
       } else {
         setScrolled(window.scrollY > 20);
@@ -46,14 +46,16 @@ export default function SiteNav() {
         window.history.pushState(null, "", href);
         setMobileMenuOpen(false);
       }
+    } else {
+      setMobileMenuOpen(false);
     }
   };
 
   return (
     <>
-      {/* Top Floating Glass Navigation Bar */}
+      {/* Top Floating Glass Navigation Bar — aligned to px-[clamp(20px,4vw,56px)] & max-w-[1440px] */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-[clamp(16px,4vw,48px)] py-4 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-[clamp(20px,4vw,56px)] py-4 ${
           scrolled || mobileMenuOpen
             ? "bg-[#070709]/85 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl py-3"
             : "bg-transparent"
@@ -99,10 +101,8 @@ export default function SiteNav() {
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-3">
-            {/* Wallet Menu (logo + address + balances + disconnect) */}
             <WalletMenu />
 
-            {/* Launch App Primary CTA */}
             <Link
               href="/app"
               className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#ffc53d] to-[#f59e0b] hover:from-[#ffd875] hover:to-[#ffc53d] font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-[#070709] shadow-[0_0_24px_rgba(255,197,61,0.35)] hover:shadow-[0_0_32px_rgba(255,197,61,0.55)] hover:scale-[1.02] transition-all"
@@ -112,7 +112,6 @@ export default function SiteNav() {
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
 
-            {/* Mobile Menu Toggle Button */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

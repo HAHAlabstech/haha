@@ -19,7 +19,7 @@ const FAQS: FaqItem[] = [
   },
   {
     q: "What does it cost to play (Open Mic vs Pro Stage)?",
-    a: "Open Mic is 100% free: every creator receives 5 free bits recharged every 24 hours against the baseline Straight Man model (1.0× reward weight). Pro Stage lets you stake for 2.5× reward weight against the full Straight Man reasoning engine with retrieval from previous seasons.",
+    a: "Open Mic is 100% free: every creator receives 5 free bits recharged every 24 hours against the baseline Straight Man model (1.0× reward weight). Pro Stage lets you compete for 2.5× reward weight against the full Straight Man reasoning engine with retrieval from previous seasons.",
   },
   {
     q: "Who are the Crowd and how is jury judging kept fair?",
@@ -55,38 +55,33 @@ export default function LandingFaq() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="relative haha-sec-divider bg-[#070709] py-28 px-[clamp(20px,4vw,56px)] text-white overflow-hidden">
-      {/* Ambient Stage Spotlight */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute bottom-1/4 right-1/4 w-[750px] h-[450px] bg-radial from-[#ffc53d]/05 via-transparent to-transparent blur-[140px]"
-      />
-
-      <div className="max-w-[1440px] mx-auto relative z-10">
-        {/* Header */}
-        <div className="max-w-3xl mb-16">
+    <section
+      id="faq"
+      className="relative haha-sec-divider bg-[#070709] py-28 px-[clamp(20px,4vw,56px)] text-white overflow-hidden"
+    >
+      <div className="max-w-[1440px] mx-auto relative z-10 grid gap-12 lg:grid-cols-[1fr_1.5fr] items-start">
+        {/* Left Column Header */}
+        <div className="lg:sticky lg:top-28">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
             06 — Box Office FAQ
           </p>
           <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
             Common Questions from <em className="italic text-[#ffc53d]">the Crowd.</em>
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-zinc-400 leading-relaxed font-light">
+          <p className="mt-4 text-base sm:text-lg text-zinc-400 leading-relaxed font-light max-w-md">
             Everything you need to know about taking the stage, judging blind, and claiming USDG rewards.
           </p>
         </div>
 
-        {/* Accordion List */}
-        <div className="max-w-4xl space-y-4">
+        {/* Right Column Accordion List — spans flush to the 1440px right edge */}
+        <div className="space-y-3">
           {FAQS.map((faq, idx) => {
             const isOpen = openIdx === idx;
             return (
               <div
                 key={faq.q}
-                className={`haha-glass-panel rounded-2xl transition-all duration-300 overflow-hidden ${
-                  isOpen
-                    ? "border-[#ffc53d]/45 shadow-[0_0_35px_rgba(255,197,61,0.12)]"
-                    : "hover:border-white/20"
+                className={`haha-glass-panel rounded-2xl transition-colors duration-300 overflow-hidden ${
+                  isOpen ? "border-[#ffc53d]/40" : "hover:border-white/20"
                 }`}
               >
                 <button
@@ -94,12 +89,14 @@ export default function LandingFaq() {
                   onClick={() => setOpenIdx(isOpen ? null : idx)}
                   className="w-full p-6 text-left flex items-center justify-between gap-4 cursor-pointer"
                 >
-                  <span className="font-serif text-xl sm:text-2xl text-white font-normal">
+                  <span className="display-serif text-xl sm:text-2xl text-white font-normal tracking-tight">
                     {faq.q}
                   </span>
                   <span
-                    className={`p-2.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 transition-transform duration-300 shrink-0 ${
-                      isOpen ? "rotate-180 text-[#ffc53d] border-[#ffc53d]/40 bg-[#ffc53d]/10" : ""
+                    className={`p-2 rounded-full border border-white/10 bg-white/5 text-zinc-400 transition-transform duration-300 shrink-0 ${
+                      isOpen
+                        ? "rotate-180 text-[#ffc53d] border-[#ffc53d]/40 bg-[#ffc53d]/10"
+                        : ""
                     }`}
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -107,7 +104,7 @@ export default function LandingFaq() {
                 </button>
 
                 {isOpen ? (
-                  <div className="px-6 pb-6 pt-0 border-t border-white/5 text-sm sm:text-base text-zinc-300 leading-relaxed font-light">
+                  <div className="px-6 pb-6 pt-0 border-t border-white/[0.07] text-sm sm:text-[15px] text-zinc-300 leading-relaxed font-light">
                     <p className="pt-4">{faq.a}</p>
                   </div>
                 ) : null}
