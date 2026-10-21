@@ -610,46 +610,84 @@
     scene.add(botCommonLegs);
 
     const botPelvis = new THREE.Group();
+    botPelvis.position.set(0, 1.15, -0.06);
     botCommonLegs.add(botPelvis);
 
-    addMesh(new THREE.CylinderGeometry(0.38, 0.42, 0.2, 32), chassisMat, botPelvis, 0, 1.15, 0);
-    const pelvisPlate = addMesh(new THREE.BoxGeometry(0.32, 0.16, 0.06), armorMat, botPelvis, 0, 1.14, 0.22);
+    addMesh(new THREE.CylinderGeometry(0.38, 0.42, 0.22, 32), chassisMat, botPelvis, 0, 0, 0);
+    const pelvisPlate = addMesh(new THREE.BoxGeometry(0.34, 0.18, 0.08), armorMat, botPelvis, 0, -0.02, 0.22);
     pelvisPlate.rotation.x = 0.2;
+    addMesh(new THREE.TorusGeometry(0.39, 0.015, 8, 32), goldTitaniumMat, botPelvis, 0, 0.08, 0).rotation.x = Math.PI / 2;
 
-    // Articulated legs with standing kinematics
+    // ARTICULATED BIPEDAL LEGS WITH DOWNWARD NORMAL BONES (-Y)
+    // Left Leg
+    const leftHip = new THREE.Group();
+    leftHip.position.set(-0.30, -0.02, 0.02);
+    botPelvis.add(leftHip);
+    addMesh(new THREE.SphereGeometry(0.13, 20, 16), chassisMat, leftHip);
+    addMesh(new THREE.TorusGeometry(0.13, 0.015, 10, 24), goldTitaniumMat, leftHip).rotation.y = Math.PI / 2;
+
     const leftThigh = new THREE.Group();
-    leftThigh.position.set(-0.28, 1.14, 0.05);
-    botPelvis.add(leftThigh);
-    addMesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 20), goldTitaniumMat, leftThigh).rotation.z = Math.PI / 2;
-    addLimb([0, 0, 0], [0, 0, 0.62], 0.11, armorMat, leftThigh);
-    addMesh(new THREE.SphereGeometry(0.12, 20, 16), chassisMat, leftThigh, 0, 0, 0.62);
-    addMesh(new THREE.TorusGeometry(0.11, 0.014, 10, 24), goldTitaniumMat, leftThigh, 0, 0, 0.62).rotation.y = Math.PI / 2;
+    leftHip.add(leftThigh);
+    addMesh(new THREE.BoxGeometry(0.24, 0.52, 0.22), armorMat, leftThigh, 0, -0.26, 0.01);
+    addMesh(new THREE.BoxGeometry(0.03, 0.48, 0.04), goldTitaniumMat, leftThigh, -0.11, -0.26, 0.01);
+    addLimb([0.08, -0.05, -0.06], [0.08, -0.48, -0.06], 0.03, chromeMat, leftThigh);
+    const leftKneeMesh = addMesh(new THREE.CylinderGeometry(0.12, 0.12, 0.18, 24), goldTitaniumMat, leftThigh, 0, -0.54, 0);
+    leftKneeMesh.rotation.z = Math.PI / 2;
 
     const leftCalf = new THREE.Group();
-    leftCalf.position.set(0, 0, 0.62);
+    leftCalf.position.set(0, -0.54, 0);
     leftThigh.add(leftCalf);
-    addLimb([0, 0, 0], [0, -0.88, 0.08], 0.09, chassisMat, leftCalf);
-    addMesh(new THREE.BoxGeometry(0.18, 0.1, 0.32), armorMat, leftCalf, 0, -0.92, 0.16);
+    addMesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), armorMat, leftCalf, 0, -0.28, 0.03);
+    const leftShinProw = addMesh(new THREE.BoxGeometry(0.08, 0.48, 0.1), chassisMat, leftCalf, 0, -0.26, 0.14);
+    leftShinProw.rotation.x = -0.1;
+    addLimb([0, -0.06, -0.08], [0, -0.50, -0.08], 0.035, chromeMat, leftCalf);
+    addMesh(new THREE.SphereGeometry(0.10, 16, 12), chassisMat, leftCalf, 0, -0.58, 0);
+
+    const leftFoot = new THREE.Group();
+    leftFoot.position.set(0, -0.58, 0);
+    leftCalf.add(leftFoot);
+    addMesh(new THREE.BoxGeometry(0.22, 0.10, 0.32), armorMat, leftFoot, 0, -0.05, 0.11);
+    addMesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), goldTitaniumMat, leftFoot, 0, -0.06, 0.27);
+    addMesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), chassisMat, leftFoot, 0, -0.04, -0.06);
+    addMesh(new THREE.BoxGeometry(0.24, 0.025, 0.46), chassisMat, leftFoot, 0, -0.10, 0.10);
+
+    // Right Leg
+    const rightHip = new THREE.Group();
+    rightHip.position.set(0.30, -0.02, 0.02);
+    botPelvis.add(rightHip);
+    addMesh(new THREE.SphereGeometry(0.13, 20, 16), chassisMat, rightHip);
+    addMesh(new THREE.TorusGeometry(0.13, 0.015, 10, 24), goldTitaniumMat, rightHip).rotation.y = Math.PI / 2;
 
     const rightThigh = new THREE.Group();
-    rightThigh.position.set(0.28, 1.14, 0.05);
-    botPelvis.add(rightThigh);
-    addMesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 20), goldTitaniumMat, rightThigh).rotation.z = Math.PI / 2;
-    addLimb([0, 0, 0], [0, 0, 0.62], 0.11, armorMat, rightThigh);
-    addMesh(new THREE.SphereGeometry(0.12, 20, 16), chassisMat, rightThigh, 0, 0, 0.62);
-    addMesh(new THREE.TorusGeometry(0.11, 0.014, 10, 24), goldTitaniumMat, rightThigh, 0, 0, 0.62).rotation.y = Math.PI / 2;
+    rightHip.add(rightThigh);
+    addMesh(new THREE.BoxGeometry(0.24, 0.52, 0.22), armorMat, rightThigh, 0, -0.26, 0.01);
+    addMesh(new THREE.BoxGeometry(0.03, 0.48, 0.04), goldTitaniumMat, rightThigh, 0.11, -0.26, 0.01);
+    addLimb([-0.08, -0.05, -0.06], [-0.08, -0.48, -0.06], 0.03, chromeMat, rightThigh);
+    const rightKneeMesh = addMesh(new THREE.CylinderGeometry(0.12, 0.12, 0.18, 24), goldTitaniumMat, rightThigh, 0, -0.54, 0);
+    rightKneeMesh.rotation.z = Math.PI / 2;
 
     const rightCalf = new THREE.Group();
-    rightCalf.position.set(0, 0, 0.62);
+    rightCalf.position.set(0, -0.54, 0);
     rightThigh.add(rightCalf);
-    addLimb([0, 0, 0], [0, -0.88, 0.08], 0.09, chassisMat, rightCalf);
-    addMesh(new THREE.BoxGeometry(0.18, 0.1, 0.32), armorMat, rightCalf, 0, -0.92, 0.16);
+    addMesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), armorMat, rightCalf, 0, -0.28, 0.03);
+    const rightShinProw = addMesh(new THREE.BoxGeometry(0.08, 0.48, 0.1), chassisMat, rightCalf, 0, -0.26, 0.14);
+    rightShinProw.rotation.x = -0.1;
+    addLimb([0, -0.06, -0.08], [0, -0.50, -0.08], 0.035, chromeMat, rightCalf);
+    addMesh(new THREE.SphereGeometry(0.10, 16, 12), chassisMat, rightCalf, 0, -0.58, 0);
 
-    // Initial seated pose
-    leftThigh.rotation.x = -Math.PI / 2 + 0.15;
-    leftCalf.rotation.x = Math.PI / 2 - 0.15;
-    rightThigh.rotation.x = -Math.PI / 2 + 0.15;
-    rightCalf.rotation.x = Math.PI / 2 - 0.15;
+    const rightFoot = new THREE.Group();
+    rightFoot.position.set(0, -0.58, 0);
+    rightCalf.add(rightFoot);
+    addMesh(new THREE.BoxGeometry(0.22, 0.10, 0.32), armorMat, rightFoot, 0, -0.05, 0.11);
+    addMesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), goldTitaniumMat, rightFoot, 0, -0.06, 0.27);
+    addMesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), chassisMat, rightFoot, 0, -0.04, -0.06);
+    addMesh(new THREE.BoxGeometry(0.24, 0.025, 0.46), chassisMat, rightFoot, 0, -0.10, 0.10);
+
+    // Initial seated leg angles
+    leftThigh.rotation.x = -1.44;
+    leftCalf.rotation.x = 1.44;
+    rightThigh.rotation.x = -1.44;
+    rightCalf.rotation.x = 1.44;
 
     /* =========================================================================
        OPTION 1: "FRONTIER APEX" (Military Mecha on Throne)
@@ -700,49 +738,101 @@
     const reactorLight1 = new THREE.PointLight(0xffb83b, 1.2, 2.8);
     coreGroup1.add(reactorLight1);
 
-    [-1, 1].forEach((sg) => {
-      const pauldron = new THREE.Group();
-      pauldron.position.set(sg * 0.65, 0.88, 0);
-      torso1.add(pauldron);
-      const pShell = addMesh(new THREE.SphereGeometry(0.18, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, pauldron);
-      pShell.rotation.z = sg * -0.4;
-      const pBevel = addMesh(new THREE.TorusGeometry(0.175, 0.014, 10, 32), goldTitaniumMat, pauldron);
-      pBevel.rotation.x = Math.PI / 2;
+    // ARTICULATED CYBERNETIC ARMS & HANDS (4-FINGER ANATOMY)
+    // Left Arm (Dynamic Gesture / Knee Rest Arm)
+    const leftShoulder1 = new THREE.Group();
+    leftShoulder1.position.set(-0.65, 0.82, 0);
+    torso1.add(leftShoulder1);
+    const leftPauldron1 = addMesh(new THREE.SphereGeometry(0.19, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, leftShoulder1);
+    leftPauldron1.rotation.z = 0.4;
+    addMesh(new THREE.TorusGeometry(0.18, 0.014, 10, 32), goldTitaniumMat, leftShoulder1).rotation.x = Math.PI / 2;
 
-      addLimb([sg * 0.68, 0.82, 0], [sg * 0.74, 0.32, 0.28], 0.055, armorMat, torso1);
-      addLimb([sg * 0.63, 0.8, -0.04], [sg * 0.7, 0.3, 0.22], 0.035, chromeMat, torso1);
-      const elbow = addMesh(new THREE.CylinderGeometry(0.11, 0.11, 0.07, 24), goldTitaniumMat, torso1, sg * 0.74, 0.32, 0.28);
-      elbow.rotation.z = Math.PI / 2;
-      elbow.rotation.y = sg * 0.3;
+    const leftUpperArm1 = new THREE.Group();
+    leftShoulder1.add(leftUpperArm1);
+    addLimb([0, 0, 0], [0, -0.42, 0], 0.06, armorMat, leftUpperArm1);
+    addLimb([0.04, -0.04, -0.03], [0.04, -0.38, -0.03], 0.032, chromeMat, leftUpperArm1);
+    const leftElbowJoint1 = addMesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 20), goldTitaniumMat, leftUpperArm1, 0, -0.42, 0);
+    leftElbowJoint1.rotation.z = Math.PI / 2;
 
-      if (sg === -1) {
-        addLimb([-0.74, 0.32, 0.28], [-0.38, -0.02, 0.62], 0.075, armorMat, torso1);
-        const leftHand = new THREE.Group();
-        leftHand.position.set(-0.36, -0.04, 0.65);
-        leftHand.rotation.set(0.3, -0.4, 0);
-        torso1.add(leftHand);
-        addMesh(new THREE.BoxGeometry(0.12, 0.04, 0.12), chassisMat, leftHand);
-        [-0.04, 0, 0.04].forEach((fx) => {
-          addMesh(new THREE.SphereGeometry(0.018, 10, 8), goldTitaniumMat, leftHand, fx, -0.01, 0.06);
-          addLimb([fx, -0.01, 0.06], [fx * 1.1, -0.04, 0.11], 0.014, armorMat, leftHand);
-          addLimb([fx * 1.1, -0.04, 0.11], [fx * 1.1, -0.09, 0.13], 0.012, chromeMat, leftHand);
-        });
-        addLimb([-0.06, 0.01, 0.02], [-0.09, -0.02, 0.06], 0.015, armorMat, leftHand);
-      } else {
-        addLimb([0.74, 0.32, 0.28], [0.55, 0.65, 0.68], 0.075, armorMat, torso1);
-        const rightHand = new THREE.Group();
-        rightHand.position.set(0.55, 0.65, 0.68);
-        rightHand.rotation.set(-0.2, 0.5, 0.3);
-        torso1.add(rightHand);
-        addMesh(new THREE.BoxGeometry(0.11, 0.05, 0.1), chassisMat, rightHand);
-        [-0.035, 0, 0.035].forEach((fx) => {
-          addMesh(new THREE.SphereGeometry(0.018, 10, 8), goldTitaniumMat, rightHand, fx, 0.02, 0.05);
-          addLimb([fx, 0.02, 0.05], [fx, 0.03, 0.1], 0.013, armorMat, rightHand);
-          addLimb([fx, 0.03, 0.1], [fx, -0.03, 0.12], 0.011, chromeMat, rightHand);
-        });
-        addLimb([0.05, -0.01, 0.03], [0.06, 0.02, 0.08], 0.014, armorMat, rightHand);
-      }
+    const leftForearm1 = new THREE.Group();
+    leftForearm1.position.set(0, -0.42, 0);
+    leftUpperArm1.add(leftForearm1);
+    addMesh(new THREE.BoxGeometry(0.14, 0.42, 0.14), armorMat, leftForearm1, 0, -0.21, 0.02);
+    addMesh(new THREE.BoxGeometry(0.02, 0.36, 0.03), amberGlowMat, leftForearm1, 0, -0.21, 0.095);
+    addMesh(new THREE.SphereGeometry(0.07, 16, 12), chassisMat, leftForearm1, 0, -0.42, 0);
+
+    const leftHand1 = new THREE.Group();
+    leftHand1.position.set(0, -0.42, 0);
+    leftForearm1.add(leftHand1);
+    addMesh(new THREE.BoxGeometry(0.12, 0.045, 0.12), chassisMat, leftHand1, 0, -0.02, 0.06);
+    addMesh(new THREE.BoxGeometry(0.10, 0.02, 0.06), goldTitaniumMat, leftHand1, 0, 0.005, 0.06);
+    [-0.04, -0.013, 0.014, 0.041].forEach((fx) => {
+      const fg = new THREE.Group();
+      fg.position.set(fx, -0.01, 0.12);
+      leftHand1.add(fg);
+      addMesh(new THREE.SphereGeometry(0.014, 8, 6), goldTitaniumMat, fg);
+      addLimb([0, 0, 0], [0, -0.03, 0.06], 0.012, armorMat, fg);
+      addLimb([0, -0.03, 0.06], [0, -0.07, 0.09], 0.010, chromeMat, fg);
     });
+    const leftThumb1 = new THREE.Group();
+    leftThumb1.position.set(0.06, -0.01, 0.04);
+    leftThumb1.rotation.set(0.2, 0.5, -0.3);
+    leftHand1.add(leftThumb1);
+    addLimb([0, 0, 0], [0.03, -0.03, 0.05], 0.013, armorMat, leftThumb1);
+    addLimb([0.03, -0.03, 0.05], [0.05, -0.06, 0.08], 0.011, chromeMat, leftThumb1);
+
+    // Right Arm (Microphone Gripping Arm)
+    const rightShoulder1 = new THREE.Group();
+    rightShoulder1.position.set(0.65, 0.82, 0);
+    torso1.add(rightShoulder1);
+    const rightPauldron1 = addMesh(new THREE.SphereGeometry(0.19, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, rightShoulder1);
+    rightPauldron1.rotation.z = -0.4;
+    addMesh(new THREE.TorusGeometry(0.18, 0.014, 10, 32), goldTitaniumMat, rightShoulder1).rotation.x = Math.PI / 2;
+
+    const rightUpperArm1 = new THREE.Group();
+    rightShoulder1.add(rightUpperArm1);
+    addLimb([0, 0, 0], [0, -0.42, 0], 0.06, armorMat, rightUpperArm1);
+    addLimb([-0.04, -0.04, -0.03], [-0.04, -0.38, -0.03], 0.032, chromeMat, rightUpperArm1);
+    const rightElbowJoint1 = addMesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 20), goldTitaniumMat, rightUpperArm1, 0, -0.42, 0);
+    rightElbowJoint1.rotation.z = Math.PI / 2;
+
+    const rightForearm1 = new THREE.Group();
+    rightForearm1.position.set(0, -0.42, 0);
+    rightUpperArm1.add(rightForearm1);
+    addMesh(new THREE.BoxGeometry(0.14, 0.42, 0.14), armorMat, rightForearm1, 0, -0.21, 0.02);
+    addMesh(new THREE.BoxGeometry(0.02, 0.36, 0.03), amberGlowMat, rightForearm1, 0, -0.21, 0.095);
+    addMesh(new THREE.SphereGeometry(0.07, 16, 12), chassisMat, rightForearm1, 0, -0.42, 0);
+
+    const rightHand1 = new THREE.Group();
+    rightHand1.position.set(0, -0.42, 0);
+    rightForearm1.add(rightHand1);
+    addMesh(new THREE.BoxGeometry(0.12, 0.045, 0.12), chassisMat, rightHand1, 0, -0.02, 0.06);
+    addMesh(new THREE.BoxGeometry(0.10, 0.02, 0.06), goldTitaniumMat, rightHand1, 0, 0.005, 0.06);
+    [-0.035, -0.01, 0.015, 0.038].forEach((fx) => {
+      const fg = new THREE.Group();
+      fg.position.set(fx, -0.01, 0.12);
+      rightHand1.add(fg);
+      addMesh(new THREE.SphereGeometry(0.014, 8, 6), goldTitaniumMat, fg);
+      addLimb([0, 0, 0], [0, -0.04, 0.04], 0.012, armorMat, fg);
+      addLimb([0, -0.04, 0.04], [0, -0.07, 0.02], 0.010, chromeMat, fg);
+    });
+    const rightThumb1 = new THREE.Group();
+    rightThumb1.position.set(-0.06, -0.01, 0.04);
+    rightThumb1.rotation.set(0.2, -0.5, 0.3);
+    rightHand1.add(rightThumb1);
+    addLimb([0, 0, 0], [-0.03, -0.03, 0.04], 0.013, armorMat, rightThumb1);
+    addLimb([-0.03, -0.03, 0.04], [-0.04, -0.06, 0.06], 0.011, chromeMat, rightThumb1);
+
+    // Initial seated arm poses
+    leftShoulder1.rotation.set(0.48, 0.12, -0.22);
+    leftUpperArm1.rotation.set(0.15, 0, 0);
+    leftForearm1.rotation.set(0.68, 0, 0);
+    leftHand1.rotation.set(-0.35, 0, 0);
+
+    rightShoulder1.rotation.set(0.62, -0.25, 0.22);
+    rightUpperArm1.rotation.set(0.2, 0, 0);
+    rightForearm1.rotation.set(0.85, 0, 0);
+    rightHand1.rotation.set(0.18, 0, 0);
 
     const headPivot1 = new THREE.Group();
     headPivot1.position.y = 1.24;
@@ -1179,23 +1269,51 @@
 
       flare = Math.max(0, flare - dt * 2.0);
 
-      // Stand-up bipedal kinematics for throne robots (Option 1, 2, 3)
+      // Stand-up & Walk bipedal kinematics for throne robots (Option 1, 2, 3)
       if (botCommonLegs.visible) {
         const targetStand = isStanding ? 1 : 0;
         standProgress += (targetStand - standProgress) * (1 - Math.exp(-6 * dt));
         const standEase = standProgress * standProgress * (3 - 2 * standProgress);
 
-        botPelvis.position.y = standEase * 0.58;
-        botPelvis.position.z = standEase * 0.42;
+        // Walk cycle when standing
+        const walkCycle = isStanding ? time * 3.5 : 0;
+        const walkBob = standProgress > 0.8 ? Math.abs(Math.sin(walkCycle * 2)) * 0.04 : 0;
+        const stride = standProgress > 0.8 ? Math.sin(walkCycle) : 0;
+        const leftStride = stride;
+        const rightStride = -stride;
 
-        leftThigh.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2 + 0.15, -0.06, standEase);
-        leftCalf.rotation.x = THREE.MathUtils.lerp(Math.PI / 2 - 0.15, 0.04, standEase);
-        rightThigh.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2 + 0.15, 0.02, standEase);
-        rightCalf.rotation.x = THREE.MathUtils.lerp(Math.PI / 2 - 0.15, -0.02, standEase);
+        botPelvis.position.y = standEase * 0.48 + walkBob;
+        botPelvis.position.z = standEase * 0.52 + (standProgress > 0.8 ? 0.35 : 0);
+        botPelvis.position.x = standProgress > 0.8 ? Math.sin(walkCycle) * 0.05 : 0;
 
-        if (torso1) torso1.rotation.x = -standEase * 0.09;
-        if (torso2) torso2.rotation.x = -standEase * 0.09;
-        if (torso3) torso3.rotation.x = -standEase * 0.09;
+        leftThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - leftStride * 0.45;
+        leftCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (leftStride < 0 ? -leftStride * 0.55 : 0.05);
+        leftFoot.rotation.x = leftStride > 0 ? -leftStride * 0.2 : leftStride * 0.15;
+
+        rightThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - rightStride * 0.45;
+        rightCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (rightStride < 0 ? -rightStride * 0.55 : 0.05);
+        rightFoot.rotation.x = rightStride > 0 ? -rightStride * 0.2 : rightStride * 0.15;
+
+        if (torso1) {
+          torso1.rotation.x = -standEase * 0.12 + Math.abs(stride) * 0.03;
+          torso1.rotation.y = standProgress > 0.8 ? Math.sin(walkCycle) * 0.12 : 0;
+
+          if (typeof leftShoulder1 !== "undefined") {
+            leftShoulder1.rotation.x = THREE.MathUtils.lerp(0.48, -0.32, standEase) - leftStride * 0.18;
+            leftShoulder1.rotation.y = THREE.MathUtils.lerp(0.12, 0.35, standEase);
+            leftShoulder1.rotation.z = THREE.MathUtils.lerp(-0.22, -0.52, standEase);
+            leftUpperArm1.rotation.x = THREE.MathUtils.lerp(0.15, 0.42, standEase);
+            leftForearm1.rotation.x = THREE.MathUtils.lerp(0.68, 0.28, standEase);
+            leftHand1.rotation.x = THREE.MathUtils.lerp(-0.35, 0.12, standEase);
+
+            rightShoulder1.rotation.x = THREE.MathUtils.lerp(0.62, 0.38, standEase) + rightStride * 0.12;
+            rightUpperArm1.rotation.x = THREE.MathUtils.lerp(0.2, 0.35, standEase);
+            rightForearm1.rotation.x = THREE.MathUtils.lerp(0.85, 0.65, standEase);
+            rightHand1.rotation.x = THREE.MathUtils.lerp(0.18, 0.12, standEase);
+          }
+        }
+        if (torso2) torso2.rotation.x = -standEase * 0.12;
+        if (torso3) torso3.rotation.x = -standEase * 0.12;
       }
 
       // Throne Mic Tube Glow pulsing

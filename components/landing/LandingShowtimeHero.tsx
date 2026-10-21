@@ -464,44 +464,84 @@ export default function LandingShowtimeHero() {
     rig.add(bot);
 
     // Pelvis Assembly
-    mesh(new THREE.CylinderGeometry(0.38, 0.42, 0.2, 32), chassisMat, bot, 0, 1.15, 0);
-    const pelvisPlate = mesh(new THREE.BoxGeometry(0.32, 0.16, 0.06), armorMat, bot, 0, 1.14, 0.22);
+    const pelvis = new THREE.Group();
+    pelvis.position.set(0, 1.15, -0.06);
+    bot.add(pelvis);
+    mesh(new THREE.CylinderGeometry(0.38, 0.42, 0.22, 32), chassisMat, pelvis, 0, 0, 0);
+    const pelvisPlate = mesh(new THREE.BoxGeometry(0.34, 0.18, 0.08), armorMat, pelvis, 0, -0.02, 0.22);
     pelvisPlate.rotation.x = 0.2;
+    mesh(new THREE.TorusGeometry(0.39, 0.015, 8, 32), goldTitaniumMat, pelvis, 0, 0.08, 0).rotation.x = Math.PI / 2;
 
-    // ARTICULATED BIPEDAL LEGS WITH STAND-UP KINEMATICS
+    // ARTICULATED BIPEDAL LEGS WITH DOWNWARD NORMAL BONES (-Y)
+    // Left Leg (Hip -> Thigh -> Knee -> Calf -> Ankle -> Boot)
+    const leftHip = new THREE.Group();
+    leftHip.position.set(-0.30, -0.02, 0.02);
+    pelvis.add(leftHip);
+    mesh(new THREE.SphereGeometry(0.13, 20, 16), chassisMat, leftHip);
+    mesh(new THREE.TorusGeometry(0.13, 0.015, 10, 24), goldTitaniumMat, leftHip).rotation.y = Math.PI / 2;
+
     const leftThigh = new THREE.Group();
-    leftThigh.position.set(-0.28, 1.14, 0.05);
-    bot.add(leftThigh);
-    mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 20), goldTitaniumMat, leftThigh).rotation.z = Math.PI / 2;
-    limb([0, 0, 0], [0, 0, 0.62], 0.11, armorMat, leftThigh);
-    mesh(new THREE.SphereGeometry(0.12, 20, 16), chassisMat, leftThigh, 0, 0, 0.62);
-    mesh(new THREE.TorusGeometry(0.11, 0.014, 10, 24), goldTitaniumMat, leftThigh, 0, 0, 0.62).rotation.y = Math.PI / 2;
+    leftHip.add(leftThigh);
+    mesh(new THREE.BoxGeometry(0.24, 0.52, 0.22), armorMat, leftThigh, 0, -0.26, 0.01);
+    mesh(new THREE.BoxGeometry(0.03, 0.48, 0.04), goldTitaniumMat, leftThigh, -0.11, -0.26, 0.01);
+    limb([0.08, -0.05, -0.06], [0.08, -0.48, -0.06], 0.03, chromeMat, leftThigh);
+    const leftKneeMesh = mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.18, 24), goldTitaniumMat, leftThigh, 0, -0.54, 0);
+    leftKneeMesh.rotation.z = Math.PI / 2;
 
     const leftCalf = new THREE.Group();
-    leftCalf.position.set(0, 0, 0.62);
+    leftCalf.position.set(0, -0.54, 0);
     leftThigh.add(leftCalf);
-    limb([0, 0, 0], [0, -0.88, 0.08], 0.09, chassisMat, leftCalf);
-    mesh(new THREE.BoxGeometry(0.18, 0.1, 0.32), armorMat, leftCalf, 0, -0.92, 0.16);
+    mesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), armorMat, leftCalf, 0, -0.28, 0.03);
+    const leftShinProw = mesh(new THREE.BoxGeometry(0.08, 0.48, 0.1), chassisMat, leftCalf, 0, -0.26, 0.14);
+    leftShinProw.rotation.x = -0.1;
+    limb([0, -0.06, -0.08], [0, -0.50, -0.08], 0.035, chromeMat, leftCalf);
+    mesh(new THREE.SphereGeometry(0.10, 16, 12), chassisMat, leftCalf, 0, -0.58, 0);
+
+    const leftFoot = new THREE.Group();
+    leftFoot.position.set(0, -0.58, 0);
+    leftCalf.add(leftFoot);
+    mesh(new THREE.BoxGeometry(0.22, 0.10, 0.32), armorMat, leftFoot, 0, -0.05, 0.11);
+    mesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), goldTitaniumMat, leftFoot, 0, -0.06, 0.27);
+    mesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), chassisMat, leftFoot, 0, -0.04, -0.06);
+    mesh(new THREE.BoxGeometry(0.24, 0.025, 0.46), chassisMat, leftFoot, 0, -0.10, 0.10);
+
+    // Right Leg (Hip -> Thigh -> Knee -> Calf -> Ankle -> Boot)
+    const rightHip = new THREE.Group();
+    rightHip.position.set(0.30, -0.02, 0.02);
+    pelvis.add(rightHip);
+    mesh(new THREE.SphereGeometry(0.13, 20, 16), chassisMat, rightHip);
+    mesh(new THREE.TorusGeometry(0.13, 0.015, 10, 24), goldTitaniumMat, rightHip).rotation.y = Math.PI / 2;
 
     const rightThigh = new THREE.Group();
-    rightThigh.position.set(0.28, 1.14, 0.05);
-    bot.add(rightThigh);
-    mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 20), goldTitaniumMat, rightThigh).rotation.z = Math.PI / 2;
-    limb([0, 0, 0], [0, 0, 0.62], 0.11, armorMat, rightThigh);
-    mesh(new THREE.SphereGeometry(0.12, 20, 16), chassisMat, rightThigh, 0, 0, 0.62);
-    mesh(new THREE.TorusGeometry(0.11, 0.014, 10, 24), goldTitaniumMat, rightThigh, 0, 0, 0.62).rotation.y = Math.PI / 2;
+    rightHip.add(rightThigh);
+    mesh(new THREE.BoxGeometry(0.24, 0.52, 0.22), armorMat, rightThigh, 0, -0.26, 0.01);
+    mesh(new THREE.BoxGeometry(0.03, 0.48, 0.04), goldTitaniumMat, rightThigh, 0.11, -0.26, 0.01);
+    limb([-0.08, -0.05, -0.06], [-0.08, -0.48, -0.06], 0.03, chromeMat, rightThigh);
+    const rightKneeMesh = mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.18, 24), goldTitaniumMat, rightThigh, 0, -0.54, 0);
+    rightKneeMesh.rotation.z = Math.PI / 2;
 
     const rightCalf = new THREE.Group();
-    rightCalf.position.set(0, 0, 0.62);
+    rightCalf.position.set(0, -0.54, 0);
     rightThigh.add(rightCalf);
-    limb([0, 0, 0], [0, -0.88, 0.08], 0.09, chassisMat, rightCalf);
-    mesh(new THREE.BoxGeometry(0.18, 0.1, 0.32), armorMat, rightCalf, 0, -0.92, 0.16);
+    mesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), armorMat, rightCalf, 0, -0.28, 0.03);
+    const rightShinProw = mesh(new THREE.BoxGeometry(0.08, 0.48, 0.1), chassisMat, rightCalf, 0, -0.26, 0.14);
+    rightShinProw.rotation.x = -0.1;
+    limb([0, -0.06, -0.08], [0, -0.50, -0.08], 0.035, chromeMat, rightCalf);
+    mesh(new THREE.SphereGeometry(0.10, 16, 12), chassisMat, rightCalf, 0, -0.58, 0);
 
-    // Initial seated leg angles
-    leftThigh.rotation.x = -Math.PI / 2 + 0.15;
-    leftCalf.rotation.x = Math.PI / 2 - 0.15;
-    rightThigh.rotation.x = -Math.PI / 2 + 0.15;
-    rightCalf.rotation.x = Math.PI / 2 - 0.15;
+    const rightFoot = new THREE.Group();
+    rightFoot.position.set(0, -0.58, 0);
+    rightCalf.add(rightFoot);
+    mesh(new THREE.BoxGeometry(0.22, 0.10, 0.32), armorMat, rightFoot, 0, -0.05, 0.11);
+    mesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), goldTitaniumMat, rightFoot, 0, -0.06, 0.27);
+    mesh(new THREE.BoxGeometry(0.18, 0.08, 0.12), chassisMat, rightFoot, 0, -0.04, -0.06);
+    mesh(new THREE.BoxGeometry(0.24, 0.025, 0.46), chassisMat, rightFoot, 0, -0.10, 0.10);
+
+    // Initial seated leg angles: Thigh forward horizontal, Calf downward to footrest
+    leftThigh.rotation.x = -1.44;
+    leftCalf.rotation.x = 1.44;
+    rightThigh.rotation.x = -1.44;
+    rightCalf.rotation.x = 1.44;
 
     // Torso Group
     const torso = new THREE.Group();
@@ -546,49 +586,101 @@ export default function LandingShowtimeHero() {
     const gyroRing1 = mesh(new THREE.TorusGeometry(0.125, 0.012, 10, 32), goldTitaniumMat, coreGroup, 0, 0, 0.03);
     const gyroRing2 = mesh(new THREE.TorusGeometry(0.145, 0.01, 8, 32), chromeMat, coreGroup, 0, 0, 0.03);
 
-    // Arms & Hands
-    for (const sg of [-1, 1]) {
-      const pauldron = new THREE.Group();
-      pauldron.position.set(sg * 0.65, 0.88, 0);
-      torso.add(pauldron);
-      const pShell = mesh(new THREE.SphereGeometry(0.18, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, pauldron);
-      pShell.rotation.z = sg * -0.4;
-      mesh(new THREE.TorusGeometry(0.175, 0.014, 10, 32), goldTitaniumMat, pauldron).rotation.x = Math.PI / 2;
+    // ARTICULATED CYBERNETIC ARMS & HANDS (4-FINGER ANATOMY)
+    // Left Arm (Dynamic Gesture / Knee Rest Arm)
+    const leftShoulder = new THREE.Group();
+    leftShoulder.position.set(-0.65, 0.82, 0);
+    torso.add(leftShoulder);
+    const leftPauldron = mesh(new THREE.SphereGeometry(0.19, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, leftShoulder);
+    leftPauldron.rotation.z = 0.4;
+    mesh(new THREE.TorusGeometry(0.18, 0.014, 10, 32), goldTitaniumMat, leftShoulder).rotation.x = Math.PI / 2;
 
-      limb([sg * 0.68, 0.82, 0], [sg * 0.74, 0.32, 0.28], 0.055, armorMat, torso);
-      limb([sg * 0.63, 0.8, -0.04], [sg * 0.7, 0.3, 0.22], 0.035, chromeMat, torso);
-      const elbow = mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.07, 24), goldTitaniumMat, torso, sg * 0.74, 0.32, 0.28);
-      elbow.rotation.z = Math.PI / 2;
-      elbow.rotation.y = sg * 0.3;
+    const leftUpperArm = new THREE.Group();
+    leftShoulder.add(leftUpperArm);
+    limb([0, 0, 0], [0, -0.42, 0], 0.06, armorMat, leftUpperArm);
+    limb([0.04, -0.04, -0.03], [0.04, -0.38, -0.03], 0.032, chromeMat, leftUpperArm);
+    const leftElbowJoint = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 20), goldTitaniumMat, leftUpperArm, 0, -0.42, 0);
+    leftElbowJoint.rotation.z = Math.PI / 2;
 
-      if (sg === -1) {
-        limb([-0.74, 0.32, 0.28], [-0.38, -0.02, 0.62], 0.075, armorMat, torso);
-        const leftHand = new THREE.Group();
-        leftHand.position.set(-0.36, -0.04, 0.65);
-        leftHand.rotation.set(0.3, -0.4, 0);
-        torso.add(leftHand);
-        mesh(new THREE.BoxGeometry(0.12, 0.04, 0.12), chassisMat, leftHand);
-        for (const fx of [-0.04, 0, 0.04]) {
-          mesh(new THREE.SphereGeometry(0.018, 10, 8), goldTitaniumMat, leftHand, fx, -0.01, 0.06);
-          limb([fx, -0.01, 0.06], [fx * 1.1, -0.04, 0.11], 0.014, armorMat, leftHand);
-          limb([fx * 1.1, -0.04, 0.11], [fx * 1.1, -0.09, 0.13], 0.012, chromeMat, leftHand);
-        }
-        limb([-0.06, 0.01, 0.02], [-0.09, -0.02, 0.06], 0.015, armorMat, leftHand);
-      } else {
-        limb([0.74, 0.32, 0.28], [0.55, 0.65, 0.68], 0.075, armorMat, torso);
-        const rightHand = new THREE.Group();
-        rightHand.position.set(0.55, 0.65, 0.68);
-        rightHand.rotation.set(-0.2, 0.5, 0.3);
-        torso.add(rightHand);
-        mesh(new THREE.BoxGeometry(0.11, 0.05, 0.1), chassisMat, rightHand);
-        for (const fx of [-0.035, 0, 0.035]) {
-          mesh(new THREE.SphereGeometry(0.018, 10, 8), goldTitaniumMat, rightHand, fx, 0.02, 0.05);
-          limb([fx, 0.02, 0.05], [fx, 0.03, 0.1], 0.013, armorMat, rightHand);
-          limb([fx, 0.03, 0.1], [fx, -0.03, 0.12], 0.011, chromeMat, rightHand);
-        }
-        limb([0.05, -0.01, 0.03], [0.06, 0.02, 0.08], 0.014, armorMat, rightHand);
-      }
-    }
+    const leftForearm = new THREE.Group();
+    leftForearm.position.set(0, -0.42, 0);
+    leftUpperArm.add(leftForearm);
+    mesh(new THREE.BoxGeometry(0.14, 0.42, 0.14), armorMat, leftForearm, 0, -0.21, 0.02);
+    mesh(new THREE.BoxGeometry(0.02, 0.36, 0.03), amberGlowMat, leftForearm, 0, -0.21, 0.095);
+    mesh(new THREE.SphereGeometry(0.07, 16, 12), chassisMat, leftForearm, 0, -0.42, 0);
+
+    const leftHand = new THREE.Group();
+    leftHand.position.set(0, -0.42, 0);
+    leftForearm.add(leftHand);
+    mesh(new THREE.BoxGeometry(0.12, 0.045, 0.12), chassisMat, leftHand, 0, -0.02, 0.06);
+    mesh(new THREE.BoxGeometry(0.10, 0.02, 0.06), goldTitaniumMat, leftHand, 0, 0.005, 0.06);
+    [-0.04, -0.013, 0.014, 0.041].forEach((fx) => {
+      const fg = new THREE.Group();
+      fg.position.set(fx, -0.01, 0.12);
+      leftHand.add(fg);
+      mesh(new THREE.SphereGeometry(0.014, 8, 6), goldTitaniumMat, fg);
+      limb([0, 0, 0], [0, -0.03, 0.06], 0.012, armorMat, fg);
+      limb([0, -0.03, 0.06], [0, -0.07, 0.09], 0.010, chromeMat, fg);
+    });
+    const leftThumb = new THREE.Group();
+    leftThumb.position.set(0.06, -0.01, 0.04);
+    leftThumb.rotation.set(0.2, 0.5, -0.3);
+    leftHand.add(leftThumb);
+    limb([0, 0, 0], [0.03, -0.03, 0.05], 0.013, armorMat, leftThumb);
+    limb([0.03, -0.03, 0.05], [0.05, -0.06, 0.08], 0.011, chromeMat, leftThumb);
+
+    // Right Arm (Microphone Gripping Arm)
+    const rightShoulder = new THREE.Group();
+    rightShoulder.position.set(0.65, 0.82, 0);
+    torso.add(rightShoulder);
+    const rightPauldron = mesh(new THREE.SphereGeometry(0.19, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, rightShoulder);
+    rightPauldron.rotation.z = -0.4;
+    mesh(new THREE.TorusGeometry(0.18, 0.014, 10, 32), goldTitaniumMat, rightShoulder).rotation.x = Math.PI / 2;
+
+    const rightUpperArm = new THREE.Group();
+    rightShoulder.add(rightUpperArm);
+    limb([0, 0, 0], [0, -0.42, 0], 0.06, armorMat, rightUpperArm);
+    limb([-0.04, -0.04, -0.03], [-0.04, -0.38, -0.03], 0.032, chromeMat, rightUpperArm);
+    const rightElbowJoint = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 20), goldTitaniumMat, rightUpperArm, 0, -0.42, 0);
+    rightElbowJoint.rotation.z = Math.PI / 2;
+
+    const rightForearm = new THREE.Group();
+    rightForearm.position.set(0, -0.42, 0);
+    rightUpperArm.add(rightForearm);
+    mesh(new THREE.BoxGeometry(0.14, 0.42, 0.14), armorMat, rightForearm, 0, -0.21, 0.02);
+    mesh(new THREE.BoxGeometry(0.02, 0.36, 0.03), amberGlowMat, rightForearm, 0, -0.21, 0.095);
+    mesh(new THREE.SphereGeometry(0.07, 16, 12), chassisMat, rightForearm, 0, -0.42, 0);
+
+    const rightHand = new THREE.Group();
+    rightHand.position.set(0, -0.42, 0);
+    rightForearm.add(rightHand);
+    mesh(new THREE.BoxGeometry(0.12, 0.045, 0.12), chassisMat, rightHand, 0, -0.02, 0.06);
+    mesh(new THREE.BoxGeometry(0.10, 0.02, 0.06), goldTitaniumMat, rightHand, 0, 0.005, 0.06);
+    [-0.035, -0.01, 0.015, 0.038].forEach((fx) => {
+      const fg = new THREE.Group();
+      fg.position.set(fx, -0.01, 0.12);
+      rightHand.add(fg);
+      mesh(new THREE.SphereGeometry(0.014, 8, 6), goldTitaniumMat, fg);
+      limb([0, 0, 0], [0, -0.04, 0.04], 0.012, armorMat, fg);
+      limb([0, -0.04, 0.04], [0, -0.07, 0.02], 0.010, chromeMat, fg);
+    });
+    const rightThumb = new THREE.Group();
+    rightThumb.position.set(-0.06, -0.01, 0.04);
+    rightThumb.rotation.set(0.2, -0.5, 0.3);
+    rightHand.add(rightThumb);
+    limb([0, 0, 0], [-0.03, -0.03, 0.04], 0.013, armorMat, rightThumb);
+    limb([-0.03, -0.03, 0.04], [-0.04, -0.06, 0.06], 0.011, chromeMat, rightThumb);
+
+    // Initial seated arm poses
+    leftShoulder.rotation.set(0.48, 0.12, -0.22);
+    leftUpperArm.rotation.set(0.15, 0, 0);
+    leftForearm.rotation.set(0.68, 0, 0);
+    leftHand.rotation.set(-0.35, 0, 0);
+
+    rightShoulder.rotation.set(0.62, -0.25, 0.22);
+    rightUpperArm.rotation.set(0.2, 0, 0);
+    rightForearm.rotation.set(0.85, 0, 0);
+    rightHand.rotation.set(0.18, 0, 0);
 
     // Head Assembly
     const headPivot = new THREE.Group();
@@ -851,23 +943,97 @@ export default function LandingShowtimeHero() {
       if (posAttr) posAttr.needsUpdate = true;
       st.boost = Math.max(0, st.boost - dt * 1.2);
 
-      // Camera 360 degree orbit around the bronze statue (over scroll <= 0.75)
-      const orbitT = Math.min(1, scroll / 0.75);
-      const phi = orbitT * Math.PI * 2;
-      const y = 0.35 + Math.sin(orbitT * Math.PI) * 0.8;
-      const radius = (4.2 - Math.sin(orbitT * Math.PI) * 0.6) * (portrait ? 1.7 : 1);
-      targetPos.set(radius * Math.sin(phi), y, radius * Math.cos(phi));
-      const tp = Math.min(1, orbitT / 0.28);
-      const ease = (Math.cos(tp * Math.PI) + 1) * 0.5;
+      // =========================================================================
+      // SCROLL-DRIVEN BIPEDAL CHOREOGRAPHY (STAND UP & WALK FORWARD ON STAGE)
+      // Phase 1 (scroll: 0.00 -> 0.06): Poised Seated on Throne
+      // Phase 2 (scroll: 0.06 -> 0.34): Rising & Standing Up tall
+      // Phase 3 (scroll: 0.34 -> 0.72): Melangkah / Walking forward commanding stage
+      // =========================================================================
 
-      const g = (c: number, w = 0.1) => Math.exp(-Math.pow((orbitT - c) / w, 2));
-      const shift = portrait
-        ? 0
-        : Math.max(-0.28, Math.min(0.28, 0.17 * ease + 0.27 * g(0.34) - 0.2 * g(0.62) + 0.2 * g(0.95, 0.12)));
+      // Stand interpolation (0 -> 1)
+      const standT = Math.max(0, Math.min(1, (scroll - 0.06) / 0.28));
+      const standEase = standT * standT * (3 - 2 * standT);
+
+      // Walk step interpolation (0 -> 1)
+      const walkT = Math.max(0, Math.min(1, (scroll - 0.34) / 0.36));
+      const walkEase = walkT * walkT * (3 - 2 * walkT);
+      const walkCycle = walkT * Math.PI * 2.2;
+
+      // Robot Base Translation
+      // Y: Rises from seated 0 to standing +0.48, with walking vertical bob
+      const walkBob = walkT > 0 ? Math.abs(Math.sin(walkCycle * 2)) * 0.04 : 0;
+      bot.position.y = standEase * 0.48 + walkBob;
+
+      // Z: Pushes forward off the throne (+0.52), then strides forward (+0.85) to the apron of the stage!
+      bot.position.z = standEase * 0.52 + walkEase * 0.85;
+
+      // X: Natural lateral weight transfer during step
+      bot.position.x = walkT > 0 ? Math.sin(walkCycle) * 0.06 : 0;
+
+      // LEGS KINEMATICS
+      // Seated: Thighs horizontal forward (-1.44), Calves downward (+1.44), Feet flat (0)
+      // Standing: Thighs straight (0), Calves straight (0), Feet flat (0)
+      // Walking: Decisive, heavy cybernetic strides with foot planting
+      const stride = walkT > 0 ? Math.sin(walkCycle) : 0;
+      const leftStride = stride;
+      const rightStride = -stride;
+
+      leftThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - leftStride * 0.45;
+      leftCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (leftStride < 0 ? -leftStride * 0.55 : 0.05);
+      leftFoot.rotation.x = leftStride > 0 ? -leftStride * 0.2 : leftStride * 0.15;
+
+      rightThigh.rotation.x = THREE.MathUtils.lerp(-1.44, 0, standEase) - rightStride * 0.45;
+      rightCalf.rotation.x = THREE.MathUtils.lerp(1.44, 0, standEase) + (rightStride < 0 ? -rightStride * 0.55 : 0.05);
+      rightFoot.rotation.x = rightStride > 0 ? -rightStride * 0.2 : rightStride * 0.15;
+
+      // Torso commanding lean and pelvic sway
+      torso.rotation.x = -standEase * 0.12 + Math.abs(stride) * 0.03;
+      torso.rotation.y = (walkT > 0 ? Math.sin(walkCycle) * 0.12 : 0) + st.mouseX * 0.1;
+      torso.rotation.z = walkT > 0 ? -Math.sin(walkCycle) * 0.03 : 0;
+
+      // ARMS & HANDS CHOREOGRAPHY
+      // Left Arm:
+      // Seated: Resting on knee (shoulder forward 0.48, elbow 0.68)
+      // Standing/Walking: Lifts off knee into dynamic orator stage gesture!
+      leftShoulder.rotation.x = THREE.MathUtils.lerp(0.48, -0.32, standEase) - leftStride * 0.18;
+      leftShoulder.rotation.y = THREE.MathUtils.lerp(0.12, 0.35, standEase);
+      leftShoulder.rotation.z = THREE.MathUtils.lerp(-0.22, -0.52, standEase);
+      leftUpperArm.rotation.x = THREE.MathUtils.lerp(0.15, 0.42, standEase);
+      leftForearm.rotation.x = THREE.MathUtils.lerp(0.68, 0.28, standEase);
+      leftHand.rotation.x = THREE.MathUtils.lerp(-0.35, 0.12, standEase);
+
+      // Right Arm (Microphone Arm):
+      // Holds microphone stem, brings capsule closer to chest/head as it advances
+      rightShoulder.rotation.x = THREE.MathUtils.lerp(0.62, 0.38, standEase) + rightStride * 0.12;
+      rightShoulder.rotation.y = THREE.MathUtils.lerp(-0.25, -0.15, standEase);
+      rightShoulder.rotation.z = THREE.MathUtils.lerp(0.22, 0.18, standEase);
+      rightUpperArm.rotation.x = THREE.MathUtils.lerp(0.2, 0.35, standEase);
+      rightForearm.rotation.x = THREE.MathUtils.lerp(0.85, 0.65, standEase);
+      rightHand.rotation.x = THREE.MathUtils.lerp(0.18, 0.12, standEase);
+
+      // Dynamic Microphone follow (tilts slightly forward with the performer's advance)
+      mic.position.z = 0.85 + standEase * 0.35 + walkEase * 0.65;
+      mic.rotation.x = -standEase * 0.08 - walkEase * 0.05;
+
+      // =========================================================================
+      // CINEMATIC FRONT PROSCENIUM CAMERA (NO 360 SPIN!)
+      // Camera stays in front facing the stage, framing the performer's actions
+      // =========================================================================
+      const stageT = Math.min(1, scroll / 0.72);
+      // Subtle dynamic parallax arc (-0.15 to +0.15 rad, always in front!)
+      const camArc = (stageT - 0.25) * 0.22;
+      const camY = (portrait ? 0.65 : 0.42) + stageT * 0.35;
+      const camDist = (portrait ? 6.2 : 3.85) - stageT * 0.35;
+
+      targetPos.set(Math.sin(camArc) * camDist, camY, Math.cos(camArc) * camDist);
+      const lookY = portrait ? -1.1 : (0.22 + stageT * 0.28);
+      lookAt.set(bot.position.x * 0.4, lookY, bot.position.z * 0.35);
+
+      // Subtle horizontal shift for text readability in hero chapter 0
+      const shift = portrait ? 0 : Math.max(-0.22, Math.min(0.22, 0.16 * (1 - stageT)));
       camera.setViewOffset(sizes.width, sizes.height, -shift * sizes.width, 0, sizes.width, sizes.height);
-      lookAt.set(0, portrait ? -1.75 : -0.15, 0);
 
-      // Dojang Exit: Camera pushes through towards/past the statue into the dark stage light
+      // Dojang Exit: Camera pushes through towards/past the robot into the dark stage light
       if (q > 0) {
         const forward = new THREE.Vector3().subVectors(lookAt, targetPos).normalize();
         const pushDist = q * q * 5.4;
@@ -885,27 +1051,6 @@ export default function LandingShowtimeHero() {
         const alpha = 1 - Math.max(0, (q - 0.4) * 1.7);
         canvas.style.opacity = String(Math.max(0, Math.min(1, alpha)));
       }
-
-      // =========================================================================
-      // SCROLL-DRIVEN BIPEDAL CHOREOGRAPHY (STANDING UP & STEPPING FORWARD)
-      // When scroll is low (0.0 -> 0.08): Seated poised on Throne.
-      // As scroll increases (0.08 -> 0.40): Robot stands up smoothly,
-      // unbends legs, steps forward toward front of stage, leans into audience!
-      // =========================================================================
-      const standT = Math.max(0, Math.min(1, (scroll - 0.08) / 0.32));
-      const standEase = standT * standT * (3 - 2 * standT);
-
-      bot.position.y = standEase * 0.58;
-      bot.position.z = standEase * 0.42;
-
-      // Legs kinematics: unbending from seated 90° to confident standing
-      leftThigh.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2 + 0.15, -0.06, standEase);
-      leftCalf.rotation.x = THREE.MathUtils.lerp(Math.PI / 2 - 0.15, 0.04, standEase);
-      rightThigh.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2 + 0.15, 0.02, standEase);
-      rightCalf.rotation.x = THREE.MathUtils.lerp(Math.PI / 2 - 0.15, -0.02, standEase);
-
-      // Torso leans forward with commanding stage posture
-      torso.rotation.x = -standEase * 0.09;
 
       // Head keeps an eye on camera
       camLocal.copy(camera.position);
