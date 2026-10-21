@@ -272,30 +272,51 @@ export default function LandingShowtimeHero() {
     );
     scene.add(sparks);
 
-    // 4. THE STRAIGHT MAN STATUE IN FULL CAST BRONZE
-    const bronze = new THREE.MeshStandardMaterial({
-      color: 0xc08a52,
-      roughness: 0.42,
-      metalness: 0.92,
+    // 4. FRONTIER APEX CYBER-MECHA MATERIALS
+    const armorMat = new THREE.MeshPhysicalMaterial({
+      color: 0x141418,
+      metalness: 0.75,
+      roughness: 0.24,
+      clearcoat: 0.9,
+      clearcoatRoughness: 0.1,
+      reflectivity: 0.85,
       envMap: envTex,
-      envMapIntensity: 0.55,
+      envMapIntensity: 1.2,
     });
-    const darkMetal = new THREE.MeshStandardMaterial({
-      color: 0x3a2a1c,
+    const chassisMat = new THREE.MeshStandardMaterial({
+      color: 0x1d1d24,
+      metalness: 0.88,
       roughness: 0.38,
-      metalness: 0.95,
       envMap: envTex,
-      envMapIntensity: 0.4,
+      envMapIntensity: 0.8,
     });
-    const glass = new THREE.MeshStandardMaterial({
-      color: 0x020202,
-      roughness: 0.06,
-      metalness: 0.2,
+    const goldTitaniumMat = new THREE.MeshStandardMaterial({
+      color: 0xdeb841,
+      metalness: 0.96,
+      roughness: 0.18,
       envMap: envTex,
-      envMapIntensity: 1,
+      envMapIntensity: 1.8,
     });
-    const lamp = new THREE.MeshBasicMaterial({ color: 0xfff2dc, toneMapped: false });
-    const amber = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
+    const chromeMat = new THREE.MeshStandardMaterial({
+      color: 0xe5e5eb,
+      metalness: 0.98,
+      roughness: 0.1,
+      envMap: envTex,
+      envMapIntensity: 2.0,
+    });
+    const visorGlassMat = new THREE.MeshPhysicalMaterial({
+      color: 0x040406,
+      metalness: 0.15,
+      roughness: 0.03,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.02,
+      transparent: true,
+      opacity: 0.92,
+      envMap: envTex,
+      envMapIntensity: 1.5,
+    });
+    const amberGlowMat = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
+    const intenseGoldMat = new THREE.MeshBasicMaterial({ color: 0xffdf7a, toneMapped: false });
     const UP = new THREE.Vector3(0, 1, 0);
 
     function mesh(geo: THREE.BufferGeometry, mat: THREE.Material, parent: THREE.Object3D, x = 0, y = 0, z = 0) {
@@ -336,8 +357,8 @@ export default function LandingShowtimeHero() {
     const statue = new THREE.Group();
 
     // Stage Plinth
-    mesh(new THREE.CylinderGeometry(1.35, 1.42, 0.16, 96), darkMetal, statue, 0, 0.08, 0);
-    const lip = new THREE.Mesh(new THREE.TorusGeometry(1.36, 0.01, 6, 160), amber);
+    mesh(new THREE.CylinderGeometry(1.6, 1.7, 0.16, 96), chassisMat, statue, 0, 0.08, 0);
+    const lip = new THREE.Mesh(new THREE.TorusGeometry(1.61, 0.012, 8, 160), amberGlowMat);
     lip.rotation.x = Math.PI / 2;
     lip.position.y = 0.16;
     statue.add(lip);
@@ -346,128 +367,317 @@ export default function LandingShowtimeHero() {
     rig.position.y = 0.16;
     statue.add(rig);
 
-    // Stool
-    mesh(new THREE.CylinderGeometry(0.52, 0.5, 0.09, 48), darkMetal, rig, 0, 1.0, 0);
-    for (let i = 0; i < 3; i++) {
-      const a = i * 2.094 + 0.5;
-      limb([Math.cos(a) * 0.36, 0.97, Math.sin(a) * 0.36], [Math.cos(a) * 0.5, 0, Math.sin(a) * 0.5], 0.025, darkMetal, rig);
-    }
-    const ring = mesh(new THREE.TorusGeometry(0.43, 0.018, 8, 64), darkMetal, rig, 0, 0.38, 0);
-    ring.rotation.x = Math.PI / 2;
+    // =========================================================
+    // CYBERNETIC THRONE
+    // =========================================================
+    const throne = new THREE.Group();
+    rig.add(throne);
 
-    // Bot Lower Body & Legs
+    const hexBase = mesh(new THREE.CylinderGeometry(0.68, 0.72, 0.08, 6), chassisMat, throne, 0, 0.04, 0);
+    hexBase.rotation.y = Math.PI / 6;
+    const hexTrim = mesh(new THREE.TorusGeometry(0.69, 0.014, 6, 6), goldTitaniumMat, throne, 0, 0.08, 0);
+    hexTrim.rotation.x = Math.PI / 2;
+    hexTrim.rotation.z = Math.PI / 6;
+
+    // Central Hydraulic Suspension Column
+    mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.85, 24), chassisMat, throne, 0, 0.5, 0);
+    mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 24), chromeMat, throne, 0, 0.7, 0);
+    mesh(new THREE.TorusGeometry(0.15, 0.02, 12, 32), goldTitaniumMat, throne, 0, 0.65, 0).rotation.x = Math.PI / 2;
+
+    for (let i = 0; i < 4; i++) {
+      const a = (i * Math.PI) / 2 + Math.PI / 4;
+      limb([0, 0.45, 0], [Math.cos(a) * 0.55, 0.08, Math.sin(a) * 0.55], 0.026, chromeMat, throne);
+      mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.05, 16), chassisMat, throne, Math.cos(a) * 0.55, 0.06, Math.sin(a) * 0.55);
+    }
+
+    const footRing = mesh(new THREE.TorusGeometry(0.48, 0.02, 12, 64), goldTitaniumMat, throne, 0, 0.38, 0);
+    footRing.rotation.x = Math.PI / 2;
+
+    mesh(new THREE.CylinderGeometry(0.54, 0.5, 0.1, 32), chassisMat, throne, 0, 1.0, 0);
+    mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.04, 32), armorMat, throne, 0, 1.055, 0);
+    mesh(new THREE.TorusGeometry(0.51, 0.012, 8, 48), amberGlowMat, throne, 0, 0.96, 0).rotation.x = Math.PI / 2;
+
+    // Mechanical Articulated Spine Backrest
+    const spineColumn = new THREE.Group();
+    spineColumn.position.set(0, 1.05, -0.42);
+    throne.add(spineColumn);
+
+    for (let i = 0; i < 4; i++) {
+      const sY = 0.2 + i * 0.24;
+      mesh(new THREE.BoxGeometry(0.16, 0.12, 0.12), chassisMat, spineColumn, 0, sY, 0);
+      const brace = mesh(new THREE.BoxGeometry(0.68 - i * 0.08, 0.03, 0.08), armorMat, spineColumn, 0, sY, 0.04);
+      for (const sg of [-1, 1]) {
+        mesh(new THREE.SphereGeometry(0.024, 10, 8), goldTitaniumMat, brace, sg * (0.34 - i * 0.04), 0, 0);
+      }
+    }
+    for (const bx of [-0.18, 0.18]) {
+      limb([bx, 0.1, -0.06], [bx, 0.9, -0.02], 0.02, chromeMat, spineColumn);
+    }
+
+    // =========================================================
+    // VINTAGE STUDIO RIBBON HOLO-MICROPHONE
+    // =========================================================
+    const mic = new THREE.Group();
+    mic.position.set(0.72, 0, 0.85);
+    rig.add(mic);
+
+    const micBase = mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.06, 8), chassisMat, mic, 0, 0.03, 0);
+    micBase.rotation.y = Math.PI / 8;
+    const vuRim = mesh(new THREE.TorusGeometry(0.08, 0.01, 8, 24), goldTitaniumMat, mic, 0, 0.065, 0.15);
+    vuRim.rotation.x = -Math.PI / 3;
+    const vuFace = mesh(new THREE.CircleGeometry(0.075, 24), amberGlowMat, mic, 0, 0.065, 0.15);
+    vuFace.rotation.x = -Math.PI / 3;
+    vuFace.castShadow = false;
+
+    limb([0, 0.06, 0], [0, 1.88, 0], 0.024, chromeMat, mic);
+    mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.09, 20), goldTitaniumMat, mic, 0, 1.88, 0);
+
+    for (let c = 0; c < 7; c++) {
+      const cY = 0.4 + c * 0.2;
+      const cRing = mesh(new THREE.TorusGeometry(0.035, 0.007, 6, 20), goldTitaniumMat, mic, 0, cY, 0);
+      cRing.rotation.x = 0.3;
+      cRing.rotation.y = c * 0.8;
+    }
+
+    const boomEnd: [number, number, number] = [-0.18, 2.36, -0.06];
+    limb([0, 1.88, 0], boomEnd, 0.018, chromeMat, mic);
+
+    const shockOuter = mesh(new THREE.TorusGeometry(0.14, 0.014, 10, 32), goldTitaniumMat, mic, boomEnd[0], boomEnd[1], boomEnd[2]);
+    shockOuter.rotation.y = Math.PI / 4;
+    const shockInner = mesh(new THREE.TorusGeometry(0.11, 0.01, 8, 24), chromeMat, mic, boomEnd[0], boomEnd[1], boomEnd[2]);
+    shockInner.rotation.x = Math.PI / 4;
+
+    const capsule = mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.18, 24), chassisMat, mic, boomEnd[0], boomEnd[1] + 0.02, boomEnd[2]);
+    const tubeGlow = mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.12, 16), amberGlowMat, mic, boomEnd[0], boomEnd[1] + 0.02, boomEnd[2]);
+    tubeGlow.castShadow = false;
+    const micGrille = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.075, 0.075, 0.185, 16, 4, true),
+      new THREE.MeshBasicMaterial({ color: 0xffc53d, wireframe: true, transparent: true, opacity: 0.75, toneMapped: false }),
+    );
+    micGrille.position.copy(capsule.position);
+    mic.add(micGrille);
+
+    // =========================================================
+    // FRONTIER APEX CYBER-MECHA
+    // =========================================================
     const bot = new THREE.Group();
     rig.add(bot);
-    mesh(new THREE.CylinderGeometry(0.4, 0.44, 0.18, 40), darkMetal, bot, 0, 1.15, 0);
-    for (const s of [-1, 1]) {
-      limb([s * 0.22, 1.12, 0.02], [s * 0.28, 1.1, 0.66], 0.12, bronze, bot);
-      mesh(new THREE.SphereGeometry(0.135, 24, 16), darkMetal, bot, s * 0.28, 1.1, 0.68);
-      limb([s * 0.29, 1.08, 0.7], [s * 0.31, 0.16, 0.8], 0.095, bronze, bot);
-      mesh(new THREE.BoxGeometry(0.24, 0.11, 0.4), darkMetal, bot, s * 0.31, 0.07, 0.9);
+
+    // Pelvis Assembly
+    mesh(new THREE.CylinderGeometry(0.38, 0.42, 0.2, 32), chassisMat, bot, 0, 1.15, 0);
+    const pelvisPlate = mesh(new THREE.BoxGeometry(0.32, 0.16, 0.06), armorMat, bot, 0, 1.14, 0.22);
+    pelvisPlate.rotation.x = 0.2;
+
+    // ARTICULATED BIPEDAL LEGS WITH STAND-UP KINEMATICS
+    const leftThigh = new THREE.Group();
+    leftThigh.position.set(-0.28, 1.14, 0.05);
+    bot.add(leftThigh);
+    mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 20), goldTitaniumMat, leftThigh).rotation.z = Math.PI / 2;
+    limb([0, 0, 0], [0, 0, 0.62], 0.11, armorMat, leftThigh);
+    mesh(new THREE.SphereGeometry(0.12, 20, 16), chassisMat, leftThigh, 0, 0, 0.62);
+    mesh(new THREE.TorusGeometry(0.11, 0.014, 10, 24), goldTitaniumMat, leftThigh, 0, 0, 0.62).rotation.y = Math.PI / 2;
+
+    const leftCalf = new THREE.Group();
+    leftCalf.position.set(0, 0, 0.62);
+    leftThigh.add(leftCalf);
+    limb([0, 0, 0], [0, -0.88, 0.08], 0.09, chassisMat, leftCalf);
+    mesh(new THREE.BoxGeometry(0.18, 0.1, 0.32), armorMat, leftCalf, 0, -0.92, 0.16);
+
+    const rightThigh = new THREE.Group();
+    rightThigh.position.set(0.28, 1.14, 0.05);
+    bot.add(rightThigh);
+    mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 20), goldTitaniumMat, rightThigh).rotation.z = Math.PI / 2;
+    limb([0, 0, 0], [0, 0, 0.62], 0.11, armorMat, rightThigh);
+    mesh(new THREE.SphereGeometry(0.12, 20, 16), chassisMat, rightThigh, 0, 0, 0.62);
+    mesh(new THREE.TorusGeometry(0.11, 0.014, 10, 24), goldTitaniumMat, rightThigh, 0, 0, 0.62).rotation.y = Math.PI / 2;
+
+    const rightCalf = new THREE.Group();
+    rightCalf.position.set(0, 0, 0.62);
+    rightThigh.add(rightCalf);
+    limb([0, 0, 0], [0, -0.88, 0.08], 0.09, chassisMat, rightCalf);
+    mesh(new THREE.BoxGeometry(0.18, 0.1, 0.32), armorMat, rightCalf, 0, -0.92, 0.16);
+
+    // Initial seated leg angles
+    leftThigh.rotation.x = -Math.PI / 2 + 0.15;
+    leftCalf.rotation.x = Math.PI / 2 - 0.15;
+    rightThigh.rotation.x = -Math.PI / 2 + 0.15;
+    rightCalf.rotation.x = Math.PI / 2 - 0.15;
+
+    // Torso Group
+    const torso = new THREE.Group();
+    torso.position.y = 1.25;
+    bot.add(torso);
+
+    for (let i = 0; i < 4; i++) {
+      const vY = 0.16 + i * 0.2;
+      mesh(new THREE.CylinderGeometry(0.13, 0.14, 0.12, 16), chassisMat, torso, 0, vY, -0.04);
+      mesh(new THREE.TorusGeometry(0.15, 0.014, 8, 24), goldTitaniumMat, torso, 0, vY, -0.04).rotation.x = Math.PI / 2;
+    }
+    mesh(new THREE.CylinderGeometry(0.55, 0.42, 0.95, 32), armorMat, torso, 0, 0.5, 0);
+
+    for (let i = 0; i < 4; i++) {
+      const finY = 0.28 + i * 0.16;
+      for (const sg of [-1, 1]) {
+        const fin = mesh(new THREE.BoxGeometry(0.15, 0.024, 0.36), chassisMat, torso, sg * 0.44, finY, 0.02);
+        fin.rotation.z = sg * -0.25;
+        fin.rotation.y = sg * 0.2;
+      }
     }
 
-    // Torso
-    const torso = new THREE.Group();
-    torso.position.y = 1.2;
-    bot.add(torso);
-    mesh(new THREE.CylinderGeometry(0.6, 0.45, 1.0, 64), bronze, torso, 0, 0.5, 0);
-    const collar = mesh(new THREE.TorusGeometry(0.33, 0.055, 12, 48), darkMetal, torso, 0, 1.0, 0);
+    for (const sg of [-1, 1]) {
+      const chestPlate = mesh(new THREE.BoxGeometry(0.24, 0.34, 0.08), armorMat, torso, sg * 0.22, 0.66, 0.44);
+      chestPlate.rotation.y = sg * -0.28;
+      chestPlate.rotation.x = -0.15;
+      mesh(new THREE.BoxGeometry(0.02, 0.32, 0.02), goldTitaniumMat, chestPlate, sg * 0.1, 0, 0.045);
+    }
+
+    const collar = mesh(new THREE.TorusGeometry(0.34, 0.04, 12, 48), goldTitaniumMat, torso, 0, 0.98, 0);
     collar.rotation.x = Math.PI / 2;
 
-    const chest = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
-    const cl = mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.03, 24), chest, torso, 0, 0.62, 0.565);
-    cl.rotation.x = Math.PI / 2 - 0.13;
+    // Golden Logic Reactor Core
+    const coreGroup = new THREE.Group();
+    coreGroup.position.set(0, 0.58, 0.42);
+    torso.add(coreGroup);
 
-    for (const s of [-1, 1]) {
-      mesh(new THREE.SphereGeometry(0.17, 24, 16), bronze, torso, s * 0.64, 0.88, 0);
-      limb([s * 0.7, 0.85, 0], [s * 0.74, 0.32, 0.28], 0.085, darkMetal, torso);
-      mesh(new THREE.SphereGeometry(0.1, 16, 12), bronze, torso, s * 0.74, 0.32, 0.28);
-      limb([s * 0.74, 0.32, 0.28], [s * 0.38, -0.02, 0.62], 0.075, darkMetal, torso);
-      mesh(new THREE.SphereGeometry(0.115, 20, 14), bronze, torso, s * 0.36, -0.04, 0.64);
+    mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.1, 24), chassisMat, coreGroup, 0, 0, 0).rotation.x = Math.PI / 2;
+    const reactorCoreMat = new THREE.MeshBasicMaterial({ color: 0xffb83b, toneMapped: false });
+    const reactorSphere = mesh(new THREE.SphereGeometry(0.09, 24, 16), reactorCoreMat, coreGroup, 0, 0, 0.03);
+    reactorSphere.castShadow = false;
+    const gyroRing1 = mesh(new THREE.TorusGeometry(0.125, 0.012, 10, 32), goldTitaniumMat, coreGroup, 0, 0, 0.03);
+    const gyroRing2 = mesh(new THREE.TorusGeometry(0.145, 0.01, 8, 32), chromeMat, coreGroup, 0, 0, 0.03);
+
+    // Arms & Hands
+    for (const sg of [-1, 1]) {
+      const pauldron = new THREE.Group();
+      pauldron.position.set(sg * 0.65, 0.88, 0);
+      torso.add(pauldron);
+      const pShell = mesh(new THREE.SphereGeometry(0.18, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat, pauldron);
+      pShell.rotation.z = sg * -0.4;
+      mesh(new THREE.TorusGeometry(0.175, 0.014, 10, 32), goldTitaniumMat, pauldron).rotation.x = Math.PI / 2;
+
+      limb([sg * 0.68, 0.82, 0], [sg * 0.74, 0.32, 0.28], 0.055, armorMat, torso);
+      limb([sg * 0.63, 0.8, -0.04], [sg * 0.7, 0.3, 0.22], 0.035, chromeMat, torso);
+      const elbow = mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.07, 24), goldTitaniumMat, torso, sg * 0.74, 0.32, 0.28);
+      elbow.rotation.z = Math.PI / 2;
+      elbow.rotation.y = sg * 0.3;
+
+      if (sg === -1) {
+        limb([-0.74, 0.32, 0.28], [-0.38, -0.02, 0.62], 0.075, armorMat, torso);
+        const leftHand = new THREE.Group();
+        leftHand.position.set(-0.36, -0.04, 0.65);
+        leftHand.rotation.set(0.3, -0.4, 0);
+        torso.add(leftHand);
+        mesh(new THREE.BoxGeometry(0.12, 0.04, 0.12), chassisMat, leftHand);
+        for (const fx of [-0.04, 0, 0.04]) {
+          mesh(new THREE.SphereGeometry(0.018, 10, 8), goldTitaniumMat, leftHand, fx, -0.01, 0.06);
+          limb([fx, -0.01, 0.06], [fx * 1.1, -0.04, 0.11], 0.014, armorMat, leftHand);
+          limb([fx * 1.1, -0.04, 0.11], [fx * 1.1, -0.09, 0.13], 0.012, chromeMat, leftHand);
+        }
+        limb([-0.06, 0.01, 0.02], [-0.09, -0.02, 0.06], 0.015, armorMat, leftHand);
+      } else {
+        limb([0.74, 0.32, 0.28], [0.55, 0.65, 0.68], 0.075, armorMat, torso);
+        const rightHand = new THREE.Group();
+        rightHand.position.set(0.55, 0.65, 0.68);
+        rightHand.rotation.set(-0.2, 0.5, 0.3);
+        torso.add(rightHand);
+        mesh(new THREE.BoxGeometry(0.11, 0.05, 0.1), chassisMat, rightHand);
+        for (const fx of [-0.035, 0, 0.035]) {
+          mesh(new THREE.SphereGeometry(0.018, 10, 8), goldTitaniumMat, rightHand, fx, 0.02, 0.05);
+          limb([fx, 0.02, 0.05], [fx, 0.03, 0.1], 0.013, armorMat, rightHand);
+          limb([fx, 0.03, 0.1], [fx, -0.03, 0.12], 0.011, chromeMat, rightHand);
+        }
+        limb([0.05, -0.01, 0.03], [0.06, 0.02, 0.08], 0.014, armorMat, rightHand);
+      }
     }
-    mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.26, 20), darkMetal, torso, 0, 1.12, 0);
 
-    // Head
+    // Head Assembly
     const headPivot = new THREE.Group();
-    headPivot.position.y = 1.22;
+    headPivot.position.y = 1.24;
     torso.add(headPivot);
 
     const head = new THREE.Group();
-    head.position.y = 0.6;
+    head.position.y = 0.42;
     headPivot.add(head);
 
-    const hg = new THREE.ExtrudeGeometry(rounded(1.5, 1.06, 0.32), {
-      depth: 0.8,
-      bevelEnabled: true,
-      bevelThickness: 0.09,
-      bevelSize: 0.09,
-      bevelSegments: 6,
-      curveSegments: 18,
-    });
+    const helmShape = new THREE.Shape();
+    helmShape.moveTo(-0.64, -0.38);
+    helmShape.lineTo(0.64, -0.38);
+    helmShape.lineTo(0.74, 0.12);
+    helmShape.lineTo(0.62, 0.52);
+    helmShape.lineTo(0.3, 0.62);
+    helmShape.lineTo(-0.3, 0.62);
+    helmShape.lineTo(-0.62, 0.52);
+    helmShape.lineTo(-0.74, 0.12);
+    helmShape.closePath();
+    const hg = new THREE.ExtrudeGeometry(helmShape, { depth: 0.72, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.06, bevelSegments: 4 });
     hg.center();
-    mesh(hg, bronze, head);
+    mesh(hg, armorMat, head);
 
-    const faceZ = 0.4 + 0.09 + 0.004;
-    mesh(new THREE.ShapeGeometry(rounded(1.2, 0.78, 0.24), 18), glass, head, 0, 0, faceZ);
+    const brow = mesh(new THREE.BoxGeometry(1.15, 0.1, 0.32), armorMat, head, 0, 0.38, 0.32);
+    brow.rotation.x = 0.28;
 
-    const eyes = new THREE.Group();
-    eyes.position.set(0, 0.07, faceZ + 0.01);
-    head.add(eyes);
+    const visorShape = new THREE.Shape();
+    visorShape.moveTo(-0.52, -0.24);
+    visorShape.lineTo(0.52, -0.24);
+    visorShape.lineTo(0.56, 0.24);
+    visorShape.lineTo(-0.52, 0.24);
+    visorShape.closePath();
+    mesh(new THREE.ShapeGeometry(visorShape), visorGlassMat, head, 0, 0.06, 0.44).castShadow = false;
 
-    const eg = new THREE.SphereGeometry(0.085, 24, 16);
-    const eyeL = mesh(eg, lamp, eyes, -0.26, 0, 0);
-    const eyeR = mesh(eg, lamp, eyes, 0.26, 0, 0);
-    [eyeL, eyeR].forEach((e) => {
-      e.scale.set(1, 1.3, 0.3);
-      e.castShadow = false;
-    });
-
-    const mouth = new THREE.Group();
-    mouth.position.set(0, -0.18, faceZ + 0.01);
-    head.add(mouth);
-    const mg = new THREE.BoxGeometry(0.21, 0.034, 0.02);
-    mesh(mg, lamp, mouth, -0.105, 0, 0);
-    const mouthR = new THREE.Group();
-    mouth.add(mouthR);
-    mesh(mg, lamp, mouthR, 0.105, 0, 0);
-
-    for (const s of [-1, 1]) {
-      const ear = mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.14, 32), darkMetal, head, s * 0.86, 0, 0);
-      ear.rotation.z = Math.PI / 2;
-      const er = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.016, 8, 40), amber);
-      er.position.set(s * 0.935, 0, 0);
-      er.rotation.y = Math.PI / 2;
-      head.add(er);
+    // 16-bar animated audio spectrogram visualizer
+    const eqGroup = new THREE.Group();
+    eqGroup.position.set(0, 0.04, 0.45);
+    head.add(eqGroup);
+    const eqBars: THREE.Mesh[] = [];
+    for (let i = 0; i < 16; i++) {
+      const bar = mesh(new THREE.BoxGeometry(0.044, 0.1, 0.01), new THREE.MeshBasicMaterial({ color: 0xffc53d, transparent: true, opacity: 0.92, toneMapped: false }), eqGroup, -0.465 + i * 0.062, 0, 0);
+      bar.castShadow = false;
+      eqBars.push(bar);
     }
 
-    mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.4, 10), darkMetal, head, 0, 0.82, 0);
-    const bulbMat = new THREE.MeshBasicMaterial({ color: 0xffb13b, toneMapped: false });
-    mesh(new THREE.SphereGeometry(0.075, 20, 14), bulbMat, head, 0, 1.05, 0).castShadow = false;
-    const bulbLight = new THREE.PointLight(0xffb13b, 1.2, 3, 2);
-    bulbLight.position.set(0, 1.05, 0);
+    // Glowing Aperture Lenses
+    const eyes = new THREE.Group();
+    eyes.position.set(0, 0.2, 0.45);
+    head.add(eyes);
+    const eyeLenses: THREE.Mesh[] = [];
+    for (const sg of [-1, 1]) {
+      mesh(new THREE.TorusGeometry(0.08, 0.015, 12, 32), goldTitaniumMat, eyes, sg * 0.26, 0, 0);
+      const pup = mesh(new THREE.SphereGeometry(0.042, 18, 12), intenseGoldMat, eyes, sg * 0.26, 0, 0.005);
+      pup.castShadow = false;
+      eyeLenses.push(pup);
+    }
+
+    // Deadpan smirk actuator
+    const mouth = new THREE.Group();
+    mouth.position.set(0, -0.16, 0.45);
+    head.add(mouth);
+    const mouthR = new THREE.Group();
+    mouth.add(mouthR);
+    mesh(new THREE.BoxGeometry(0.18, 0.03, 0.01), intenseGoldMat, mouth, -0.09, 0, 0).castShadow = false;
+    mesh(new THREE.BoxGeometry(0.18, 0.03, 0.01), intenseGoldMat, mouthR, 0.09, 0, 0).castShadow = false;
+
+    // Floating Sensor Halo
+    const haloGroup = new THREE.Group();
+    haloGroup.position.set(0, 0.82, 0.02);
+    head.add(haloGroup);
+    mesh(new THREE.TorusGeometry(0.36, 0.012, 12, 64), goldTitaniumMat, haloGroup).rotation.x = Math.PI / 2;
+    const haloNodes: THREE.Mesh[] = [];
+    for (let i = 0; i < 3; i++) {
+      haloNodes.push(mesh(new THREE.SphereGeometry(0.026, 12, 8), amberGlowMat, haloGroup));
+    }
+
+    const bulbLight = new THREE.PointLight(0xffb83b, 1.4, 3.5, 2);
+    bulbLight.position.set(0, 0.85, 0.05);
     head.add(bulbLight);
 
-    // Mic Stand on Stage
-    const mic = new THREE.Group();
-    mic.position.set(1.0, 0, 0.75);
-    rig.add(mic);
-    mesh(new THREE.CylinderGeometry(0.2, 0.24, 0.04, 40), darkMetal, mic, 0, 0.02, 0);
-    limb([0, 0, 0], [0, 2.0, 0], 0.022, darkMetal, mic);
-    limb([0, 1.95, 0], [-0.42, 2.32, 0.05], 0.016, darkMetal, mic);
-    limb([-0.42, 2.32, 0.05], [-0.52, 2.4, 0.1], 0.045, darkMetal, mic);
-    mesh(new THREE.SphereGeometry(0.085, 18, 12), bronze, mic, -0.56, 2.44, 0.12);
-    const gw = new THREE.Mesh(
-      new THREE.SphereGeometry(0.088, 12, 8),
-      new THREE.MeshBasicMaterial({
-        color: 0xffb13b,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.5,
-        toneMapped: false,
-      }),
-    );
-    gw.position.set(-0.56, 2.44, 0.12);
-    mic.add(gw);
+    // Multi-tier CNC Ear Turrets
+    for (const sg of [-1, 1]) {
+      const eg = new THREE.Group();
+      eg.position.set(sg * 0.82, 0.06, 0.02);
+      head.add(eg);
+      mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.14, 32), chassisMat, eg).rotation.z = Math.PI / 2;
+      mesh(new THREE.TorusGeometry(0.15, 0.015, 10, 36), goldTitaniumMat, eg, sg * 0.08, 0, 0).rotation.y = Math.PI / 2;
+    }
 
     // =========================================================================
     // CRITICAL: BOX3 CENTERING CONTRACT
@@ -676,6 +886,27 @@ export default function LandingShowtimeHero() {
         canvas.style.opacity = String(Math.max(0, Math.min(1, alpha)));
       }
 
+      // =========================================================================
+      // SCROLL-DRIVEN BIPEDAL CHOREOGRAPHY (STANDING UP & STEPPING FORWARD)
+      // When scroll is low (0.0 -> 0.08): Seated poised on Throne.
+      // As scroll increases (0.08 -> 0.40): Robot stands up smoothly,
+      // unbends legs, steps forward toward front of stage, leans into audience!
+      // =========================================================================
+      const standT = Math.max(0, Math.min(1, (scroll - 0.08) / 0.32));
+      const standEase = standT * standT * (3 - 2 * standT);
+
+      bot.position.y = standEase * 0.58;
+      bot.position.z = standEase * 0.42;
+
+      // Legs kinematics: unbending from seated 90° to confident standing
+      leftThigh.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2 + 0.15, -0.06, standEase);
+      leftCalf.rotation.x = THREE.MathUtils.lerp(Math.PI / 2 - 0.15, 0.04, standEase);
+      rightThigh.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2 + 0.15, 0.02, standEase);
+      rightCalf.rotation.x = THREE.MathUtils.lerp(Math.PI / 2 - 0.15, -0.02, standEase);
+
+      // Torso leans forward with commanding stage posture
+      torso.rotation.x = -standEase * 0.09;
+
       // Head keeps an eye on camera
       camLocal.copy(camera.position);
       bot.worldToLocal(camLocal);
@@ -699,13 +930,47 @@ export default function LandingShowtimeHero() {
         st.nextBlink = 2.2 + Math.random() * 3.5;
       }
       st.blink = Math.max(0, st.blink - dt * 7);
-      eyeL.scale.y = eyeR.scale.y = 1.3 * (1 - Math.min(1, st.blink * 1.2)) + 0.06;
+      const eyeScaleY = 1.3 * (1 - Math.min(1, st.blink * 1.2)) + 0.06;
+      for (const pup of eyeLenses) {
+        pup.scale.y = eyeScaleY;
+      }
       eyes.position.x = st.hYaw * 0.05;
       st.smile = Math.max(0, st.smile - dt * 0.45);
       mouthR.rotation.z = Math.sin(Math.min(1, st.smile) * Math.PI) * 0.22;
-      const pulse = 0.8 + 0.2 * (Math.sin(time * 2.2) * 0.5 + 0.5);
-      chest.color.setRGB(1 * pulse, 0.69 * pulse, 0.23 * pulse);
-      bulbLight.intensity = 1 + st.boost * 4;
+
+      // Real-time audio spectrogram equalizer bars
+      for (let i = 0; i < eqBars.length; i++) {
+        const bar = eqBars[i];
+        if (!bar) continue;
+        const freq = Math.sin(time * 7 + i * 0.7) * 0.5 + Math.cos(time * 11 + i * 0.9) * 0.5;
+        const h = Math.max(0.04, (0.08 + Math.abs(freq) * 0.18) * (1 + st.boost * 1.5 + q * 1.4));
+        bar.scale.y = h / 0.1;
+        bar.position.y = h / 2 - 0.04;
+      }
+
+      // Gyroscopic containment rings spin
+      gyroRing1.rotation.x = time * 2.2;
+      gyroRing1.rotation.y = time * 1.5;
+      gyroRing2.rotation.z = -time * 1.8;
+      gyroRing2.rotation.x = time * 1.1;
+
+      // Halo rotation and satellite nodes
+      haloGroup.rotation.y = time * (0.6 + q * 4.0);
+      for (let i = 0; i < haloNodes.length; i++) {
+        const node = haloNodes[i];
+        if (!node) continue;
+        const a = time * (1.6 + q * 6.0) + (i * Math.PI * 2) / 3;
+        node.position.set(Math.cos(a) * 0.36, Math.sin(time * 3 + i) * 0.015, Math.sin(a) * 0.36);
+      }
+
+      // Mic tube glow pulse
+      (tubeGlow.material as THREE.MeshBasicMaterial).color
+        .setRGB(1, 0.7 + (st.boost + q) * 0.3, 0.25)
+        .multiplyScalar(0.7 + 0.3 * Math.sin(time * 3));
+
+      // Golden logic reactor core pulse
+      const pulse = 0.8 + 0.2 * (Math.sin(time * 2.4) * 0.5 + 0.5);
+      reactorCoreMat.color.setRGB(1 * pulse, 0.72 * pulse, 0.25 * pulse);
 
       shaderUniforms.uTime.value = time;
       shaderUniforms.uMouse.value.set(st.mouseX, -st.mouseY);
