@@ -1,6 +1,22 @@
 # HAHA — Mainnet Handoff Runbook (4663 Robinhood Chain)
 
-Status: **PREPARED — NOT DEPLOYED** (user instruction: no mainnet broadcast).
+Status: **DEPLOYED & LIVE (21 Okt 2026, ~17:50 UTC)** — owner broadcast override.
+Foundation deployed by `0xAeA64dd878A8F1746e920e5725E41dcA0057B651`
+(single-wallet, hot=cold per owner decision):
+
+- TipJar `0xda4762e4205aFf2d8CB9177cDcE6d69A23068bbE`
+- FeeSplitter `0xE9a827aC2834fFD30DDa5b7d710dbfbE43afe144`
+- MicDrop `0x57dDE4efC1868A153be6b8d040d13A8d28993949`
+- V4BuybackAdapter `0x9754F06cA930B9190Dc622D26532Db77E6B76E2c`
+- VaultRegistry `0x27e5ADf5F3BfEBFA7B7B81619CA68a97CD1866D6`
+- ProducerGateway `0x71826870a70064F0657EF527AFd9d1029Ae950de`
+- USDG `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` (6dp); CrowdStaking deferred (real Pons CA)
+
+Production cutover: VPS env `CHAIN_ENV=mainnet` + addresses, containers
+recreated from GHCR image `8957318`, `/api/config` serves 4663, worker ticks
+scoped `4663` and `done`. Testnet data remains in DB under `chain_id=46630`.
+Deploy txs: `contracts/broadcast/DeployMainnet.s.sol/4663/run-latest.json`.
+This runbook below is retained as the checklist record; broadcast is done.
 This runbook is the complete go-live checklist. It distills the testnet
 runtime findings (sesi 19–21 Okt 2026, plan §8.1) into launch steps.
 

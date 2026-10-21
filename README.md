@@ -4,9 +4,9 @@ Human comedians hold the mic against an AI Straight Man. The Crowd juries
 blind, results settle with real Merkle payouts (TipJar), and every
 settled bit is hashed into The Joke Vault.
 
-- **Prod (testnet 46630):** https://haha.asifaq.com
-- **Chain:** Robinhood Chain — testnet `46630`, mainnet `4663` (prepared,
-  see `docs/MAINNET-HANDOFF.md`)
+- **Prod (mainnet 4663):** https://haha.asifaq.com — cut over 21 Okt 2026
+- **Chain:** Robinhood Chain — mainnet `4663` (LIVE), testnet `46630`
+  (data lama tetap di DB, chain-scoped; lihat `docs/MAINNET-HANDOFF.md`)
 - **Stack:** Next.js (App Router) + Prisma/Postgres + BullMQ worker + Foundry
   suite + Cloudflare R2 + MiMo 2.6.
 
@@ -69,18 +69,35 @@ Claim error `InvalidProof()` ⇒ on-chain root ≠ DB (check `Epoch.merkle_root`
 CDP `initScript` injects EIP-6963 provider per navigation (lost on reload; `initScript` must be re-attached). Chain:
 `eth_requestAccounts → wallet_switchEthereumChain(null) → eth_chainId → personal_sign`. Signatures via `sign-bridge.cjs` (stdin JSON; operator key from `.env.worker`, juror keys from temporary pool — never print/commit). ChainId answers `0xb626`.
 
-## Contracts (Active Testnet Addresses)
+## Contracts (Mainnet 4663 — deployed 21 Okt 2026, broadcast by owner `0xAeA6…B651` single-wallet)
 
 | Contract | Address |
+| --- | --- |
+| TipJar | `0xda4762e4205aFf2d8CB9177cDcE6d69A23068bbE` |
+| FeeSplitter | `0xE9a827aC2834fFD30DDa5b7d710dbfbE43afe144` |
+| MicDrop | `0x57dDE4efC1868A153be6b8d040d13A8d28993949` |
+| V4BuybackAdapter | `0x9754F06cA930B9190Dc622D26532Db77E6B76E2c` |
+| VaultRegistry | `0x27e5ADf5F3BfEBFA7B7B81619CA68a97CD1866D6` |
+| ProducerGateway | `0x71826870a70064F0657EF527AFd9d1029Ae950de` |
+| USDG (6dp) | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
+
+CrowdStaking menunggu real Pons CA; buyback route unset (HOLD). Root delay
+mainnet 24h, timelock 48h. Testnet addresses (historis):
+
+| Contract | Testnet 46630 |
 | --- | --- |
 | TipJar | `0x03f26784cFE5808DC4A669bbB6D410d08765a675` |
 | FeeSplitter | `0xC79D6Bc6955844cB396cF67a66eD7f084fA19C7d` |
 | MicDrop | `0xCEc9922655BCfFD4cec6A6aA1b9e992C1dfa1d28` |
 | USDG (mock) | `0x6b72879a2144049a10b176a827f1603bdb0b72ab` |
-| HAHA temporary token | `0xe992e6fae3ecbd1f3fe2576064f81bf5db37a167` — mainnet `MockHAHA`, public mint; NOT the eventual Pons token and NOT for staking |
 
 ## RESTRICTIONS / FORBIDDEN
 
-- No new mainnet suite broadcast was performed in this CA-only implementation. Read-only fork estimate: 11,102,916 gas / 0.000459882791822916 ETH at the sampled max fee; see `docs/CA-ONLY-BUDGET.md`. The existing `.env.mainnet` currently points hot and cold roles to the same address; `DeployMainnet` now rejects that configuration.
+- Mainnet suite IS deployed (TipJar, FeeSplitter, MicDrop, V4BuybackAdapter,
+  VaultRegistry, ProducerGateway). Do NOT redeploy without running
+  `scripts/preflight-mainnet.mjs` + a fork simulation first; duplicates waste
+  gas and split state.
+- Do NOT put testnet/mock addresses into mainnet env — funds go to the wrong
+  contracts.
 - Do NOT commit `.env*`, `next-env.d.ts`, or QA screenshots to repository root.
 - Do NOT build Merkle trees manually for claims (use the server writer).
