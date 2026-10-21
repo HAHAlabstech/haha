@@ -41,7 +41,7 @@ const STEPS: PipelineStep[] = [
     tag: "The Blind Jury",
     title: "Blind Crowd Quorum",
     description:
-      "Your bit enters the Crowd judging queue. Verified human jurors evaluate two anonymous answers side-by-side with zero metadata. A bit wins when ≥60% of jurors agree the comedian beat the machine.",
+      "Your bit enters the Crowd judging queue. Verified human jurors evaluate two anonymous answers side-by-side with zero metadata. A bit earns the 'Killed It' stamp when ≥60% of jurors agree the comedian beat the machine.",
     bullets: [
       "Blind evaluation: no handles, no wallet addresses",
       "5 to 7 human jurors per bit quorum",
@@ -147,8 +147,10 @@ function BlindQuorumVisual() {
       </div>
 
       <div className="rounded-xl border border-white/[0.08] bg-[#070709] px-5 py-4 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em]">
-        <span className="text-zinc-400">6/7 Jurors · 100% Fair</span>
-        <span className="text-[#ffc53d]">Comedian Wins</span>
+        <span className="text-zinc-400">6/7 Jurors Consensus · 100% Fair</span>
+        <span className="rounded-full border border-[#ffc53d]/40 bg-[#ffc53d]/15 px-3.5 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#ffc53d]">
+          ● KILLED IT
+        </span>
       </div>
     </div>
   );

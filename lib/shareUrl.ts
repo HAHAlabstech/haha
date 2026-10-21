@@ -4,8 +4,8 @@
 export function cardKey(bitId: string, opts?: { holdout?: boolean }): string {
   const id = bitId.toLowerCase();
   return opts?.holdout
-    ? `public/share/v2/sealed-bit-${id}.png`
-    : `public/share/v2/bit-${id}.png`;
+    ? `public/share/v3/sealed-bit-${id}.png`
+    : `public/share/v3/bit-${id}.png`;
 }
 
 export function cardUrl(bitId: string, opts?: { holdout?: boolean }): string | null {

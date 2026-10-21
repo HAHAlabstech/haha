@@ -186,10 +186,14 @@ export default function SpotlightFeed() {
               className="haha-glass-panel group rounded-2xl p-8 flex flex-col justify-between transition-colors duration-300 hover:border-white/20"
             >
               <div>
-                {/* Quiet Top Meta */}
-                <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-500 mb-6">
-                  <span className="text-[#ffc53d]">{b.category}</span>
-                  <span>{b.stage}</span>
+                {/* Top Meta & Killed It Verdict Stamp */}
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6 font-mono text-[10px] uppercase tracking-[0.16em]">
+                  <span className="text-zinc-400">
+                    {b.category} · {b.stage}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ffc53d]/35 bg-[#ffc53d]/10 px-3 py-1 text-[10px] font-semibold tracking-[0.16em] text-[#ffc53d]">
+                    ● Killed It
+                  </span>
                 </div>
 
                 {/* Human Bit Quote */}

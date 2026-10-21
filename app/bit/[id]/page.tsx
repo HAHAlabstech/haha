@@ -2,9 +2,9 @@
 
 import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Disclaimer } from "@/components/ui";
+import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
-import { ArrowUpRight } from "lucide-react";
+import { CheckCircle2, XCircle, Mic, ArrowUpRight, Users, Bot } from "lucide-react";
 import {
   authHeaders,
   ensureSiweSession,
@@ -52,10 +52,10 @@ interface BitPayload {
 }
 
 const STAGES = [
-  "Waiting for Straight Man",
+  "Waiting for the Straight Man",
   "Straight Man answered",
-  "Blind Crowd Quorum",
-  "Final Verdict Settled",
+  "Waiting for the Crowd Quorum",
+  "Killed it / Bombed / Heckled off",
 ];
 
 function stageIndexForStatus(status?: string): number {
@@ -72,11 +72,6 @@ function stageIndexForStatus(status?: string): number {
     default:
       return 0;
   }
-}
-
-function formatStatusLabel(status?: string): string {
-  if (!status) return "Screening";
-  return status.replace(/_/g, " ");
 }
 
 export default function BitPage({
@@ -279,248 +274,244 @@ export default function BitPage({
 
   return (
     <div className="relative min-h-screen bg-[#070709] text-white selection:bg-[#ffc53d]/30 selection:text-[#ffc53d] overflow-x-clip">
+      {/* Ambient Stage Lighting Glow */}
       <div
         aria-hidden
-        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-radial from-[#ffc53d]/05 via-transparent to-transparent blur-[160px] rounded-full z-0"
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-radial from-[#ffc53d]/06 via-[#ffc53d]/01 to-transparent blur-[160px] rounded-full z-0"
       />
 
       <div className="relative z-10 mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-12">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-6 border-b border-white/10 pb-8">
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold">
+            <span className="eyebrow">
               Bit Dossier · {(bit?.category ?? "stage").replace(/_/g, " ")} ·{" "}
               {bit?.stage === "pro" ? "Pro Stage (2.5×)" : "Open Mic (1.0×)"}
-            </p>
-            <h1 className="display-serif mt-3 text-4xl text-white md:text-6xl tracking-tight">
-              Case <em className="italic text-[#ffc53d]">#{id.slice(0, 10)}</em>
+            </span>
+            <h1 className="display-serif mt-3 text-4xl text-white md:text-6xl">
+              Bit <em>#{id.slice(0, 10)}</em>
             </h1>
             {bit?.user ? (
-              <p className="mt-3 font-mono text-xs uppercase tracking-[0.16em] text-zinc-400">
-                Submitted by{" "}
+              <p className="mt-2 font-mono text-xs uppercase tracking-widest text-zinc-400">
+                Performed by{" "}
                 <Link
                   href={`/u/${encodeURIComponent(bit.user.handle)}`}
-                  className="text-white hover:text-[#ffc53d] underline transition-colors"
+                  className="text-[#ffc53d] hover:text-[#ffd875] underline transition-colors"
                 >
                   @{bit.user.handle}
                 </Link>
               </p>
             ) : null}
           </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {bit?.share_card_url ? (
-              <button
-                type="button"
-                onClick={() => {
-                  void navigator.clipboard.writeText(
-                    bit.share_card_url ?? window.location.href,
-                  );
-                  setCardCopied(true);
-                  window.setTimeout(() => setCardCopied(false), 1800);
-                }}
-                className="px-4 py-2 rounded-full border border-white/15 bg-white/[0.03] font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-300 hover:border-[#ffc53d]/50 hover:text-[#ffc53d] transition-colors cursor-pointer"
-              >
-                {cardCopied ? "Copied ✓" : "Copy Card Link"}
-              </button>
-            ) : null}
-            <span className="px-4 py-2 rounded-full border border-[#ffc53d]/35 bg-[#ffc53d]/10 font-mono text-[11px] uppercase tracking-[0.16em] text-[#ffc53d]">
-              {loading ? "Loading…" : formatStatusLabel(bit?.status)}
-            </span>
+          <div className="flex items-center gap-3">
+            <Stamp
+              tone={
+                bit?.status === "killed_it"
+                  ? "green"
+                  : bit?.status === "bombed" || bit?.status === "heckled_off"
+                    ? "red"
+                    : "amber"
+              }
+            >
+              ●{" "}
+              {loading
+                ? "Loading…"
+                : (bit?.status ?? "screening").replace(/_/g, " ")}
+            </Stamp>
           </div>
         </div>
 
         {!loading && (bit?.retrial_round ?? 0) >= 2 ? (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#ffc53d]/30 bg-[#ffc53d]/[0.05] px-5 py-3.5 font-mono text-xs">
-            <span className="uppercase tracking-[0.16em] text-[#ffc53d]">
+          <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-[#ffc53d]/30 bg-[#ffc53d]/[0.06] px-4 py-3">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
               Round 2 · Crowd Retrial
             </span>
-            <span className="text-zinc-400">
-              Fresh jurors re-evaluated this bit after the Round 1 verdict was appealed.
+            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+              Fresh seats re-judged this bit after the Round 1 verdict was appealed
             </span>
           </div>
         ) : null}
 
-        {/* 3-Column Editorial Dossier Cards */}
+        {/* 3-Screen Stage / Straight Man / Crowd Flow */}
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Card 1: The Stage */}
-          <div className="haha-glass-panel rounded-2xl p-8 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-500">
-                <span className="text-[#ffc53d]">Comedian Setup</span>
-                <span>{bit?.stage === "pro" ? "Pro 2.5×" : "Open Mic"}</span>
-              </div>
-
-              <p className="display-serif text-xl sm:text-2xl text-white leading-[1.38] tracking-tight font-normal">
-                “{bit?.scenario ?? "Loading setup…"}”
-              </p>
-
-              {bit?.question ? (
-                <div className="mt-6 pt-5 border-t border-white/[0.07]">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 block mb-2">
-                    Prompt Question
-                  </span>
-                  <p className="text-sm text-zinc-300 leading-relaxed font-light">
-                    {bit.question}
-                  </p>
-                </div>
-              ) : null}
+          <div className="screen">
+            <div className="screen-bar">
+              <span>1 · The Stage</span>
+              <span className="dots">
+                <i />
+                <i />
+                <i />
+              </span>
             </div>
-
-            <div className="mt-8 pt-4 border-t border-white/[0.07] font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">
-              ID · {id}
+            <div className="screen-body">
+              <div>
+                <p className="quote">{bit?.scenario ?? "Loading setup…"}</p>
+                <p className="mt-4 font-mono text-xs uppercase tracking-wider text-[#ffc53d]">
+                  {bit?.question}
+                </p>
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                Full ID: {id}
+              </span>
             </div>
           </div>
 
-          {/* Card 2: Straight Man */}
-          <div className="haha-glass-panel rounded-2xl p-8 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-500">
-                <span className="text-[#ffc53d]">Straight Man Read</span>
-                <span>{bit?.ai_answer?.model_version ?? "mimo-v2.6-pro"}</span>
-              </div>
-
+          <div className="screen">
+            <div className="screen-bar">
+              <span>2 · Straight Man</span>
+              <span>{bit?.ai_answer?.model_version ?? "SM-01"}</span>
+            </div>
+            <div className="screen-body">
               {bit?.ai_answer ? (
-                <div className="space-y-5">
-                  <div className="rounded-xl border border-white/[0.08] bg-[#070709] p-5 text-[13px] text-zinc-200 leading-relaxed font-light">
-                    {bit.ai_answer.answer}
+                <>
+                  <div className="space-y-3">
+                    <div className="ai">{bit.ai_answer.answer}</div>
+                    <p className="text-xs leading-relaxed text-zinc-400">
+                      {bit.ai_answer.reasoning}
+                    </p>
                   </div>
-                  {bit.ai_answer.reasoning ? (
-                    <div>
-                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 block mb-1.5">
-                        Chain of Thought
-                      </span>
-                      <p className="text-xs leading-relaxed text-zinc-400 font-light">
-                        {bit.ai_answer.reasoning}
-                      </p>
-                    </div>
-                  ) : null}
-                </div>
+                  <div className="confidence">
+                    <span>Literal Confidence {confPct}%</span>
+                    <span className="bar">
+                      <i style={{ width: `${confPct}%` }} />
+                    </span>
+                  </div>
+                </>
               ) : (
-                <p className="font-mono text-xs uppercase tracking-[0.16em] text-zinc-500">
-                  Computing literal response…
+                <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+                  Straight Man is computing literal response…
                 </p>
               )}
             </div>
-
-            <div className="mt-8 pt-4 border-t border-white/[0.07]">
-              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400 mb-2">
-                <span>Literal Confidence</span>
-                <span className="text-[#ffc53d]">{confPct}%</span>
-              </div>
-              <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#ffc53d]"
-                  style={{ width: `${confPct}%` }}
-                />
-              </div>
-            </div>
           </div>
 
-          {/* Card 3: Comedian Reveal & Crowd Quorum */}
-          <div className="haha-glass-panel rounded-2xl p-8 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-500">
-                <span className="text-[#ffc53d]">Reveal &amp; Quorum</span>
-                <span>
-                  {votedCount} / {assignedCount} Votes
-                </span>
-              </div>
-
+          <div className="screen">
+            <div className="screen-bar">
+              <span>3 · Comedian Reveal &amp; Crowd</span>
+              <span>
+                {votedCount} / {assignedCount} Votes
+              </span>
+            </div>
+            <div className="screen-body">
               {bit?.comedian_reveal ? (
-                <div className="space-y-4">
-                  <p className="display-serif text-xl text-white leading-snug font-normal">
+                <div className="space-y-2">
+                  <p className="font-serif text-xl text-white">
                     “{bit.comedian_reveal.answer}”
                   </p>
-                  <p className="text-xs leading-relaxed text-zinc-400 font-light">
+                  <p className="text-xs leading-relaxed text-zinc-400">
                     {bit.comedian_reveal.explanation}
                   </p>
                 </div>
               ) : (
-                <p className="text-sm text-zinc-400 font-light">
-                  Awaiting comedian reveal or verdict selection below.
+                <p className="text-sm text-zinc-400">
+                  Awaiting comedian reveal or verdict below.
                 </p>
               )}
-            </div>
 
-            <div className="mt-8 pt-4 border-t border-white/[0.07] space-y-4">
-              <div>
-                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400 mb-2">
+              <div className="space-y-2.5 pt-3">
+                <div className="confidence">
                   <span>Quorum Progress</span>
-                  <span className="text-white">{progressPct}%</span>
+                  <span className="bar">
+                    <i style={{ width: `${progressPct}%` }} />
+                  </span>
                 </div>
-                <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#ffc53d]"
-                    style={{ width: `${progressPct}%` }}
-                  />
-                </div>
-              </div>
-
-              {bit?.outcome ? (
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.14em]">
-                    <span className="text-[#ffc53d]">
-                      {formatStatusLabel(bit.outcome.result)}
+                {bit?.outcome ? (
+                  <Stamp
+                    tone={bit.outcome.result === "killed_it" ? "green" : "red"}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      {bit.outcome.result === "killed_it" ? (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      ) : (
+                        <XCircle className="w-3.5 h-3.5" />
+                      )}
+                      <span>
+                        {bit.outcome.result.replace(/_/g, " ").toUpperCase()} · Win{" "}
+                        {(bit.outcome.win_strength * 100).toFixed(0)}% · Fair{" "}
+                        {(bit.outcome.fair_ratio * 100).toFixed(0)}%
+                      </span>
                     </span>
-                    <span className="text-zinc-300">
-                      Win {(bit.outcome.win_strength * 100).toFixed(0)}% · Fair{" "}
-                      {(bit.outcome.fair_ratio * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  <p className="text-xs leading-relaxed text-zinc-400 font-light">
+                  </Stamp>
+                ) : null}
+                {bit?.outcome ? (
+                  <p className="text-xs leading-relaxed text-zinc-400">
                     {bit.outcome.result === "killed_it"
-                      ? "Payouts settle daily at 00:00 UTC and are claimable from the Tip Jar once the new root activates."
+                      ? "Payouts settle daily at 00:00 UTC — once the new epoch activates (~10 min later), claim from Tip Jar in one transaction."
                       : (bit.retrial_round ?? 0) < 2
-                        ? "Eligible for one Round-2 appeal below."
-                        : "Final verdict after Round 2 retrial."}
+                        ? "You can file one Round-2 appeal below — a fresh jury re-judges this bit."
+                        : "Final verdict after Round 2. Write a new bit to try again."}
                   </p>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Verdict Action Panel */}
-        <section aria-label="Verdict" className="space-y-5">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold">
-                Comedian Call
-              </p>
-              <h2 className="display-serif mt-2 text-3xl text-white">
-                Did the Straight Man <em className="italic text-[#ffc53d]">get the joke?</em>
-              </h2>
+        {/* Share Card (renders once the bit settles and the card pipeline runs) */}
+        {bit?.share_card_url ? (
+          <section aria-label="Share card" className="pb-2">
+            <div className="mx-auto max-w-[860px] rounded-2xl border border-white/10 bg-[#0c0c12] shadow-2xl overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={bit.share_card_url}
+                alt="Crowd verdict share card"
+                loading="lazy"
+                className="w-full aspect-[16/9] object-cover"
+              />
+              <div className="flex items-center justify-between gap-4 px-5 py-3.5 border-t border-white/10 bg-[#070709]/80">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                  Crowd verdict card · auto-rendered on settle
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(bit.share_card_url ?? "");
+                    setCardCopied(true);
+                    window.setTimeout(() => setCardCopied(false), 1800);
+                  }}
+                  className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d] border border-[#ffc53d]/30 bg-[#ffc53d]/10 rounded-full px-4 py-1.5 hover:bg-[#ffc53d]/20 transition cursor-pointer"
+                >
+                  {cardCopied ? "Link Copied ✓" : "Copy Card Link"}
+                </button>
+              </div>
             </div>
-            <span className="font-mono text-xs text-zinc-500">
-              Available once the Straight Man answers
-            </span>
-          </div>
+          </section>
+        ) : null}
 
-          <div className="haha-glass-panel rounded-2xl p-8">
+        {/* Verdict Action Panel */}
+        <section aria-label="Verdict">
+          <SectionTitle
+            eyebrow="Comedian Call"
+            hint="Available once the Straight Man answers"
+          >
+            Did the Straight Man <em>get the joke?</em>
+          </SectionTitle>
+          <Card hot={canVerdict}>
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 disabled={!canVerdict || submittingVerdict}
                 onClick={() => void submitVerdict("got_it")}
-                className="pill-btn disabled:cursor-not-allowed disabled:opacity-40"
+                className="pill-btn disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-1.5"
               >
-                <span>Got it · AI Understood</span>
+                <Bot className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Got it (AI Understood)</span>
               </button>
               <button
                 type="button"
                 disabled={!canVerdict || submittingVerdict}
                 onClick={() => setMissedMode((v) => !v)}
-                className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40"
+                className="pill-btn hot disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-1.5"
               >
-                <span>Missed it · Send to Crowd</span>
+                <Users className="w-3.5 h-3.5" />
+                <span>Missed it (Send to Crowd)</span>
               </button>
             </div>
 
             {missedMode && canVerdict ? (
-              <div className="mt-6 space-y-4 border-t border-white/10 pt-6">
+              <div className="mt-6 space-y-4 border-t border-white/10 pt-5">
                 <div>
-                  <label className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffc53d]">
+                  <label className="font-mono text-xs uppercase tracking-widest text-[#ffc53d]">
                     Your Real Answer / Punchline (max 200 chars)
                   </label>
                   <input
@@ -529,11 +520,11 @@ export default function BitPage({
                     value={revealAnswer}
                     onChange={(e) => setRevealAnswer(e.target.value)}
                     placeholder="What was the real punchline, subtext, or outcome?"
-                    className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white focus:border-[#ffc53d] focus:outline-none"
+                    className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white placeholder:text-zinc-500 focus:border-[#ffc53d] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-xs uppercase tracking-[0.16em] text-[#ffc53d]">
+                  <label className="font-mono text-xs uppercase tracking-widest text-[#ffc53d]">
                     Why the Straight Man Missed It (max 400 chars)
                   </label>
                   <textarea
@@ -542,7 +533,7 @@ export default function BitPage({
                     value={revealExplanation}
                     onChange={(e) => setRevealExplanation(e.target.value)}
                     placeholder="Explain it clearly for the blind Crowd jury…"
-                    className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white focus:border-[#ffc53d] focus:outline-none"
+                    className="mt-2 w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white placeholder:text-zinc-500 focus:border-[#ffc53d] focus:outline-none"
                   />
                 </div>
                 <button
@@ -564,74 +555,52 @@ export default function BitPage({
               </div>
             ) : null}
 
-            <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500">
-              “Missed it” locks your reveal and dispatches the bit to a blind human Crowd quorum.
+            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500">
+              “Missed it” locks your reveal and dispatches the bit to a blind
+              human Crowd quorum.
             </p>
-          </div>
+          </Card>
         </section>
 
-        {/* Lifecycle Stepper */}
-        <section aria-label="Progress" className="space-y-5">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold">
-                Lifecycle
-              </p>
-              <h2 className="display-serif mt-2 text-3xl text-white">
-                Where this bit <em className="italic text-[#ffc53d]">stands.</em>
-              </h2>
-            </div>
-            <span className="font-mono text-xs text-zinc-500">
-              Live auto-refresh
-            </span>
-          </div>
-
+        {/* Progress Stepper */}
+        <section aria-label="Progress">
+          <SectionTitle eyebrow="Lifecycle" hint="Live auto-refresh">
+            Where this bit <em>stands.</em>
+          </SectionTitle>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STAGES.map((s, i) => {
-              const active = i === currentStage;
-              return (
-                <div
-                  key={s}
-                  className={`haha-glass-panel rounded-2xl p-6 flex flex-col justify-between ${
-                    active ? "border-[#ffc53d]/45" : ""
-                  }`}
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500">
-                    Step 0{i + 1}
-                  </div>
-                  <p className="display-serif mt-3 text-xl text-white">{s}</p>
-                  <span
-                    className={`mt-4 inline-block font-mono text-[10px] uppercase tracking-[0.16em] ${
-                      active ? "text-[#ffc53d]" : "text-zinc-600"
-                    }`}
-                  >
-                    {active ? "Active stage" : i < currentStage ? "Completed" : "Pending"}
-                  </span>
+            {STAGES.map((s, i) => (
+              <Card key={s} hot={i === currentStage}>
+                <div className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                  Stage 0{i + 1}
                 </div>
-              );
-            })}
+                <p className="display-serif mt-2 text-xl text-white">{s}</p>
+                {i === currentStage ? (
+                  <span className="mt-2 inline-block font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
+                    ● Active Now
+                  </span>
+                ) : null}
+              </Card>
+            ))}
           </div>
         </section>
 
         {/* Appeal Panel */}
         {bit?.status === "bombed" && (bit.retrial_round ?? 0) < 2 ? (
-          <section aria-label="Appeal" className="space-y-4">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold">
-                Retrial
-              </p>
-              <h2 className="display-serif mt-2 text-3xl text-white">
-                Disagree with the Crowd? <em className="italic text-[#ffc53d]">Appeal.</em>
-              </h2>
-            </div>
-            <div className="haha-glass-panel rounded-2xl p-8 space-y-4">
+          <section aria-label="Appeal">
+            <SectionTitle
+              eyebrow="Retrial"
+              hint="1 appeal per 24h · fresh Round 2 jury"
+            >
+              Disagree with the Crowd? <em>Appeal.</em>
+            </SectionTitle>
+            <Card className="space-y-4">
               <input
                 type="text"
                 maxLength={500}
                 value={appealReason}
                 onChange={(e) => setAppealReason(e.target.value)}
                 placeholder="Why should a fresh Round 2 Crowd jury re-evaluate this bit?"
-                className="w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white focus:border-[#ffc53d] focus:outline-none"
+                className="w-full rounded-xl border border-white/15 bg-[#070709] p-3.5 text-sm text-white placeholder:text-zinc-500 focus:border-[#ffc53d] focus:outline-none"
               />
               <button
                 type="button"
@@ -646,20 +615,20 @@ export default function BitPage({
               {appealStatus ? (
                 <p className="font-mono text-xs text-[#ffc53d]">{appealStatus}</p>
               ) : null}
-            </div>
+            </Card>
           </section>
         ) : null}
 
         {/* Report Panel */}
         <section aria-label="Report">
-          <div className="haha-glass-panel rounded-2xl p-6 flex flex-wrap items-center gap-3">
+          <Card className="flex flex-wrap items-center gap-3">
             <input
               type="text"
               maxLength={500}
               value={reportReason}
               onChange={(e) => setReportReason(e.target.value)}
               placeholder="Report rule violation or personal data (optional)…"
-              className="flex-1 rounded-xl border border-white/15 bg-[#070709] px-4 py-2.5 text-xs text-white focus:border-[#ffc53d] focus:outline-none"
+              className="flex-1 rounded-xl border border-white/15 bg-[#070709] px-4 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:border-[#ffc53d] focus:outline-none"
             />
             <button
               type="button"
@@ -674,12 +643,12 @@ export default function BitPage({
                 {reportStatus}
               </span>
             ) : null}
-          </div>
+          </Card>
         </section>
 
         {error ? (
           <p
-            className="rounded-xl border border-red-500/40 bg-red-500/10 p-3.5 text-sm text-[#ffc53d]"
+            className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3.5 text-sm text-rose-200"
             role="alert"
           >
             {error}
@@ -688,10 +657,12 @@ export default function BitPage({
 
         <div className="flex flex-wrap gap-3">
           <Link href="/app?tab=stage" className="pill-btn hot flex items-center gap-2">
+            <Mic className="w-3.5 h-3.5" />
             <span>Take the stage again</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
           <Link href="/app?tab=crowd" className="pill-btn flex items-center gap-2">
+            <Users className="w-3.5 h-3.5 text-zinc-400" />
             <span>Judge in the Crowd</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>

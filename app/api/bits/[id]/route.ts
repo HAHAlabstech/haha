@@ -92,7 +92,9 @@ export async function GET(
           fairWeight,
           totalWeight,
         },
-        share_card_url: isSettled ? (bit.share_card_r2_url ?? cardUrl(bit.id, { holdout: bit.is_holdout })) : null,
+        share_card_url: isSettled
+          ? (cardUrl(bit.id, { holdout: bit.is_holdout }) ?? bit.share_card_r2_url)
+          : null,
       },
       { headers: { "cache-control": "no-store" } },
     );

@@ -6,9 +6,9 @@
 const sharp = require("sharp");
 
 const MAINNET_BADGES = {
-  killed_it: { label: "KILLED IT", color: "#ffc53d", textColor: "#070709" },
-  bombed: { label: "BOMBED", color: "#27272a", textColor: "#e4e4e7" },
-  heckled_off: { label: "HECKLED OFF", color: "#d97706", textColor: "#070709" },
+  killed_it: { label: "● KILLED IT", bg: "#1c1608", border: "#ffc53d", textColor: "#ffc53d" },
+  bombed: { label: "● BOMBED", bg: "#18181b", border: "#3f3f46", textColor: "#e4e4e7" },
+  heckled_off: { label: "● HECKLED OFF", bg: "#1c1208", border: "#d97706", textColor: "#fbbf24" },
 };
 
 function esc(s) {
@@ -41,33 +41,40 @@ function pct(x) {
 
 // data: { id, category, scenario, result, winStrength, fairRatio, jurorCount, holdout, seasonName }
 async function renderShareCard(data) {
-  const badge = MAINNET_BADGES[data.result] ?? { label: esc(data.result), color: "#ffc53d", textColor: "#070709" };
+  const badge = MAINNET_BADGES[data.result] ?? {
+    label: esc(data.result),
+    bg: "#1c1608",
+    border: "#ffc53d",
+    textColor: "#ffc53d",
+  };
   const seasonChip = esc(data.seasonName ?? "SEASON 01");
+  const badgeW = 36 + badge.label.length * 15;
+  const badgeCenterX = 96 + Math.round(badgeW / 2);
 
   // Holdout: rubrik §4.6 — isi skenario/jawaban WAJIB disembunyikan di kartu.
   if (data.holdout) {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#070709"/><stop offset="1" stop-color="#111116"/>
+      <stop offset="0" stop-color="#070709"/><stop offset="1" stop-color="#0e0e14"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="675" fill="url(#bg)"/>
   <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#27272a" stroke-width="2"/>
-  <text x="96" y="104" font-size="40" font-weight="bold" fill="#ffc53d">HAHA</text>
-  <text x="240" y="100" font-size="22" fill="#a1a1aa">Humans Are Hard to Automate</text>
-  <rect x="816" y="70" width="288" height="48" rx="24" fill="#18181b" stroke="#27272a" stroke-width="1"/>
-  <text x="960" y="101" font-size="22" fill="#ffc53d" text-anchor="middle">${esc(data.category)}</text>
-  <rect x="96" y="180" width="${40 + badge.label.length * 26}" height="64" rx="32" fill="${badge.color}"/>
-  <text x="120" y="226" font-size="34" font-weight="bold" fill="${badge.textColor}">${esc(badge.label)}</text>
-  <rect x="96" y="270" width="240" height="56" rx="28" fill="#18181b" stroke="#27272a" stroke-width="1"/>
-  <text x="216" y="306" font-size="24" fill="#e4e4e7" text-anchor="middle">${seasonChip}</text>
-  <text x="96" y="400" font-size="34" font-weight="bold" fill="#f4f4f5">CONTENT SEALED</text>
-  <text x="96" y="448" font-size="26" fill="#a1a1aa">This bit is reserved for the holdout training set.</text>
-  <text x="96" y="488" font-size="26" fill="#a1a1aa">Joke text and reveals are hidden by design.</text>
-  <line x1="96" y1="584" x2="1104" y2="584" stroke="#27272a" stroke-width="2"/>
-  <text x="96" y="622" font-size="26" fill="#e4e4e7">jurors ${data.jurorCount ?? 0}</text>
-  <text x="1104" y="622" font-size="22" fill="#71717a" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
+  <text x="96" y="104" font-size="36" font-weight="bold" fill="#ffc53d">HAHA</text>
+  <text x="230" y="100" font-size="20" fill="#a1a1aa">THE CROWD JUDGES</text>
+  <rect x="896" y="70" width="208" height="44" rx="22" fill="#121218" stroke="#27272a" stroke-width="1"/>
+  <text x="1000" y="99" font-size="20" fill="#ffc53d" text-anchor="middle">${esc(String(data.category ?? "").toUpperCase())}</text>
+  <rect x="96" y="176" width="${badgeW}" height="52" rx="26" fill="${badge.bg}" stroke="${badge.border}" stroke-width="1.5"/>
+  <text x="${badgeCenterX}" y="210" font-size="22" font-weight="bold" fill="${badge.textColor}" text-anchor="middle">${esc(badge.label)}</text>
+  <rect x="96" y="256" width="220" height="48" rx="24" fill="#121218" stroke="#27272a" stroke-width="1"/>
+  <text x="206" y="288" font-size="20" fill="#e4e4e7" text-anchor="middle">${seasonChip}</text>
+  <text x="96" y="396" font-size="32" font-weight="bold" fill="#f4f4f5">CONTENT SEALED</text>
+  <text x="96" y="444" font-size="24" fill="#a1a1aa">This bit is reserved for the holdout training set.</text>
+  <text x="96" y="484" font-size="24" fill="#a1a1aa">Joke text and reveals are hidden by design.</text>
+  <line x1="96" y1="584" x2="1104" y2="584" stroke="#27272a" stroke-width="1.5"/>
+  <text x="96" y="622" font-size="22" fill="#ffc53d">jurors ${data.jurorCount ?? 0}</text>
+  <text x="1104" y="622" font-size="20" fill="#71717a" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
 </svg>`;
     return sharp(Buffer.from(svg, "utf8"), { density: 96 })
       .resize(1200, 675)
@@ -91,28 +98,28 @@ async function renderShareCard(data) {
   ].filter(Boolean).join("   ·   ");
 
   const body = shown
-    .map((l, i) => `<text x="96" y="${300 + i * 48}" font-size="30" fill="#f4f4f5">${esc(l)}</text>`)
+    .map((l, i) => `<text x="96" y="${296 + i * 48}" font-size="30" fill="#f4f4f5">${esc(l)}</text>`)
     .join("\n    ");
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#070709"/><stop offset="1" stop-color="#111116"/>
+      <stop offset="0" stop-color="#070709"/><stop offset="1" stop-color="#0e0e14"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="675" fill="url(#bg)"/>
   <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#27272a" stroke-width="2"/>
-  <text x="96" y="104" font-size="40" font-weight="bold" fill="#ffc53d">HAHA</text>
-  <text x="240" y="100" font-size="22" fill="#a1a1aa">Humans Are Hard to Automate</text>
-  <rect x="896" y="70" width="208" height="48" rx="24" fill="#18181b" stroke="#27272a" stroke-width="1"/>
-  <text x="1000" y="101" font-size="22" fill="#ffc53d" text-anchor="middle">${esc(data.category)}</text>
-  <rect x="96" y="150" width="${40 + badge.label.length * 26}" height="64" rx="32" fill="${badge.color}"/>
-  <text x="120" y="196" font-size="34" font-weight="bold" fill="${badge.textColor}">${esc(badge.label)}</text>
+  <text x="96" y="104" font-size="36" font-weight="bold" fill="#ffc53d">HAHA</text>
+  <text x="230" y="100" font-size="20" fill="#a1a1aa">THE CROWD JUDGES</text>
+  <rect x="896" y="70" width="208" height="44" rx="22" fill="#121218" stroke="#27272a" stroke-width="1"/>
+  <text x="1000" y="99" font-size="20" fill="#ffc53d" text-anchor="middle">${esc(String(data.category ?? "").toUpperCase())}</text>
+  <rect x="96" y="152" width="${badgeW}" height="52" rx="26" fill="${badge.bg}" stroke="${badge.border}" stroke-width="1.5"/>
+  <text x="${badgeCenterX}" y="186" font-size="22" font-weight="bold" fill="${badge.textColor}" text-anchor="middle">${esc(badge.label)}</text>
   ${body}
   ${moreWords ? `<text x="96" y="572" font-size="24" fill="#a1a1aa">… +${moreWords} more words</text>` : ""}
-  <line x1="96" y1="584" x2="1104" y2="584" stroke="#27272a" stroke-width="2"/>
-  <text x="96" y="622" font-size="26" fill="#ffc53d">${esc(stats)}</text>
-  <text x="1104" y="622" font-size="22" fill="#71717a" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
+  <line x1="96" y1="584" x2="1104" y2="584" stroke="#27272a" stroke-width="1.5"/>
+  <text x="96" y="622" font-size="24" fill="#ffc53d">${esc(stats)}</text>
+  <text x="1104" y="622" font-size="20" fill="#71717a" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
 </svg>`;
 
   return sharp(Buffer.from(svg, "utf8"), { density: 96 })
@@ -130,8 +137,8 @@ async function renderShareCard(data) {
 function cardKey(bitId, opts) {
   const id = String(bitId).toLowerCase();
   return opts?.holdout
-    ? `public/share/v2/sealed-bit-${id}.png`
-    : `public/share/v2/bit-${id}.png`;
+    ? `public/share/v3/sealed-bit-${id}.png`
+    : `public/share/v3/bit-${id}.png`;
 }
 function cardUrl(bitId, opts) {
   const base = (process.env.R2_PUBLIC_URL ?? "").replace(/\/+$/, "");
