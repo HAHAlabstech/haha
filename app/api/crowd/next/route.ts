@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { requireWalletSession } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,11 @@ export async function GET(req: Request) {
   }
   try {
     const prisma = getPrisma();
+    // A ballot contains two candidate answers before the public reveal. Only
+    // the authenticated owner of the assignment may read it.
+    const auth = await requireWalletSession(req, prisma, wallet);
+    if (!auth.ok) return auth.response;
+
     const juror = await prisma.user.findUnique({
       where: { wallet },
       select: {
@@ -29,10 +35,17 @@ export async function GET(req: Request) {
         device_hash: true,
         ip_subnet: true,
         funding_source: true,
+        onboarding_passed: true,
       },
     });
     if (!juror) {
       return NextResponse.json({ error: "unknown juror" }, { status: 404 });
+    }
+    if (!juror.onboarding_passed) {
+      return NextResponse.json(
+        { error: "calibration required before voting" },
+        { status: 403, headers: { "cache-control": "no-store" } },
+      );
     }
     // SKIP LOCKED style: earliest-expiring open assignment first.
     const candidates = await prisma.crowdAssignment.findMany({

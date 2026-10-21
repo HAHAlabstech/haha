@@ -59,7 +59,7 @@ export default function CrowdView() {
   const [stakeInfo, setStakeInfo] = useState<StakeCheckInfo | null>(null);
   const [assignment, setAssignment] = useState<AssignmentPayload | null>(null);
   const [queueState, setQueueState] = useState<
-    "idle" | "loading" | "ready" | "empty" | "error" | "locked"
+    "idle" | "loading" | "ready" | "empty" | "error" | "locked" | "auth"
   >("idle");
   const [queueError, setQueueError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -106,8 +106,18 @@ export default function CrowdView() {
 
       const nextRes = await fetch(
         `/api/crowd/next?wallet=${encodeURIComponent(wallet)}`,
-        { cache: "no-store" },
+        { cache: "no-store", headers: authHeaders() },
       );
+      if (nextRes.status === 401) {
+        setAssignment(null);
+        setQueueState("auth");
+        return;
+      }
+      if (nextRes.status === 403) {
+        setAssignment(null);
+        setQueueState("locked");
+        return;
+      }
       if (nextRes.status === 404) {
         setAssignment(null);
         setQueueState("empty");
@@ -196,6 +206,28 @@ export default function CrowdView() {
       setError(e instanceof Error ? e.message : "Vote failed.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function signInForQueue() {
+    setError(null);
+    const st = getSharedWalletState();
+    if (!st.provider || !st.account) {
+      setModalOpen(true);
+      return;
+    }
+    setQueueState("loading");
+    try {
+      const siwe = await ensureSiweSession(st.provider, st.account);
+      if (!siwe.ok) {
+        setQueueError(siwe.error ?? "Sign-in failed. Try again.");
+        setQueueState("error");
+        return;
+      }
+      await loadQueue(st.account);
+    } catch (e) {
+      setQueueError(e instanceof Error ? e.message : "Sign-in failed.");
+      setQueueState("error");
     }
   }
 
@@ -427,6 +459,33 @@ export default function CrowdView() {
                 <Link href="/crowd/join" className="pill-btn">
                   <span>Review Calibration</span>
                 </Link>
+              </div>
+            </div>
+          ) : queueState === "auth" ? (
+            <div className="space-y-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
+                Sign in to load ballots
+              </p>
+              <p className="text-base text-zinc-300">
+                Your wallet is connected, but the signed session that protects
+                blind ballots is missing or expired. Sign in again without
+                losing your calibration.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => void signInForQueue()}
+                  className="pill-btn hot cursor-pointer"
+                >
+                  <span>Sign In with Wallet →</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(true)}
+                  className="pill-btn cursor-pointer"
+                >
+                  <span>Reconnect Wallet</span>
+                </button>
               </div>
             </div>
           ) : queueState === "locked" ? (
