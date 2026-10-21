@@ -1,6 +1,5 @@
 "use client";
 
-import { Activity, ShieldCheck, Database, Award } from "lucide-react";
 import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
 
 interface ProtocolFactsProps {
@@ -20,53 +19,43 @@ export default function ProtocolFacts({
       value: `$${dailyPoolUSDG}`,
       unit: "USDG",
       desc: "Daily automated prize pool settled to winning comedians at midnight UTC.",
-      icon: Activity,
     },
     {
       label: "Verified Performances",
       value: bitsTotal,
       unit: "Bits",
       desc: "Blind quorum-verified performances archived in the immutable Joke Vault.",
-      icon: Database,
     },
     {
       label: "Human Win Rate",
       value: winRate,
       unit: "vs AI",
       desc: "Human comedians successfully outsmarting Straight Man deadpan reasoning.",
-      icon: Award,
     },
     {
       label: "Active Contestant",
       value: "Straight Man",
       unit: "S1",
       desc: "Zero-shot frontier LLM with frozen literal priors on Robinhood Chain.",
-      icon: ShieldCheck,
     },
   ];
 
   return (
     <section className="relative haha-sec-divider bg-[#070709] py-28 px-[clamp(20px,4vw,56px)] text-white overflow-hidden">
-      {/* Ambient Spectrogram Acoustic Waves Texture */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-50 mix-blend-screen"
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-40 mix-blend-screen"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/landing/bg-spectrogram.jpg"
           alt=""
           loading="lazy"
-          className="w-full h-full object-cover object-center filter saturate-[1.2] brightness-[1.2] contrast-[1.2]"
+          className="w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070709] via-transparent via-transparent to-[#070709]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070709] via-transparent to-[#070709]" />
       </div>
 
-      {/* Ambient Stage Spotlight */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-radial from-[#ffc53d]/06 via-transparent to-transparent blur-[120px]"
-      />
       <div className="max-w-[1440px] mx-auto relative z-10">
         {/* Section Eyebrow & Title */}
         <div className="mb-14 max-w-2xl">
@@ -86,39 +75,33 @@ export default function ProtocolFacts({
           </p>
         </div>
 
-        {/* 4-Card Dojang-Style Facts Grid */}
+        {/* 4-Card Editorial Facts Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {facts.map((f, i) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={f.label}
-                className="haha-glass-panel relative rounded-2xl p-7 flex flex-col justify-between group hover:-translate-y-1"
-              >
-                <div className="flex items-center justify-between mb-5">
-                  <span className="font-mono text-[11px] uppercase tracking-widest text-zinc-400">
-                    {`0${i + 1}`} // {f.label}
-                  </span>
-                  <span className="p-2 rounded-xl bg-white/5 border border-white/10 text-[#ffc53d] group-hover:bg-[#ffc53d]/10 transition-colors">
-                    <Icon className="w-4 h-4" />
-                  </span>
-                </div>
+          {facts.map((f) => (
+            <div
+              key={f.label}
+              className="haha-glass-panel relative rounded-2xl p-7 flex flex-col justify-between transition-colors duration-300 hover:border-white/20"
+            >
+              <div>
+                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-500 block mb-5">
+                  {f.label}
+                </span>
 
-                <div className="flex items-baseline gap-2 mb-3">
-                  <span className="font-display font-bold text-3xl sm:text-4xl text-white tabular-nums tracking-tight">
+                <div className="flex items-baseline gap-2.5 mb-4">
+                  <span className="display-serif font-bold text-4xl sm:text-[42px] text-white tabular-nums tracking-tight leading-none">
                     {f.value}
                   </span>
-                  <span className="font-mono text-xs uppercase tracking-wider text-[#ffc53d] font-semibold">
+                  <span className="font-mono text-xs uppercase tracking-wider text-[#ffc53d]">
                     {f.unit}
                   </span>
                 </div>
-
-                <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                  {f.desc}
-                </p>
               </div>
-            );
-          })}
+
+              <p className="text-xs text-zinc-400 leading-relaxed font-light border-t border-white/[0.07] pt-4">
+                {f.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
