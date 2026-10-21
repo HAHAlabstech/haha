@@ -318,6 +318,17 @@ export default function BitPage({
         </div>
       </div>
 
+      {!loading && (bit?.retrial_round ?? 0) >= 2 ? (
+        <div className="mb-6 flex flex-wrap items-center gap-2 rounded-lg border border-[#ffc53d]/30 bg-[#ffc53d]/[0.06] px-3.5 py-2.5">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffc53d]">
+            Round 2 · Crowd Retrial
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[#a3988a]">
+            Fresh seats re-judged this bit after the Round 1 verdict was appealed
+          </span>
+        </div>
+      ) : null}
+
       {/* 3-Screen Stage / Straight Man / Crowd Flow */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="screen">
