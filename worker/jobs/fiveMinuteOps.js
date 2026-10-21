@@ -205,19 +205,21 @@ async function run(job) {
 
   // (5) TipJar keeper: activate a pending root once its veto delay has passed.
   // Without this the proposed epoch rows never become claimable (nobody else
-  // activates), so /api/rewards claims keep reverting InvalidProof.
+  // activates), so /api/rewards claims keep reverting InvalidProof. Note the
+  // pending root may equal the active root (identical tree re-proposed to
+  // advance the epoch counter) — the contract accepts that; activating it is
+  // the correct epoch-advance, so we do NOT skip on content equality.
   let activatedRoots = null;
   let keeperError = null;
   try {
     const chainLib = require("../lib/chain");
     const pc = chainLib.publicClient();
-    const [pendingRoot, pendingEta, activeRoot] = await Promise.all([
+    const [pendingRoot, pendingEta] = await Promise.all([
       pc.readContract({ address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "pendingRoot" }),
       pc.readContract({ address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "pendingEta" }),
-      pc.readContract({ address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "merkleRoot" }),
     ]);
-    const isPending = pendingRoot && pendingRoot !== viemZeroBytes();
-    if (isPending && pendingRoot !== activeRoot && Number(pendingEta) <= Date.now() / 1000) {
+    const isPending = pendingRoot !== viemZeroBytes();
+    if (isPending && Number(pendingEta) <= Date.now() / 1000) {
       const { client, account } = chainLib.walletClient();
       const hash = await client.writeContract({
         address: tipjarAddress(), abi: chainLib.ABI.tipJar, functionName: "activateRoot",
@@ -232,7 +234,9 @@ async function run(job) {
     keeperError = (e.message ?? "").slice(0, 160);
   }
 
-  await prisma.cronJobRun.update({ where: { idempotency_key: idem }, data: { status: "done" } });
+  const jobUpdate = { status: "done" };
+  if (keeperError) jobUpdate.last_error = keeperError;
+  await prisma.cronJobRun.update({ where: { idempotency_key: idem }, data: jobUpdate });
   return { settled: settled.length, promotions, appeals: appeals.length, tipjarActivation: activatedRoots ?? null, keeperError };
 }
 
