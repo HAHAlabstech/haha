@@ -674,7 +674,7 @@ Bucket `haha-storage`: kartu publik + snapshot `.enc` + DEK (KMS/env) + `pg_dump
 | `/api/bits/[id]/appeal` | `POST` | Banding 1x per bit DAN maks 1x/hari per user (gabungan kedua aturan), hanya `bombed/heckled_off`. 7 retrial baru(haha.md). |
 | `/api/bits/[id]/report` | `POST` | Laporan pengguna (§16): takedown request → unlist carousel/share dalam 24h via cron, antre GDPR-erasure 30 hari. |
 | `/api/crowd/stake-check` | `GET` | Baca `CrowdStaking.stakeOf` on-chain; blok `/crowd/next` jika < minimum. Pre-launch (belum ada token): mode allowlist. |
-| `/api/crowd/onboarding` | `POST` | 10 soal, lulus ≥8/10(haha.md). |
+| `/api/crowd/onboarding` | `POST` | 10 soal kuis UI, grading server-side (`CALIB_KEY`+sesi SIWA wajib) — jalur self-report `correct/total` dihapus (forgeable). |
 | `/api/crowd/next` | `GET` | Fetch 1 assignment milik juri (dibuat di verdict/retrial/validasi, BUKAN di next). `SKIP LOCKED` anti-race. Tahan jika belum normalized. |
 | `/api/rpc` | `POST` (server-only) | Proxy RPC allowlist (chain 4663/46630, method read-only + `eth_sendRawTransaction` via worker) — kunci Alchemy HANYA server (T3: DILARANG `NEXT_PUBLIC_*` berisi key; bundle klien tak boleh bocor). Chain/env dibaca runtime `/api/config` (T3: `NEXT_PUBLIC_*` beku saat build — JANGAN ganti env via restart; build image per env ATAU config runtime). |
 | `/api/crowd/[assignmentId]` | `POST` | Vote weighted §4.4. Thin→7. `killed_it`→holdout lottery + share(haha.md). |

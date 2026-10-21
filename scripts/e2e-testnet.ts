@@ -105,7 +105,8 @@ async function main() {
   for (let i = 0; i < 5; i++) {
     const acct = privateKeyToAccount(generatePrivateKey());
     const a = await siwe(acct);
-    await post("/api/crowd/onboarding", { wallet: a.wallet, correct: 10, total: 10 }, a.token);
+    // New route contract: answers are graded against the server-side key.
+    await post("/api/crowd/onboarding", { wallet: a.wallet, answers: ["B", "B", "B", "B", "B", "B", "B", "A", "B", "B"] }, a.token);
     jurors.push({ account: acct, ...a });
     keys.push(a.wallet);
   }
