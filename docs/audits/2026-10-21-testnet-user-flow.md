@@ -1,5 +1,12 @@
 # Testnet user-flow / UI-UX audit — 21 October 2026
 
+> **Remediation status (21 Oct 2026):** the code-level findings below were
+> remediated and re-verified on testnet; see §6 for the per-finding evidence.
+> The original findings are retained as the historical baseline. Mainnet code
+> is prepared and real-4663 read-only preflight passes, but **no mainnet
+> deployment/broadcast was made**; the full fork dry-run is blocked by the
+> public RPC's missing historical state. External launch gates remain.
+
 ## Verdict
 
 **Available for QA, not UX-final and not ready for a final sign-off.** Successful deployment and HTTP 200 responses do not establish that a new user can finish a journey without confusion.
