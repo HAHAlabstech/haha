@@ -126,6 +126,8 @@ export async function GET() {
           stage: true,
           created_at: true,
           season: { select: { name: true } },
+          ai_answer: { select: { answer: true } },
+          outcome: { select: { win_strength: true, juror_count: true } },
         },
       }),
     ]);

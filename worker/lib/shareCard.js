@@ -2,12 +2,13 @@
 // Share card renderer (plan §4.6: 1200×675 PNG, auto-uploaded to R2 when a bit
 // settles). Server-safe: sharp rasterizes an inline SVG — no headless browser.
 // Text rendering uses librsvg via system fonts (fonts-dejavu-core in image).
+// Palette: Luxury Obsidian (#070709 / #0f0f14) + Warm Amber Gold (#ffc53d) + Titanium Zinc (#f4f4f5 / #a1a1aa).
 const sharp = require("sharp");
 
 const MAINNET_BADGES = {
-  killed_it: { label: "KILLED IT", color: "#22c55e" },
-  bombed: { label: "BOMBED", color: "#ef4444" },
-  heckled_off: { label: "HECKLED OFF", color: "#f59e0b" },
+  killed_it: { label: "KILLED IT", color: "#ffc53d", textColor: "#070709" },
+  bombed: { label: "BOMBED", color: "#27272a", textColor: "#e4e4e7" },
+  heckled_off: { label: "HECKLED OFF", color: "#d97706", textColor: "#070709" },
 };
 
 function esc(s) {
@@ -40,7 +41,7 @@ function pct(x) {
 
 // data: { id, category, scenario, result, winStrength, fairRatio, jurorCount, holdout, seasonName }
 async function renderShareCard(data) {
-  const badge = MAINNET_BADGES[data.result] ?? { label: esc(data.result), color: "#8b5cf6" };
+  const badge = MAINNET_BADGES[data.result] ?? { label: esc(data.result), color: "#ffc53d", textColor: "#070709" };
   const seasonChip = esc(data.seasonName ?? "SEASON 01");
 
   // Holdout: rubrik §4.6 — isi skenario/jawaban WAJIB disembunyikan di kartu.
@@ -48,25 +49,25 @@ async function renderShareCard(data) {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#141c33"/>
+      <stop offset="0" stop-color="#070709"/><stop offset="1" stop-color="#111116"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="675" fill="url(#bg)"/>
-  <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#26304d" stroke-width="2"/>
-  <text x="96" y="104" font-size="40" font-weight="bold" fill="#facc15">HAHA</text>
-  <text x="310" y="100" font-size="22" fill="#8fa3c8">the crowd judges</text>
-  <rect x="816" y="70" width="288" height="48" rx="24" fill="#1b2540"/>
-  <text x="960" y="101" font-size="24" fill="#9db2dc" text-anchor="middle">${esc(data.category)}</text>
+  <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#27272a" stroke-width="2"/>
+  <text x="96" y="104" font-size="40" font-weight="bold" fill="#ffc53d">HAHA</text>
+  <text x="240" y="100" font-size="22" fill="#a1a1aa">Humans Are Hard to Automate</text>
+  <rect x="816" y="70" width="288" height="48" rx="24" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+  <text x="960" y="101" font-size="22" fill="#ffc53d" text-anchor="middle">${esc(data.category)}</text>
   <rect x="96" y="180" width="${40 + badge.label.length * 26}" height="64" rx="32" fill="${badge.color}"/>
-  <text x="120" y="226" font-size="34" font-weight="bold" fill="#0b1020">${esc(badge.label)}</text>
-  <rect x="96" y="270" width="240" height="56" rx="28" fill="#1b2540"/>
-  <text x="216" y="306" font-size="26" fill="#9db2dc" text-anchor="middle">${seasonChip}</text>
-  <text x="96" y="400" font-size="34" font-weight="bold" fill="#e8eefc">CONTENT SEALED</text>
-  <text x="96" y="448" font-size="26" fill="#8fa3c8">This bit is reserved for the holdout training set.</text>
-  <text x="96" y="488" font-size="26" fill="#8fa3c8">Joke text and reveals are hidden by design.</text>
-  <line x1="96" y1="584" x2="1104" y2="584" stroke="#26304d" stroke-width="2"/>
-  <text x="96" y="622" font-size="26" fill="#c7d4ef">jurors ${data.jurorCount ?? 0}</text>
-  <text x="1104" y="622" font-size="22" fill="#5d6f96" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
+  <text x="120" y="226" font-size="34" font-weight="bold" fill="${badge.textColor}">${esc(badge.label)}</text>
+  <rect x="96" y="270" width="240" height="56" rx="28" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+  <text x="216" y="306" font-size="24" fill="#e4e4e7" text-anchor="middle">${seasonChip}</text>
+  <text x="96" y="400" font-size="34" font-weight="bold" fill="#f4f4f5">CONTENT SEALED</text>
+  <text x="96" y="448" font-size="26" fill="#a1a1aa">This bit is reserved for the holdout training set.</text>
+  <text x="96" y="488" font-size="26" fill="#a1a1aa">Joke text and reveals are hidden by design.</text>
+  <line x1="96" y1="584" x2="1104" y2="584" stroke="#27272a" stroke-width="2"/>
+  <text x="96" y="622" font-size="26" fill="#e4e4e7">jurors ${data.jurorCount ?? 0}</text>
+  <text x="1104" y="622" font-size="22" fill="#71717a" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
 </svg>`;
     return sharp(Buffer.from(svg, "utf8"), { density: 96 })
       .resize(1200, 675)
@@ -90,28 +91,28 @@ async function renderShareCard(data) {
   ].filter(Boolean).join("   ·   ");
 
   const body = shown
-    .map((l, i) => `<text x="96" y="${300 + i * 48}" font-size="30" fill="#e8eefc">${esc(l)}</text>`)
+    .map((l, i) => `<text x="96" y="${300 + i * 48}" font-size="30" fill="#f4f4f5">${esc(l)}</text>`)
     .join("\n    ");
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#141c33"/>
+      <stop offset="0" stop-color="#070709"/><stop offset="1" stop-color="#111116"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="675" fill="url(#bg)"/>
-  <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#26304d" stroke-width="2"/>
-  <text x="96" y="104" font-size="40" font-weight="bold" fill="#facc15">HAHA</text>
-  <text x="310" y="100" font-size="22" fill="#8fa3c8">the crowd judges</text>
-  <rect x="896" y="70" width="208" height="48" rx="24" fill="#1b2540"/>
-  <text x="1000" y="101" font-size="24" fill="#9db2dc" text-anchor="middle">${esc(data.category)}</text>
+  <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#27272a" stroke-width="2"/>
+  <text x="96" y="104" font-size="40" font-weight="bold" fill="#ffc53d">HAHA</text>
+  <text x="240" y="100" font-size="22" fill="#a1a1aa">Humans Are Hard to Automate</text>
+  <rect x="896" y="70" width="208" height="48" rx="24" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+  <text x="1000" y="101" font-size="22" fill="#ffc53d" text-anchor="middle">${esc(data.category)}</text>
   <rect x="96" y="150" width="${40 + badge.label.length * 26}" height="64" rx="32" fill="${badge.color}"/>
-  <text x="120" y="196" font-size="34" font-weight="bold" fill="#0b1020">${esc(badge.label)}</text>
+  <text x="120" y="196" font-size="34" font-weight="bold" fill="${badge.textColor}">${esc(badge.label)}</text>
   ${body}
-  ${moreWords ? `<text x="96" y="572" font-size="24" fill="#8fa3c8">… +${moreWords} more words</text>` : ""}
-  <line x1="96" y1="584" x2="1104" y2="584" stroke="#26304d" stroke-width="2"/>
-  <text x="96" y="622" font-size="26" fill="#c7d4ef">${esc(stats)}</text>
-  <text x="1104" y="622" font-size="22" fill="#5d6f96" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
+  ${moreWords ? `<text x="96" y="572" font-size="24" fill="#a1a1aa">… +${moreWords} more words</text>` : ""}
+  <line x1="96" y1="584" x2="1104" y2="584" stroke="#27272a" stroke-width="2"/>
+  <text x="96" y="622" font-size="26" fill="#ffc53d">${esc(stats)}</text>
+  <text x="1104" y="622" font-size="22" fill="#71717a" text-anchor="end">${esc(String(data.id).slice(-8))}</text>
 </svg>`;
 
   return sharp(Buffer.from(svg, "utf8"), { density: 96 })
