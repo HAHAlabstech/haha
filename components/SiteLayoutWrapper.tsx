@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import SiteNav from "./SiteNav";
 import SiteFooter from "./SiteFooter";
-import ArrivalPreloader from "./ArrivalPreloader";
 
 export default function SiteLayoutWrapper({
   children,
@@ -12,7 +11,6 @@ export default function SiteLayoutWrapper({
 }) {
   const pathname = usePathname();
   const isApp = pathname?.startsWith("/app");
-  const isHome = pathname === "/";
 
   if (isApp) {
     return <main className="relative min-h-screen">{children}</main>;
@@ -20,7 +18,6 @@ export default function SiteLayoutWrapper({
 
   return (
     <>
-      {isHome && <ArrivalPreloader />}
       <SiteNav />
       <main className="relative min-h-screen">{children}</main>
       <SiteFooter />
