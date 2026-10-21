@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { createPortal } from "react-dom";
 
 const CALIBRATION_LOGS = [
   { at: 0, text: "INIT: Booting Straight Man v2.4 neural deadpan core..." },
@@ -13,15 +12,12 @@ const CALIBRATION_LOGS = [
 ];
 
 export const ArrivalPreloader: React.FC = () => {
-  const [mounted, setMounted] = useState(false);
   const [stage, setStage] = useState<"pending" | "ready" | "hidden">("pending");
   const [progress, setProgress] = useState(0);
   const [dbLevel, setDbLevel] = useState("-18.4");
   const skippedRef = useRef(false);
 
   useEffect(() => {
-    setMounted(true);
-
     // Respect reduced motion
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setStage("hidden");
@@ -106,7 +102,7 @@ export const ArrivalPreloader: React.FC = () => {
     setTimeout(() => setStage("hidden"), 550);
   };
 
-  if (!mounted || stage === "hidden") return null;
+  if (stage === "hidden") return null;
 
   // Active calibration text
   const currentLog =
@@ -114,9 +110,15 @@ export const ArrivalPreloader: React.FC = () => {
     CALIBRATION_LOGS[0]?.text ??
     "STAGE READY";
 
-  const content = (
+  return (
     <div
       className={`haha-preloader ${stage === "ready" ? "haha-preloader-ready" : ""}`}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 100000,
+        background: "#08080c",
+      }}
       onClick={handleSkip}
       title="Click anywhere to enter stage (ESC to skip)"
       aria-hidden="true"
@@ -231,7 +233,7 @@ export const ArrivalPreloader: React.FC = () => {
               </div>
             </div>
 
-            {/* Glowing Golden Laser Progress Bar */}
+            {/* Glowing Laser Progress Bar */}
             <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden relative">
               <div
                 className="h-full bg-gradient-to-r from-[#f59e0b] via-[#ffd875] to-[#ffc53d] transition-all duration-75 ease-out rounded-full shadow-[0_0_16px_#ffc53d]"
@@ -269,8 +271,6 @@ export const ArrivalPreloader: React.FC = () => {
       </div>
     </div>
   );
-
-  return createPortal(content, document.body);
 };
 
 export default ArrivalPreloader;
