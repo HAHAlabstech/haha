@@ -8,6 +8,12 @@
 
 **Tech Stack:** Next.js 16 (App Router, client components), Prisma/Postgres, viem, BullMQ worker, Solidity 0.8.24 + Foundry.
 
+> **Execution status (21 Oct 2026):** Tasks 1–6 are implemented and deployed to
+> testnet; Task 7's deploy code/runbook is complete and unit-tested, with no
+> mainnet broadcast; Task 8 is complete within the evidence boundaries recorded
+> in `docs/audits/2026-10-21-testnet-user-flow.md` §6. The unchecked boxes below
+> are the original plan, not current status.
+
 ## Global Constraints
 
 - Target runtime for all tests: `https://haha.asifaq.com`, `CHAIN_ENV=testnet`, chain `46630`.

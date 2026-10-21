@@ -108,3 +108,48 @@ Diagnostic scripts, JSON reports and screenshots are retained under `C:/Users/si
 - **Mobile/accessibility:** reachable wallet control, named workspace tabs, active-tab semantics, usable targets, associated form labels and errors near the action. Keep the existing obsidian/amber identity; do not redesign the hero/preloader.
 
 Implementation and deployment are intentionally pending design review. **Do not mark the testnet UX final based on this audit; it identified the work needed to reach that point.**
+
+## 6. Remediation implemented and re-verified — 21 Oct 2026
+
+State-aware repair was implemented on the existing screens (no hero/preloader redesign,
+no reward-math change). Deployed testnet SHA: `b354374` (with the UI follow-up
+`b8eb1d3`). All checks below are against `https://haha.asifaq.com`, chain **46630**.
+
+| Finding | Status | Re-verification evidence |
+|---|---|---|
+| AUTH-01 | FIXED | `requireWalletSession` now rejects a missing token. No-credential `POST /api/bits` and `POST /api/bits/[id]/verdict` returned **401**; onboarding status returned `authenticated:false`, `status:null`. Real SIWE connect still returned **200** and authorized the author flow. |
+| FLOW-01 | FIXED | A Stage draft survived Stage→Crowd→Stage and a full page reload at 1440px. The page showed `Draft saved locally`; `Discard draft` emptied both fields. Storage is wallet-scoped. |
+| FLOW-02 | FIXED | New self-conceded QA bit `cmvi1bjqj0002k501rcnoxvn9`: **Got it 200**, status `bombed`, no Outcome. UI says it was conceded/no Crowd vote, removes verdict buttons, and offers no appeal. Server appeal on that bit returned **409 `no Crowd verdict exists to appeal`**. |
+| FLOW-03 | FIXED | In a separate anonymous browser context on the same bit, there were **0** Got it/Missed it buttons and the page said only the performer can decide. |
+| FLOW-04 | FIXED | New QA reveal bit `cmvi1d4fp0005k501dztwm0ri`: **Missed it 200**, `disputed`, `has_reveal:true`, 5 jurors assigned. UI says `Waiting for the Crowd`; reveal text/explanation were absent from the DOM; verdict buttons disappeared. |
+| FLOW-05 | FIXED | Authenticated owner profile (`/u/0xDE8c…d663`) listed both **DISPUTED** and **BOMBED** own bits. `WalletMenu` now links to `My bits & profile`. Public profile filtering remains separate. |
+| QUIZ-01 | FIXED | Anonymous 10/10 preview showed only `Connect Wallet to Save Pass`; `Enter Crowd Jury Console` was absent. The fresh-wallet Crowd console showed `Calibration required` and made **no** `/api/crowd/next` request. |
+| QUIZ-02 | FIXED | Submit shows `Grading your answers…`, disables duplicate submission, and renders a visible `role="alert"` error while retaining answers. Error handling is outside the graded-only branch. |
+| QUIZ-03 | FIXED | With the QA wallet's local token and cookies removed, `/crowd/join` showed `Sign in to check your saved result` and hid the ten questions. Sign-in recovery returned **200** and then showed `Calibration already passed`. |
+| ERROR-01 | FIXED | Injected Crowd `next` 503 rendered `JURY QUEUE UNAVAILABLE` + `RETRY QUEUE` and never the empty-queue copy. Injected rewards 503 rendered `Rewards unavailable` + retry and never “no reward allocation”. |
+| CLAIM-01 | FIXED (UI/read path) | Real operator wallet: lifetime **$220.15**, already claimed **$220.15**, available **$0.00**, full-claimed state, **0** Claim buttons. No-provider run showed `Reconnect Wallet` and **0** Claim buttons. A controlled claim-ready response showed `$220.15` available and one enabled `Claim $220.15 USDG` button. Proofs are now cryptographically checked against the active on-chain root, not merely compared by epoch label. |
+| MOBILE-01 | FIXED | At 390px: header `scrollWidth=375`, two-row header, named/active workspace tabs, wallet control fully inside the viewport. Screenshot: `C:/Users/sifaq/AppData/Local/Temp/opencode/shots/stage-mobile-b8eb1d3.png`. Producers/SiteNav also no longer clips the brand; Launch App moved into the mobile menu. |
+| NOTFOUND-01 | FIXED | `/bit/does-not-exist-qa-123` rendered `This bit does not exist.` with recovery links; no `SCREENING` or fake AI processing state. |
+| BUYER-01 | FIXED | Vault → Holdout Eval checkout opened `/producers?plan=eval` with **Holdout Eval Run** selected and `Selected Plan` on that card. |
+| COPY-01 | FIXED | Stage/Vault now state 5 judges → 7 if thin; Vault shows 40/30/10/20 and separates modeled replacement value from actual licensing revenue; Tip Jar explains 70% creator fees + 30% general producer revenue + 10% royalty. No live `7–9`, `50% TipJar`, or old Tip Jar producer claim remains. |
+| ROUND-01 | FIXED | Round-2 dossier `cmvhhda6d0001qi016f86i6y6` returned crowd `{round:2, assigned:7, voted:5}`, matching the active jury instead of 10/12 all-round totals. |
+
+Additional source-risk closures:
+
+- `answered` without an AI answer keeps polling and cannot be judged; verdict API now requires `status=answered` **and** a stored `ai_answer`.
+- Verdict `missed_it` now requires a 1–400 character explanation, matching the UI.
+- `heckled_off` is appealable; self-conceded `bombed` is not (server enforced).
+- Rejected prescreen renders the rejection reason; `crisis_support` renders a support panel instead of a generic rejection.
+- Crowd vote POST enforces onboarding, own-bit exclusion, and daily tier quota server-side.
+- Settlement now writes the proof epoch and refreshes every reward row for a wallet, so a wallet with no new reward still receives a current proof.
+- Holdout share-card branch still seals category-only content and uses the separate `sealed-bit-*` key.
+- Mainnet preflight no longer `staticcall`s the state-changing `claimToken/claim`; it checks view endpoints plus dispatcher selectors. Foundry: **66 tests passed**, including 4 dedicated preflight/selector tests against a mock chain `4663`. Dry-run deploy code is complete; **no mainnet broadcast was made**.
+
+### Remaining evidence boundaries (do not overclaim)
+
+- No paid claim transaction was executed in this pass. The operator allocation is already fully claimed on-chain, and the QA provider intentionally denies `eth_sendTransaction`. Receipt polling/revert handling is implemented but only read-path/claim-ready states were browser-tested.
+- No new daily settlement was forced. The current active root was verified cryptographically against the stored proof; the next settlement will exercise the refreshed-proof write.
+- No controlled rejected-prescreen/crisis fixture was created in this pass.
+- No live juror ballot was cast, so the new server quota path was not exercised end-to-end; the uncalibrated gate and queue failure states were.
+- Mainnet remains **prepared, not deployed**. External audit/legal/sanctions/geo, kill-switch, takedown/GDPR, invoice/KYC, Pons V2 audit, and backup/restore drill gates are still outside code.
+- Mainnet dry-run against the real 4663 RPC was not performed in this pass because no broadcast/real-address verification was authorized; the gate logic is unit-tested against mocks.

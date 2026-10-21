@@ -66,6 +66,22 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
    §10 `.env.example` block names. Do not commit real env values. Keep
    `WORKER_CHAIN_WRITES=off` until roles are verified.
 
+### 2.1 Code verification (21 Oct 2026)
+
+- `forge test` in `contracts/`: **66 passed, 0 failed**.
+- `DeployMainnet.t.sol` proves:
+  - the old `staticcall` of `claimToken(address)` reverts by design (the Test 8 false negative);
+  - the selector scan finds the real state-changing claim surface;
+  - `_preflight()` passes on a mock chain id `4663` with 6-decimal USDG and the
+    expected view/claim surface;
+  - `_preflight()` aborts on the wrong chain id.
+- The script **cannot broadcast** without both `--broadcast` and
+  `MAINNET_DEPLOY_CONFIRM=DEPLOY_HAHA_MAINNET_4663`. No mainnet transaction was
+  signed or sent in this pass.
+- The real 4663 dry-run remains pending because it requires the final mainnet
+  RPC/address set and is part of the external launch window. Do not treat the
+  mock preflight as a substitute for that dry-run.
+
 ## 3. Worker bring-up
 
 1. Set `CHAIN_ENV=mainnet`, `RPC_URL_MAINNET`, suite addresses.
