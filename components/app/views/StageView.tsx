@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, Disclaimer, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
+import { StraightManLiveEngine } from "@/components/StraightManLiveEngine";
 import { Mic, ArrowUpRight, Sparkles, Layers, Orbit, Scale, CheckCircle2 } from "lucide-react";
 import {
   authHeaders,
@@ -387,6 +388,95 @@ export default function StageView() {
         </dl>
       </div>
 
+      {/* Guided Journey Stepper Banner */}
+      <section aria-label="User journey roadmap" className="mb-8">
+        <div className="haha-glass-panel rounded-2xl p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3.5 mb-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">
+              How To Play &amp; Earn · 4-Step Flow
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
+              {!account
+                ? "Step 01 Active: Connect Wallet"
+                : calibrated === false
+                  ? "Step 02 Active: Calibrate or Perform"
+                  : "Ready: Perform on Stage or Judge in Crowd"}
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              className={`rounded-xl border p-3.5 transition-all ${
+                !account
+                  ? "border-[#ffc53d]/45 bg-[#ffc53d]/[0.07]"
+                  : "border-white/10 bg-[#070709]/60"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 01</span>
+                <span className={account ? "text-[#ffc53d]" : "text-zinc-500"}>
+                  {account ? "Connected ✓" : "Required"}
+                </span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Connect &amp; Sign In</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Link your wallet on Robinhood Testnet (gasless SIWE session).
+              </p>
+            </div>
+
+            <Link
+              href="/crowd/join"
+              className={`rounded-xl border p-3.5 transition-all hover:border-[#ffc53d]/40 ${
+                account && calibrated === false
+                  ? "border-[#ffc53d]/45 bg-[#ffc53d]/[0.07]"
+                  : "border-white/10 bg-[#070709]/60"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 02</span>
+                <span className={calibrated ? "text-[#ffc53d]" : "text-zinc-300"}>
+                  {calibrated ? "Calibrated ✓" : "Quiz (8/10) →"}
+                </span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Calibrate Juror</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Pass the 10-case calibration quiz to unlock blind Crowd judging.
+              </p>
+            </Link>
+
+            <div
+              className={`rounded-xl border p-3.5 transition-all ${
+                account
+                  ? "border-[#ffc53d]/45 bg-[#ffc53d]/[0.07]"
+                  : "border-white/10 bg-[#070709]/60"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 03</span>
+                <span className="text-[#ffc53d]">Active Here</span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Stump the AI</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Submit a setup below. If Straight Man misses the nuance, send to Crowd.
+              </p>
+            </div>
+
+            <Link
+              href="/app?tab=tipjar"
+              className="rounded-xl border border-white/10 bg-[#070709]/60 p-3.5 transition-all hover:border-[#ffc53d]/40"
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 04</span>
+                <span className="text-zinc-300">00:00 UTC →</span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Claim USDG</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Winning bits &amp; consensus jurors claim daily USDG in Tip Jar.
+              </p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Category Selection Cards */}
       <section aria-label="Pick a category" className="mb-8">
         <div className="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-400">
@@ -578,6 +668,12 @@ export default function StageView() {
                 <ArrowUpRight className="w-3 h-3" />
               </Link>
             </div>
+
+            {submitting ? (
+              <div className="mt-5">
+                <StraightManLiveEngine stage="prescreen" category={category} />
+              </div>
+            ) : null}
 
             {draftSaved ? (
               <div className="mt-3 flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">

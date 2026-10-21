@@ -4,6 +4,7 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
+import { StraightManLiveEngine } from "@/components/StraightManLiveEngine";
 import { CheckCircle2, XCircle, Mic, ArrowUpRight, Users, Bot } from "lucide-react";
 import {
   authHeaders,
@@ -524,9 +525,10 @@ export default function BitPage({
                   </div>
                 </>
               ) : (
-                <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
-                  Straight Man is computing literal response…
-                </p>
+                <StraightManLiveEngine
+                  stage={bit?.status === "screening" ? "prescreen" : "straightman"}
+                  category={bit?.category}
+                />
               )}
             </div>
           </div>
@@ -675,10 +677,11 @@ export default function BitPage({
           {bit?.status === "screening" ||
           (bit?.status === "answered" && !hasAiAnswer) ? (
             <Card hot>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ffc53d]">
-                Straight Man is working
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+              <StraightManLiveEngine
+                stage={bit?.status === "screening" ? "prescreen" : "straightman"}
+                category={bit?.category}
+              />
+              <p className="mt-4 text-sm leading-relaxed text-zinc-300">
                 The bit passed prescreen. Its literal answer is still being
                 written and stored. This page will keep checking; you do not
                 need to reload.

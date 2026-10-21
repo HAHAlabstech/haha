@@ -82,7 +82,7 @@ export default function AppShell({ initialTab = "stage" }: AppShellProps) {
       />
 
       {/* Main Workspace Stage */}
-      <main className="relative z-10 animate-fadeIn">
+      <main key={activeTab} className="relative z-10 animate-hahaTabEnter">
         {activeTab === "stage" && <StageView />}
         {activeTab === "crowd" && <CrowdView />}
         {activeTab === "vault" && <VaultView />}

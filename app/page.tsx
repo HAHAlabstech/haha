@@ -16,6 +16,7 @@ import ProcessPipeline from "@/components/landing/ProcessPipeline";
 import VaultTerminal from "@/components/landing/VaultTerminal";
 import SpotlightFeed from "@/components/landing/SpotlightFeed";
 import LandingFaq from "@/components/landing/LandingFaq";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 export default function HomePage() {
   const [dailyPoolUSDG, setDailyPoolUSDG] = useState("2,840");
@@ -114,7 +115,7 @@ export default function HomePage() {
           className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-radial from-[#ffc53d]/15 via-[#ffc53d]/03 to-transparent blur-[160px] rounded-full"
         />
 
-        <div className="relative z-10 max-w-3xl mx-auto space-y-6">
+        <ScrollReveal direction="scale" className="relative z-10 max-w-3xl mx-auto space-y-6">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold text-center">
             07 — Open Mic Is Live
           </p>
@@ -145,7 +146,7 @@ export default function HomePage() {
               <span>Join As Juror</span>
             </Link>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
     </main>
   );

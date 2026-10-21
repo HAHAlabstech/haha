@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 interface FaqItem {
   q: string;
@@ -61,7 +62,7 @@ export default function LandingFaq() {
     >
       <div className="max-w-[1440px] mx-auto relative z-10 grid gap-12 lg:grid-cols-[1fr_1.5fr] items-start">
         {/* Left Column Header */}
-        <div className="lg:sticky lg:top-28">
+        <ScrollReveal direction="left" className="lg:sticky lg:top-28">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
             06 — Box Office FAQ
           </p>
@@ -71,44 +72,53 @@ export default function LandingFaq() {
           <p className="mt-4 text-base sm:text-lg text-zinc-400 leading-relaxed font-light max-w-md">
             Everything you need to know about taking the stage, judging blind, and claiming USDG rewards.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Right Column Accordion List — spans flush to the 1440px right edge */}
         <div className="space-y-3">
           {FAQS.map((faq, idx) => {
             const isOpen = openIdx === idx;
             return (
-              <div
-                key={faq.q}
-                className={`haha-glass-panel rounded-2xl transition-colors duration-300 overflow-hidden ${
-                  isOpen ? "border-[#ffc53d]/40" : "hover:border-white/20"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenIdx(isOpen ? null : idx)}
-                  className="w-full p-6 text-left flex items-center justify-between gap-4 cursor-pointer"
+              <ScrollReveal key={faq.q} delayMs={Math.min(idx * 55, 350)}>
+                <div
+                  className={`haha-glass-panel rounded-2xl transition-colors duration-300 overflow-hidden ${
+                    isOpen ? "border-[#ffc53d]/40" : "hover:border-white/20"
+                  }`}
                 >
-                  <span className="display-serif text-xl sm:text-2xl text-white font-normal tracking-tight">
-                    {faq.q}
-                  </span>
-                  <span
-                    className={`p-2 rounded-full border border-white/10 bg-white/5 text-zinc-400 transition-transform duration-300 shrink-0 ${
+                  <button
+                    type="button"
+                    onClick={() => setOpenIdx(isOpen ? null : idx)}
+                    className="w-full p-6 text-left flex items-center justify-between gap-4 cursor-pointer"
+                  >
+                    <span className="display-serif text-xl sm:text-2xl text-white font-normal tracking-tight">
+                      {faq.q}
+                    </span>
+                    <span
+                      className={`p-2 rounded-full border border-white/10 bg-white/5 text-zinc-400 transition-transform duration-300 shrink-0 ${
+                        isOpen
+                          ? "rotate-180 text-[#ffc53d] border-[#ffc53d]/40 bg-[#ffc53d]/10"
+                          : ""
+                      }`}
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </span>
+                  </button>
+
+                  <div
+                    className={`grid transition-all duration-300 ease-out ${
                       isOpen
-                        ? "rotate-180 text-[#ffc53d] border-[#ffc53d]/40 bg-[#ffc53d]/10"
-                        : ""
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
                     }`}
                   >
-                    <ChevronDown className="w-4 h-4" />
-                  </span>
-                </button>
-
-                {isOpen ? (
-                  <div className="px-6 pb-6 pt-0 border-t border-white/[0.07] text-sm sm:text-[15px] text-zinc-300 leading-relaxed font-light">
-                    <p className="pt-4">{faq.a}</p>
+                    <div className="overflow-hidden">
+                      <div className="px-6 pb-6 pt-0 border-t border-white/[0.07] text-sm sm:text-[15px] text-zinc-300 leading-relaxed font-light">
+                        <p className="pt-4">{faq.a}</p>
+                      </div>
+                    </div>
                   </div>
-                ) : null}
-              </div>
+                </div>
+              </ScrollReveal>
             );
           })}
         </div>

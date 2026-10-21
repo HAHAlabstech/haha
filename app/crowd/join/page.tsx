@@ -9,6 +9,7 @@ import {
   authHeaders,
   ensureSiweSession,
   getSharedWalletState,
+  setSharedWalletState,
   subscribeWalletState,
   truncateAddress,
 } from "@/lib/wallets";
@@ -114,12 +115,45 @@ export default function CrowdJoinPage() {
   const [signingIn, setSigningIn] = useState(false);
   const [statusRefresh, setStatusRefresh] = useState(0);
   const [allowQuizWithoutSession, setAllowQuizWithoutSession] = useState(false);
+  const [sessionActive, setSessionActive] = useState(false);
 
   useEffect(() => {
     const st = getSharedWalletState();
-    if (st.account) setAccount(st.account);
-    return subscribeWalletState((next) => setAccount(next.account));
+    if (st.account) {
+      setAccount(st.account);
+      setSessionActive(Boolean(st.sessionToken));
+    }
+    return subscribeWalletState((next) => {
+      setAccount(next.account);
+      setSessionActive(Boolean(next.sessionToken));
+    });
   }, []);
+
+  async function forceReSignSiwe() {
+    const st = getSharedWalletState();
+    if (!st.account) {
+      setModalOpen(true);
+      return;
+    }
+    setSigningIn(true);
+    setError(null);
+    try {
+      // Clear existing session token to force a fresh personal_sign popup in wallet
+      setSharedWalletState({ sessionToken: null });
+      setSessionActive(false);
+      const siwe = await ensureSiweSession(st.provider, st.account);
+      if (!siwe.ok) {
+        setError(siwe.error ?? "Wallet signature cancelled or rejected.");
+        return;
+      }
+      setSessionActive(true);
+      setStatusRefresh((v) => v + 1);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to sign SIWE session.");
+    } finally {
+      setSigningIn(false);
+    }
+  }
 
   // Check the saved calibration result BEFORE showing ten questions again.
   // `authenticated` is distinct from `status`: an expired session must ask
@@ -307,6 +341,173 @@ export default function CrowdJoinPage() {
         lede={`Ten cases with known answers. Score at least ${PASS_MARK} out of 10 — both the winning answer and the fairness call must be right to earn a point.`}
       />
 
+      {/* Guided Journey Roadmap Banner */}
+      <section aria-label="Juror onboarding roadmap" className="mb-2">
+        <div className="haha-glass-panel rounded-2xl p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3.5 mb-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">
+              Juror Calibration Track · 4 Steps
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
+              {!account
+                ? "Step 01 Active: Connect Wallet"
+                : alreadyPassed
+                  ? "Calibration Complete · Juror Status Active"
+                  : graded && score >= PASS_MARK
+                    ? "Step 03 Active: Sign SIWE Credential"
+                    : "Step 02 Active: Complete 10 Cases"}
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              className={`rounded-xl border p-3.5 transition-all ${
+                !account
+                  ? "border-[#ffc53d]/45 bg-[#ffc53d]/[0.07]"
+                  : "border-emerald-500/30 bg-emerald-950/15"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 01</span>
+                <span className={account ? "text-emerald-400 font-semibold" : "text-zinc-500"}>
+                  {account ? "Connected ✓" : "Required"}
+                </span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Connect Wallet</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Robinhood Testnet (Chain ID 46630).
+              </p>
+            </div>
+
+            <div
+              className={`rounded-xl border p-3.5 transition-all ${
+                account && !alreadyPassed && !(graded && score >= PASS_MARK)
+                  ? "border-[#ffc53d]/45 bg-[#ffc53d]/[0.07]"
+                  : alreadyPassed || (graded && score >= PASS_MARK)
+                    ? "border-emerald-500/30 bg-emerald-950/15"
+                    : "border-white/10 bg-[#070709]/60"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 02</span>
+                <span
+                  className={
+                    alreadyPassed || (graded && score >= PASS_MARK)
+                      ? "text-emerald-400 font-semibold"
+                      : "text-[#ffc53d]"
+                  }
+                >
+                  {alreadyPassed || (graded && score >= PASS_MARK)
+                    ? "Passed (8+/10) ✓"
+                    : "Active Quiz"}
+                </span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Pass 10 Cases</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Identify true joke interpretation &amp; fairness.
+              </p>
+            </div>
+
+            <div
+              className={`rounded-xl border p-3.5 transition-all ${
+                graded && score >= PASS_MARK && !savedServer
+                  ? "border-[#ffc53d]/45 bg-[#ffc53d]/[0.07]"
+                  : alreadyPassed || savedServer
+                    ? "border-emerald-500/30 bg-emerald-950/15"
+                    : "border-white/10 bg-[#070709]/60"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 03</span>
+                <span
+                  className={
+                    alreadyPassed || savedServer
+                      ? "text-emerald-400 font-semibold"
+                      : "text-zinc-400"
+                  }
+                >
+                  {alreadyPassed || savedServer ? "Certified ✓" : "SIWE Sign"}
+                </span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Sign SIWE Session</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Gasless signature saves juror credential.
+              </p>
+            </div>
+
+            <Link
+              href="/app?tab=crowd"
+              className={`rounded-xl border p-3.5 transition-all hover:border-[#ffc53d]/40 ${
+                alreadyPassed || savedServer
+                  ? "border-emerald-500/40 bg-emerald-950/20"
+                  : "border-white/10 bg-[#070709]/60"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 04</span>
+                <span className="text-zinc-300">Console →</span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Judge in Crowd</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Cast blind votes and share 20% Tip Jar daily.
+              </p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Wallet & SIWE Session Status Bar */}
+      <section aria-label="Wallet and authentication status">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#0c0c12]/90 p-4 backdrop-blur-md">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="font-mono text-xs uppercase tracking-wider text-zinc-400">
+              Wallet Status:
+            </span>
+            {account ? (
+              <span className="font-mono text-xs text-[#ffc53d]">
+                {truncateAddress(account)}
+              </span>
+            ) : (
+              <span className="font-mono text-xs text-zinc-500">
+                Not connected
+              </span>
+            )}
+            {account && sessionActive ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-emerald-400">
+                <CheckCircle2 className="h-3 w-3" />
+                SIWE Session Active
+              </span>
+            ) : account ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 font-mono text-[11px] text-amber-300">
+                SIWE Signature Pending
+              </span>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2">
+            {!account ? (
+              <button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                className="pill-btn hot text-xs"
+              >
+                <span>Connect Wallet →</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={signingIn}
+                onClick={() => void forceReSignSiwe()}
+                className="pill-btn text-xs hover:border-[#ffc53d]/50 cursor-pointer"
+                title="Trigger a fresh personal_sign SIWE request in your wallet"
+              >
+                <span>
+                  {signingIn ? "Waiting for Wallet…" : "✍️ Test SIWE Signature"}
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
       {account && checkingSaved ? (
         <Card>
           <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
@@ -316,13 +517,17 @@ export default function CrowdJoinPage() {
       ) : null}
 
       {!checkingSaved && alreadyPassed && !graded ? (
-        <Card hot>
-          <p className="display-serif text-3xl text-white" role="status">
-            Calibration already passed
+        <Card className="border-emerald-500/50 bg-gradient-to-b from-emerald-950/25 via-[#0c0c12] to-[#070709] shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/50 bg-emerald-500/15 px-4 py-1.5 font-mono text-xs font-semibold text-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.25)]">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <span>CALIBRATION PASSED · JUROR ELIGIBLE</span>
+          </div>
+          <p className="display-serif mt-4 text-3xl text-white" role="status">
+            Calibration Already Passed
           </p>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-zinc-300">
             This wallet{account ? ` (${truncateAddress(account)})` : ""} is
-            already calibrated into the Crowd — no need to retake the quiz.
+            already calibrated into the Crowd — no need to retake the quiz. You are eligible to cast blind verdicts and earn 20% of the Tip Jar.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/app?tab=crowd" className="pill-btn hot">
@@ -388,7 +593,7 @@ export default function CrowdJoinPage() {
                   </span>
                   {graded ? (
                     <Stamp tone={gradedWrong ? "red" : "green"}>
-                      {gradedWrong ? "Missed" : "Correct"}
+                      {gradedWrong ? "Missed ✗" : "Correct ✓"}
                     </Stamp>
                   ) : null}
                 </div>
@@ -459,19 +664,37 @@ export default function CrowdJoinPage() {
             </span>
           </button>
         ) : (
-          <Card hot={score >= PASS_MARK}>
+          <div
+            className={`editorial-card transition-all duration-300 ${
+              score >= PASS_MARK
+                ? "border-emerald-500/50 bg-gradient-to-b from-emerald-950/25 via-[#0c0c12] to-[#070709] shadow-[0_0_40px_rgba(16,185,129,0.2)]"
+                : "border-rose-500/40 bg-gradient-to-b from-rose-950/20 via-[#0c0c12] to-[#070709]"
+            }`}
+          >
+            {score >= PASS_MARK ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/50 bg-emerald-500/20 px-3.5 py-1.5 font-mono text-xs font-semibold text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  <span>CALIBRATION PASSED · JUROR ELIGIBLE</span>
+                </div>
+                <span className="font-mono text-xs uppercase tracking-widest text-emerald-400 font-semibold">
+                  Score: {score} / {QUIZ.length} (Passing: 8+)
+                </span>
+              </div>
+            ) : null}
+
             <p className="display-serif text-3xl text-white" role="status">
               {score} / {QUIZ.length} —{" "}
               {score >= PASS_MARK
                 ? "Welcome to the Crowd."
                 : "Not quite — review & retry."}
             </p>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-zinc-300 leading-relaxed">
               {score >= PASS_MARK
                 ? savedServer
-                  ? `Recorded for ${account ? truncateAddress(account) : "your wallet"}. You can now judge live Crowd assignments!`
-                  : "You passed. Save the result to your wallet before entering the jury console — otherwise it will look unpassed there."
-                : `You need at least ${PASS_MARK} to pass. Review the corrections above and retake it.`}
+                  ? `Recorded for ${account ? truncateAddress(account) : "your wallet"}. Your juror credentials are active. You can now judge live Crowd assignments and share 20% Tip Jar payouts!`
+                  : "You passed the calibration! Sign the SIWE session with your wallet to save your juror credential."
+                : `You need at least ${PASS_MARK} out of 10 to pass. Review the corrections above and retake it.`}
             </p>
 
             {score >= PASS_MARK ? (
@@ -491,9 +714,9 @@ export default function CrowdJoinPage() {
                   >
                     <span>
                       {saving
-                        ? "Recording on server…"
+                        ? "✍️ Prompting Wallet Signature (SIWE)…"
                         : account
-                          ? "Save Pass to Wallet"
+                          ? "✍️ Sign SIWE & Save Juror Credential"
                           : "Connect Wallet to Save Pass"}
                     </span>
                   </button>
@@ -502,6 +725,17 @@ export default function CrowdJoinPage() {
                     <span>Enter Crowd Jury Console →</span>
                   </Link>
                 )}
+
+                {account ? (
+                  <button
+                    type="button"
+                    disabled={signingIn}
+                    onClick={() => void forceReSignSiwe()}
+                    className="pill-btn cursor-pointer"
+                  >
+                    <span>{signingIn ? "Signing…" : "Test Wallet Signature (Re-sign SIWE)"}</span>
+                  </button>
+                ) : null}
               </div>
             ) : (
               <button
@@ -525,7 +759,7 @@ export default function CrowdJoinPage() {
                 {error}
               </p>
             ) : null}
-          </Card>
+          </div>
         )}
       </div>
       {error && !graded ? (

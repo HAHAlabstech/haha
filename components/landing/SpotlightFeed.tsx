@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 type FeedEntry = {
   id: string;
@@ -156,7 +157,7 @@ export default function SpotlightFeed() {
 
       <div className="max-w-[1440px] mx-auto relative z-10">
         {/* Header */}
-        <div className="flex flex-wrap items-end justify-between gap-6 mb-16">
+        <ScrollReveal className="flex flex-wrap items-end justify-between gap-6 mb-16">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
               05 — Live Stage Feed
@@ -175,51 +176,52 @@ export default function SpotlightFeed() {
           >
             Enter Stage Console &rarr;
           </Link>
-        </div>
+        </ScrollReveal>
 
         {/* Minimal Editorial Cards */}
         <div className="grid gap-6 md:grid-cols-3">
-          {battles.map((b) => (
-            <Link
-              key={b.id}
-              href={b.href}
-              className="haha-glass-panel group rounded-2xl p-8 flex flex-col justify-between transition-colors duration-300 hover:border-white/20"
-            >
-              <div>
-                {/* Top Meta & Killed It Verdict Stamp */}
-                <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6 font-mono text-[10px] uppercase tracking-[0.16em]">
-                  <span className="text-zinc-400">
-                    {b.category} · {b.stage}
-                  </span>
-                  <span className="inline-flex items-center rounded-md border border-[#ffc53d]/30 bg-gradient-to-r from-[#ffc53d]/15 via-[#ffc53d]/08 to-[#ffc53d]/02 px-2.5 py-1 text-[10px] font-semibold tracking-[0.2em] text-[#ffc53d] uppercase shadow-[inset_0_1px_0_rgba(255,197,61,0.25)]">
-                    Killed It
-                  </span>
-                </div>
+          {battles.map((b, idx) => (
+            <ScrollReveal key={b.id} delayMs={idx * 110} className="h-full">
+              <Link
+                href={b.href}
+                className="haha-glass-panel group h-full rounded-2xl p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-white/20"
+              >
+                <div>
+                  {/* Top Meta & Killed It Verdict Stamp */}
+                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6 font-mono text-[10px] uppercase tracking-[0.16em]">
+                    <span className="text-zinc-400">
+                      {b.category} · {b.stage}
+                    </span>
+                    <span className="inline-flex items-center rounded-md border border-[#ffc53d]/30 bg-gradient-to-r from-[#ffc53d]/15 via-[#ffc53d]/08 to-[#ffc53d]/02 px-2.5 py-1 text-[10px] font-semibold tracking-[0.2em] text-[#ffc53d] uppercase shadow-[inset_0_1px_0_rgba(255,197,61,0.25)]">
+                      Killed It
+                    </span>
+                  </div>
 
-                {/* Human Bit Quote */}
-                <p className="display-serif text-xl sm:text-[22px] text-zinc-100 leading-[1.38] tracking-tight font-normal">
-                  “{b.setup}”
-                </p>
-
-                {/* Straight Man Literal Miss */}
-                <div className="mt-6 pt-5 border-t border-white/[0.07]">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 block mb-2">
-                    Straight Man literal read
-                  </span>
-                  <p className="text-[13px] text-zinc-400 leading-relaxed font-light line-clamp-3">
-                    {b.straightManResponse}
+                  {/* Human Bit Quote */}
+                  <p className="display-serif text-xl sm:text-[22px] text-zinc-100 leading-[1.38] tracking-tight font-normal">
+                    “{b.setup}”
                   </p>
-                </div>
-              </div>
 
-              {/* Quiet Footer */}
-              <div className="mt-8 pt-4 border-t border-white/[0.07] flex items-center justify-between font-mono text-[11px]">
-                <span className="text-zinc-500">{b.quorumText}</span>
-                <span className="text-zinc-300 group-hover:text-[#ffc53d] transition-colors">
-                  {b.rightMeta}
-                </span>
-              </div>
-            </Link>
+                  {/* Straight Man Literal Miss */}
+                  <div className="mt-6 pt-5 border-t border-white/[0.07]">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 block mb-2">
+                      Straight Man literal read
+                    </span>
+                    <p className="text-[13px] text-zinc-400 leading-relaxed font-light line-clamp-3">
+                      {b.straightManResponse}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quiet Footer */}
+                <div className="mt-8 pt-4 border-t border-white/[0.07] flex items-center justify-between font-mono text-[11px]">
+                  <span className="text-zinc-500">{b.quorumText}</span>
+                  <span className="text-zinc-300 group-hover:text-[#ffc53d] transition-colors">
+                    {b.rightMeta}
+                  </span>
+                </div>
+              </Link>
+            </ScrollReveal>
           ))}
         </div>
       </div>

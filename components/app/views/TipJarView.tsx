@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { encodeFunctionData, type Address } from "viem";
 import { Card, Disclaimer, SectionTitle, Stamp } from "@/components/ui";
 import WalletModal from "@/components/WalletModal";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { tipJarAbi } from "@/lib/haha-contracts";
 import type { HahaRuntimeConfig } from "@/lib/haha-chains";
 import {
@@ -480,6 +481,99 @@ export default function TipJarView() {
         </dl>
       </div>
 
+      {/* Guided User Journey Stepper */}
+      <section aria-label="Tip jar reward roadmap">
+        <div className="haha-glass-panel rounded-2xl p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3.5 mb-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">
+              Tip Jar Settlement Lifecycle · 4 Steps
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
+              {!account
+                ? "Step 01: Connect Wallet"
+                : reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n
+                  ? "Step 04: Rewards Available to Claim"
+                  : "Steps 02-03: Perform or Judge to Earn Allocations"}
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              className={`rounded-xl border p-3.5 transition-all ${
+                !account
+                  ? "border-[#ffc53d]/45 bg-[#ffc53d]/[0.07]"
+                  : "border-emerald-500/30 bg-emerald-950/15"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 01</span>
+                <span className={account ? "text-emerald-400 font-semibold" : "text-zinc-500"}>
+                  {account ? "Connected ✓" : "Required"}
+                </span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Connect &amp; Sign In</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Robinhood Testnet session.
+              </p>
+            </div>
+
+            <Link
+              href="/app?tab=stage"
+              className="rounded-xl border border-white/10 bg-[#070709]/60 p-3.5 transition-all hover:border-[#ffc53d]/40"
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 02</span>
+                <span className="text-zinc-300">Stage (80%) →</span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Perform &amp; Stump</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Outwit the Straight Man AI.
+              </p>
+            </Link>
+
+            <Link
+              href="/app?tab=crowd"
+              className="rounded-xl border border-white/10 bg-[#070709]/60 p-3.5 transition-all hover:border-[#ffc53d]/40"
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 03</span>
+                <span className="text-zinc-300">Crowd (20%) →</span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Judge in Quorum</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                Cast blind votes that agree with consensus.
+              </p>
+            </Link>
+
+            <div
+              className={`rounded-xl border p-3.5 transition-all ${
+                reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n
+                  ? "border-[#ffc53d]/45 bg-[#ffc53d]/[0.07]"
+                  : "border-white/10 bg-[#070709]/60"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-zinc-400">Step 04</span>
+                <span
+                  className={
+                    reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n
+                      ? "text-[#ffc53d] font-semibold"
+                      : "text-zinc-500"
+                  }
+                >
+                  {reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n
+                    ? "Claim Ready"
+                    : "00:00 UTC Daily"}
+                </span>
+              </div>
+              <p className="mt-1 font-serif text-base text-white">Claim USDG</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
+                One-click Merkle claim on Robinhood Testnet.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Claim Rewards Panel */}
       <section aria-label="Claim your rewards">
         <SectionTitle
@@ -518,9 +612,23 @@ export default function TipJarView() {
               {loading ||
               rewardStatus === "loading" ||
               rewardStatus === "idle" ? (
-                <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
-                  Querying cumulative Merkle tree…
-                </p>
+                <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#070709]/80 p-8 text-center backdrop-blur-md">
+                  <div className="relative mx-auto mb-4 flex h-20 w-20 items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border border-emerald-500/30 animate-hahaRadar" />
+                    <div className="absolute inset-2 rounded-full border border-dashed border-[#ffc53d]/40 animate-hahaSpinSlow" />
+                    <div className="absolute inset-4 rounded-full bg-radial from-emerald-500/15 to-transparent" />
+                    <ArrowUpRight className="relative z-10 h-7 w-7 text-emerald-400" />
+                  </div>
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">
+                    Querying Cumulative Merkle Tree…
+                  </p>
+                  <p className="mt-1.5 text-xs text-zinc-400">
+                    Verifying settled USDG rewards from TipJar.sol on Robinhood Testnet.
+                  </p>
+                  <div className="mt-4 mx-auto max-w-xs h-0.5 bg-white/10 overflow-hidden rounded-full">
+                    <div className="h-full w-1/3 bg-gradient-to-r from-emerald-400 via-[#ffc53d] to-amber-200 animate-hahaProgress" />
+                  </div>
+                </div>
               ) : rewardStatus === "error" ? (
                 <div className="space-y-3">
                   <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">

@@ -1,6 +1,7 @@
 "use client";
 
 import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 interface ProtocolFactsProps {
   dailyPoolUSDG?: string;
@@ -58,7 +59,7 @@ export default function ProtocolFacts({
 
       <div className="max-w-[1440px] mx-auto relative z-10">
         {/* Section Eyebrow & Title */}
-        <div className="mb-14 max-w-2xl">
+        <ScrollReveal className="mb-14 max-w-2xl">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
             02 — Protocol Telemetry
           </p>
@@ -73,34 +74,33 @@ export default function ProtocolFacts({
             </span>
             <span>testnet with verifiable state transitions.</span>
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* 4-Card Editorial Facts Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {facts.map((f) => (
-            <div
-              key={f.label}
-              className="haha-glass-panel relative rounded-2xl p-7 flex flex-col justify-between transition-colors duration-300 hover:border-white/20"
-            >
-              <div>
-                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-500 block mb-5">
-                  {f.label}
-                </span>
+          {facts.map((f, idx) => (
+            <ScrollReveal key={f.label} delayMs={idx * 100} className="h-full">
+              <div className="haha-glass-panel relative h-full rounded-2xl p-7 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-white/20">
+                <div>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-500 block mb-5">
+                    {f.label}
+                  </span>
 
-                <div className="flex items-baseline gap-2.5 mb-4">
-                  <span className="display-serif font-bold text-4xl sm:text-[42px] text-white tabular-nums tracking-tight leading-none">
-                    {f.value}
-                  </span>
-                  <span className="font-mono text-xs uppercase tracking-wider text-[#ffc53d]">
-                    {f.unit}
-                  </span>
+                  <div className="flex items-baseline gap-2.5 mb-4">
+                    <span className="display-serif font-bold text-4xl sm:text-[42px] text-white tabular-nums tracking-tight leading-none">
+                      {f.value}
+                    </span>
+                    <span className="font-mono text-xs uppercase tracking-wider text-[#ffc53d]">
+                      {f.unit}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <p className="text-xs text-zinc-400 leading-relaxed font-light border-t border-white/[0.07] pt-4">
-                {f.desc}
-              </p>
-            </div>
+                <p className="text-xs text-zinc-400 leading-relaxed font-light border-t border-white/[0.07] pt-4">
+                  {f.desc}
+                </p>
+              </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>
