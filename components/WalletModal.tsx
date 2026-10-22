@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Wallet } from "lucide-react";
 import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
 import { KNOWN_WALLETS } from "@/lib/known-wallets";
@@ -57,6 +58,11 @@ export default function WalletModal({
   const [error, setError] = useState<string | null>(null);
   const [shouldRender, setShouldRender] = useState(open);
   const [isClosing, setIsClosing] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -248,15 +254,15 @@ export default function WalletModal({
     }
   }, [activeProvider, runtime]);
 
-  if (!shouldRender) return null;
+  if (!shouldRender || !mounted || typeof document === "undefined") return null;
 
   const expectedChain = runtime?.chainId ?? 46_630;
   const onWrongChain = chainId !== null && chainId !== expectedChain;
   const firstAccount = accounts[0] ?? null;
 
-  return (
+  const modalContent = (
     <div
-      className={`fixed inset-0 z-90 flex items-center justify-center bg-black/80 p-4 ${
+      className={`fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 ${
         isClosing ? "animate-hahaFadeOut" : "animate-hahaFadeIn"
       }`}
       role="dialog"
@@ -265,7 +271,7 @@ export default function WalletModal({
       onClick={handleClose}
     >
       <div
-        className={`w-full max-w-xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:p-6 ${
+        className={`my-auto w-full max-w-xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:p-6 ${
           isClosing ? "animate-hahaModalExit" : "animate-hahaModalEnter"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -483,4 +489,6 @@ export default function WalletModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
