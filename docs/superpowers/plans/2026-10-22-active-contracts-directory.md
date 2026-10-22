@@ -68,8 +68,8 @@
 - Test in production browser: `/contracts`, navigation, clipboard feedback, explorer link target, mobile layout.
 - No additional contract or database writes.
 
-- [ ] Run `npm test`, `npm run typecheck`, and `npm run build`.
-- [ ] Commit only the contracts registry/page/navigation/tests; do not stage unrelated local modifications.
-- [ ] Push `main`, wait for CI test/build/deploy/healthcheck/read-only preflight success.
-- [ ] In production browser verify `/contracts` returns 200, six cards render, `Contracts` navigation link works, copy status is announced, explorer URLs include the correct chain address, and mobile width has no horizontal overflow.
-- [ ] Verify `/api/config` still returns chain ID 4663 and the existing HAHA/CrowdStaking addresses; no mainnet transaction is sent.
+- [x] Run `npm test`, `npm run typecheck`, and `npm run build`.
+- [x] Commit only the contracts registry/page/navigation/tests; leave unrelated local modifications untouched.
+- [x] Push `main`; CI test/build/deploy/healthcheck/read-only preflight succeeded.
+- [x] In production browser verify `/contracts` returns 200, six cards render, desktop/mobile/footer `Contracts` navigation works, copy feedback is announced, explorer URLs have safe target attributes, and mobile width has no horizontal overflow.
+- [x] Verify `/api/config` returns chain ID 4663 and the existing HAHA/CrowdStaking addresses; no mainnet transaction is sent.
