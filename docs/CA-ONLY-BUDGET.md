@@ -34,19 +34,20 @@ Measured on mainnet and the 4663 fork:
 | Foundation deploy (already paid) | **≈ 0.00018680253188 ETH** | observed operator balance delta, nonce 1→7 |
 | Standalone token + CrowdStaking (already paid) | **0.00003890465 ETH** | actual receipt fees combined |
 | Balance after token/staking deploys (historical) | **0.001762392788522 ETH** | before owner's 0.0018 ETH top-up |
-| Current measured balance | **0.003562392788522 ETH** | after 0.0018 ETH top-up; nonce 9 |
-| Suggested reserve | **0.005 ETH** | operational target; remaining difference **0.001437607211478 ETH** |
+| Balance after live swap/funding test | **0.00334986396618 ETH** | after 0.0018 ETH top-up and test gas; nonce 14 |
+| Suggested reserve | **0.005 ETH** | operational target; remaining difference **0.00165013603382 ETH** |
 
 Optional hardening (not required): a second key held OFF the VPS for admin
 roles would cost 0 extra gas — only create it if the owner changes their mind.
 
 ### USDG for rewards (owner choice)
 
-- The contracts require **$0 USDG** reward seed. Current live TipJar balance is
-  **0 USDG**; there are **0** mainnet funding receipts, **0** mainnet Reward
-  rows, and no claimable rewards.
-- With **$0 seed**, claims stay empty until a verified B2B or treasury funding
-  receipt arrives; no reward amount is promised.
+- Contracts require **no minimum USDG reward seed**. An owner-authorized live
+  smoke test deposited **0.4 USDG** into TipJar and registered one verified
+  funding receipt. There are still **0** mainnet Reward rows and no claimable
+  rewards because no eligible outcome/root exists.
+- The 0.4 USDG seed is real TipJar capital, not a promised payout. Claims remain
+  empty until an eligible funded epoch is settled and its root activated.
 - Optional cold-start example: deposit **1,000 USDG**. Settlement treats this
   as a general pool: **800 USDG comedian pool / 200 USDG crowd pool**, then
   existing score, per-account cap and dust-rollover rules apply. This is an
@@ -95,8 +96,8 @@ the owner receives only the CA and has no launcher coordination.
 
 | Bucket | Suggested amount | Required? |
 | --- | ---: | --- |
-| Operator wallet (single-key, all roles) | **0.005 ETH** total | Yes; measured deploy is 0.00046 ETH, rest is ops buffer. Current balance 0.00199 ETH already covers deploy |
-| Initial USDG reward seed | $0 minimum; $1,000 example | Optional; only for bootstrapping before customer receipts |
+| Operator wallet (single-key, all roles) | **0.005 ETH** total | Suggested reserve; current measured balance is 0.00334986396618 ETH |
+| Initial USDG reward seed | $0 minimum; **0.4 USDG** live seed; $1,000 example | Optional; the live seed is not a guaranteed payout |
 | MicDrop buyback seed | $0 | Optional; hold B2B share until verified route/liquidity (route unset = $0 gas) |
 | VPS/R2/MiMo monthly invoice | Not verifiable from repo | Variable; read actual provider/account bills |
 
@@ -113,9 +114,10 @@ and no pricing quote was captured with this measurement.
   1,000,000,000 initial HAHA, all held by the operator, no mint function.
 - CrowdStaking `0xe861a2c5d2114A76779d91d416c750bE7D3f7d88`, tx
   `0x6c8222ca48bb305c3f1fef7b7a0da577e3ccf55153d3a43d75355225b39a525a`, is
-  bound to that standalone token. The operator later added 0.0018 ETH; live
-  balance is **0.003562392788522 ETH** and the gap to the suggested 0.005 ETH
-  operating buffer is **0.001437607211478 ETH**.
+  bound to that standalone token. After the operator's 0.0018 ETH top-up, live
+  ETH→USDG swap, and gas for the funding test, operator balance is
+  **0.00334986396618 ETH**; the gap to the suggested 0.005 ETH reserve is
+  **0.00165013603382 ETH**.
 - Actual token deployment receipt gas cost: **0.000012163983 ETH**; staking
   deployment: **0.000026740667 ETH**. The mainnet foundation suite was deployed
   earlier. Fork gas estimates are maxima/simulation results, not actual fees.
@@ -124,5 +126,14 @@ and no pricing quote was captured with this measurement.
   reserve, not become dust liquidity. MicDrop is inactive/HOLD and no creator
   fees are assumed. Juror access does not require HAHA stake; the extra-bit lock
   is separate.
-- TipJar remains at 0 USDG with no verified receipts or reward rows. Rewards
-  are not claimable until verified funding and settlement.
+- The operator swapped 0.0002 ETH for **0.485262 USDG** through the observed
+  Uniswap V3 WETH/USDG 0.01% pool (swap tx
+  `0xc546d3fbe86baa8015fbcc2f7bfe570c864bd5ca29d8f478c7d4ac471b52045a`). It
+  then seeded **0.4 USDG** via `ProducerGateway.fundRewards` (tx
+  `0x36b219a87998c8670abc645f01c990288d1d808fa2ea2fbba53346ed7a6fdbda`); the
+  API verified and imported one receipt. Operator retains **0.085262 USDG**.
+- TipJar holds **0.4 USDG**, with one funding receipt but **0 Reward rows**, no
+  eligible outcome/root, and no claimable payout. The temporary E2E wallet's
+  SIWE user/session was deleted. No fake bit or vote was created.
+- HAHA still has no HAHA trading pool and all initial supply remains in the
+  operator wallet; the ETH/USDG swap did not create HAHA liquidity.

@@ -18,13 +18,15 @@ remain set; the worker must not poll Pons or write to MicDrop in this mode.
   extra-bit lock applies only to above-quota bits where that feature is used.
 - No market pool is configured. Token buy/trade is not available from the app;
   do not show a price or imply that users can buy HAHA.
-- The operator wallet last measured `0.003562392788522 ETH`. Preserve it as an
-  operations/gas balance; do not put it into a dust-liquidity pool.
+- The operator wallet last measured `0.00334986396618 ETH` and `0.085262 USDG`
+  after the live swap/funding smoke test. Preserve the ETH as an operations/gas
+  balance; do not put it into a dust-liquidity pool.
 
 ## Reward funding and settlement
 
-- Current TipJar balance is 0 USDG; production has 0 verified funding receipts
-  and 0 mainnet reward rows. No payout is claimable now.
+- Current TipJar balance is **0.4 USDG** from one owner-funded, verified
+  `ProducerGateway.fundRewards` smoke receipt. Production still has **0 mainnet
+  Reward rows**, no eligible outcome/root, and no claimable payout.
 - Only actual, verified USDG transfers/events can fund rewards. Customer B2B
   purchases split 30% to the general TipJar pool, 10% to a contributor royalty
   reserve, 20% to the MicDrop hold, and 40% to operations/treasury. The MicDrop
@@ -34,6 +36,11 @@ remain set; the worker must not poll Pons or write to MicDrop in this mode.
   registration. Do not count ETH gas funding as USDG rewards.
 - Settlement publishes roots only for funded eligible epochs. Claims are
   USDG-only and require an activated root; do not promise daily or fixed payouts.
+- Live smoke transactions were: swap 0.0002 ETH→0.485262 USDG at
+  `0xc546d3fbe86baa8015fbcc2f7bfe570c864bd5ca29d8f478c7d4ac471b52045a`, then
+  seed 0.4 USDG at
+  `0x36b219a87998c8670abc645f01c990288d1d808fa2ea2fbba53346ed7a6fdbda` and
+  register its verified receipt. The temporary SIWE user/session was deleted.
 - A new CrowdStaking deployment is required if the token is ever replaced;
   its token address is immutable and existing stakes do not migrate.
 
@@ -45,5 +52,6 @@ remain set; the worker must not poll Pons or write to MicDrop in this mode.
    `productMode=standalone` without Pons errors or MicDrop writes.
 3. Confirm TipJar USDG balance, verified funding receipt count, and reward rows
    before announcing any payout.
-4. Confirm operator ETH reserve before any new mainnet transaction. No pool,
-   USDG seed, or token distribution transaction is part of the current release.
+4. Confirm operator ETH reserve before any new mainnet transaction. No HAHA
+   pool or token-distribution transaction exists; the 0.4 USDG smoke seed is
+   already in TipJar, but there is no claimable root.

@@ -95,5 +95,5 @@
 - [x] Commit/push code; CI unit tests, typecheck, build, deploy, healthcheck, and read-only preflight succeeded.
 - [x] Verify `/api/health` 200 and `/api/config` chain ID/addresses.
 - [x] Verify app and worker containers are healthy; recent worker logs show normal queue startup and no Pons errors/alerts or chain writes.
-- [x] Read the mainnet ETH balance and token/TipJar state after deployment. No market, reward, or token-distribution transaction was broadcast.
+- [x] Read the mainnet ETH/token/TipJar state after deployment. No HAHA market or token-distribution transaction was broadcast; the authorized 0.4 USDG funding smoke seed and receipt are documented, with no claimable root.
 - [x] Final docs/status aligned with live verification.
