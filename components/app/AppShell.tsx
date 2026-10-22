@@ -31,7 +31,9 @@ export default function AppShell({ initialTab = "stage" }: AppShellProps) {
     fetch("/api/tipjar/summary")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (!cancelled && data && typeof data.dailyPoolUSDG === "number") {
+        if (!cancelled && data && typeof data.dailyPoolUSDGDisplay === "string") {
+          setDailyPool(data.dailyPoolUSDGDisplay);
+        } else if (!cancelled && data && typeof data.dailyPoolUSDG === "number") {
           setDailyPool(data.dailyPoolUSDG.toLocaleString());
         }
       })

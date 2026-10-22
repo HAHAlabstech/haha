@@ -31,7 +31,9 @@ export default function HomePage() {
       fetch("/api/vault/summary").then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]).then(([bitsData, tjData, vaultData]) => {
       if (cancelled) return;
-      if (tjData && typeof tjData.dailyPoolUSDG === "number") {
+      if (tjData && typeof tjData.dailyPoolUSDGDisplay === "string") {
+        setDailyPoolUSDG(tjData.dailyPoolUSDGDisplay);
+      } else if (tjData && typeof tjData.dailyPoolUSDG === "number") {
         setDailyPoolUSDG(tjData.dailyPoolUSDG.toLocaleString());
       }
       if (vaultData && typeof vaultData.verifiedCount === "number") {

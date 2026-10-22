@@ -9,6 +9,7 @@ import {
 } from "@/lib/haha-contracts";
 import { getPrisma, readChainEnv } from "@/lib/server";
 import { epochScope } from "@/worker/lib/funding";
+import { formatUsdgMicroDisplay } from "@/lib/usdg-display";
 
 export const dynamic = "force-dynamic";
 
@@ -148,6 +149,7 @@ export async function GET() {
       // Hero/header badge number (USDG, whole units) consumed by landing +
       // AppShell navbar. Keep in sync with escrow.tipJar.microUsdg.
       dailyPoolUSDG: Math.round(tipJarMicro / 1_000_000),
+      dailyPoolUSDGDisplay: formatUsdgMicroDisplay(tipJarMicroUsdg),
       escrow: {
         tipJar: { address: contracts.tipJar, microUsdg: tipJarMicroUsdg },
         feeSplitter: {
