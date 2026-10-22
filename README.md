@@ -8,7 +8,7 @@
 
 *Can you fool the machine? Human comedians take the mic against an AI Straight Man. Blind crowds jury. Real Merkle rewards flow to the funny.*
 
-🎤 **The Stage:** [`/stage`](https://hahastage.xyz/stage) · 👥 **The Crowd:** [`/crowd`](https://hahastage.xyz/crowd) · 💰 **TipJar:** [`/tipjar`](https://hahastage.xyz/tipjar) · 🏛️ **The Joke Vault:** [`/vault`](https://hahastage.xyz/vault) · 💼 **Producers B2B:** [`/producers`](https://hahastage.xyz/producers) · 🏆 **Leaderboard:** [`/leaderboard`](https://hahastage.xyz/leaderboard)
+🎤 **The Stage:** [`/stage`](https://haha.asifaq.com/stage) · 👥 **The Crowd:** [`/crowd`](https://haha.asifaq.com/crowd) · 💰 **TipJar:** [`/tipjar`](https://haha.asifaq.com/tipjar) · 🏛️ **The Joke Vault:** [`/vault`](https://haha.asifaq.com/vault) · 💼 **Producers B2B:** [`/producers`](https://haha.asifaq.com/producers) · 🏆 **Leaderboard:** [`/leaderboard`](https://haha.asifaq.com/leaderboard)
 
 [![Chains](https://img.shields.io/badge/Chains-Robinhood%204663%20%C2%B7%20Testnet%2046630-CCFF00?style=flat-square&labelColor=0A081E&logoColor=black)](#-live-robinhood-mainnet-deployments-chain-id-4663)
 [![Runtime](https://img.shields.io/badge/Runtime-Next.js%2016%20%C2%B7%20React%2019%20%C2%B7%20TypeScript-7C3AED?style=flat-square&labelColor=0A081E)](#-tech-stack)
