@@ -53,6 +53,16 @@ export default function SiteFooter() {
               <Database className="w-3.5 h-3.5 text-zinc-400" />
               <span>Open The Vault</span>
             </Link>
+            <a
+              href="https://x.com/HAHAlabstech"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Follow HAHA on X (@HAHAlabstech)"
+              title="Follow @HAHAlabstech on X"
+              className="inline-flex items-center justify-center h-10 w-10 rounded-full border border-white/10 bg-[#12121a] hover:bg-white/10 hover:border-white/20 text-zinc-300 hover:text-white transition-all shadow-sm"
+            >
+              <XLogoMark size={14} />
+            </a>
           </div>
         </div>
 
