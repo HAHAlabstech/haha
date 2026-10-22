@@ -9,7 +9,7 @@ Make the existing HAHA web app honest and usable on Robinhood Chain mainnet with
 - HAHA standalone token is the only configured product token: `0xd2Da320EF90FB76809587C830A33a49512bA90D9`.
 - CrowdStaking remains bound to that token: `0xe861a2c5d2114A76779d91d416c750bE7D3f7d88`.
 - Pons, creator-fee harvesting, and MicDrop buyback are out of this release. No Pons factory polling, fees, or route assumptions are required for the app to work.
-- Juror access is based on wallet session, allowlist/onboarding, and the calibration quiz. The current app does not enforce on-chain juror stake in `/api/crowd/next`; the API/UI must not imply that a 10 HAHA extra-bit stake is a juror threshold or USD valuation.
+- Juror access is based on a signed-in wallet and the calibration quiz. The current app does not enforce on-chain juror stake in `/api/crowd/next`; the API/UI must not imply that a 10 HAHA extra-bit stake is a juror threshold or USD valuation.
 - Token balances and extra-bit stake are displayed in HAHA units only. No USD valuation is shown without an independent price source.
 - USDG rewards are claimable only after verified funding and settlement. Empty funding state is shown as “no rewards funded yet,” not as a failed or promised payout.
 - Do not create a pool or market with the current dust-level ETH balance. The latest verified operator balance is `0.003562392788522 ETH`; preserve it for gas/operations. Trading is explicitly unavailable until a separate market/liquidity decision is supported by verified venue and adequate liquidity.

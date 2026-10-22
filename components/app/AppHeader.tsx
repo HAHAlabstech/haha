@@ -33,7 +33,7 @@ const TABS: { id: AppTab; label: string; icon: typeof Mic }[] = [
 export default function AppHeader({
   activeTab,
   onTabChange,
-  dailyPoolUSDG = "2,840",
+  dailyPoolUSDG = "—",
 }: AppHeaderProps) {
   return (
     <>
@@ -115,7 +115,7 @@ export default function AppHeader({
             {/* Live Pool Pill */}
             <div className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#ffc53d]/25 bg-[#ffc53d]/10 px-3 py-1 font-mono text-[10px] text-[#ffc53d]">
               <Flame className="h-3 w-3" />
-              <span>${dailyPoolUSDG} USDG</span>
+              <span>{dailyPoolUSDG === "—" ? "Pool unavailable" : `$${dailyPoolUSDG} USDG`}</span>
             </div>
 
             {/* Network Pill */}

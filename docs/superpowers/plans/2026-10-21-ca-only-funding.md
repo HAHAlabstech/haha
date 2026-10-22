@@ -52,4 +52,5 @@ Files: deploy script, `.env.example`, read-only capital report script, `docs/MAI
 - [x] Review CA-only constraints, old testnet/TipJar scope, hot/cold mismatch, live temporary token identity, and `.env.mainnet` ignore rule.
 - [x] Record actual gas measurement and budget; clearly separate optional USDG seed from customer-funded receipts.
 - [x] Mainnet foundation suite + standalone fixed-supply HAHA + CrowdStaking deployed by the owner wallet; production app/worker are cut over and healthy. Standalone supply is held by the operator.
-- [ ] Await actual Pons CA/pool before replacing MicDrop binding or enabling buyback. This is an on-chain asset/lifecycle dependency; no launcher communication is required. The temporary MockHAHA is not used by production.
+- [x] Pons/creator-fee path removed from the active standalone operating scope. MicDrop remains HOLD and no creator-fee revenue is assumed.
+- [x] No pool or reward seed broadcast: available ETH is retained for gas/operations and TipJar rewards remain receipt-funded only.

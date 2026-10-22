@@ -164,7 +164,7 @@ export async function GET() {
       launchProof: {
         txHash: null,
         exemptCount: 0,
-        note: "0 additional exempt wallets (only 2 automatic Pons protocol exemptions)",
+        note: "Standalone HAHA deployment; no Pons launch proof or creator-fee exemptions are assumed",
       },
       feeRecipient: contracts.feeSplitter,
       takeoverArmed: false,

@@ -448,7 +448,7 @@ export default function CrowdJoinPage() {
               </div>
               <p className="mt-1 font-serif text-base text-white">Judge in Crowd</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
-                Cast blind votes and share 20% Tip Jar daily.
+                Cast blind votes; any USDG share requires verified funding and settlement.
               </p>
             </Link>
           </div>
@@ -527,7 +527,7 @@ export default function CrowdJoinPage() {
           </p>
           <p className="mt-2 text-sm text-zinc-300">
             This wallet{account ? ` (${truncateAddress(account)})` : ""} is
-            already calibrated into the Crowd — no need to retake the quiz. You are eligible to cast blind verdicts and earn 20% of the Tip Jar.
+            already calibrated into the Crowd — no need to retake the quiz. You are eligible to cast blind verdicts. Any reward depends on verified USDG funding and settlement; it is not guaranteed.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/app?tab=crowd" className="pill-btn hot">
@@ -692,7 +692,7 @@ export default function CrowdJoinPage() {
             <p className="mt-2 text-sm text-zinc-300 leading-relaxed">
               {score >= PASS_MARK
                 ? savedServer
-                  ? `Recorded for ${account ? truncateAddress(account) : "your wallet"}. Your juror credentials are active. You can now judge live Crowd assignments and share 20% Tip Jar payouts!`
+                  ? `Recorded for ${account ? truncateAddress(account) : "your wallet"}. Your juror credentials are active. You can now judge eligible Crowd assignments. Any reward depends on verified USDG funding and settlement.`
                   : "You passed the calibration! Sign the SIWE session with your wallet to save your juror credential."
                 : `You need at least ${PASS_MARK} out of 10 to pass. Review the corrections above and retake it.`}
             </p>

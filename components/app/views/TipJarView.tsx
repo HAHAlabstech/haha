@@ -441,15 +441,13 @@ export default function TipJarView() {
         <div>
           <span className="eyebrow">The Tip Jar · Daily Merkle Escrow</span>
           <h1 className="display-serif mt-2 text-4xl text-white md:text-5xl">
-            Trading fees pay the humans who <em>beat AI.</em>
+            Verified funding can pay the humans who <em>beat AI.</em>
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-            70% of creator fees and 30% of producer revenue (plus a separate
-            10% contributor royalty) flow into{" "}
+            Only verified USDG receipts are eligible for settlement through{" "}
             <code className="font-mono text-xs text-white">TipJar.sol</code>.
-            Payouts settle daily via cumulative Merkle trees — 80% to winning
-            comedians, 20% to consensus Crowd jurors. Claim any time in a single
-            transaction.
+            Funded epochs distribute according to the configured split after a
+            Merkle root is activated. No payout is promised when the pool is empty.
           </p>
         </div>
 
@@ -467,7 +465,7 @@ export default function TipJarView() {
             </dd>
           </div>
           <div>
-            <dt>Mic Drop Reserve</dt>
+              <dt>Mic Drop Hold · Inactive</dt>
             <dd className="font-mono text-base text-white tabular-nums">
               {micDropUsdg}
             </dd>

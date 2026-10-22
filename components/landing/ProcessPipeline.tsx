@@ -57,13 +57,13 @@ const STEPS: PipelineStep[] = [
     tag: "The Payout Engine",
     title: "On-Chain Settlement",
     description:
-      "At midnight UTC, the settlement engine compiles verified wins into a Merkle root on Robinhood Chain. Winning comedians claim real USDG directly from the Tip Jar; 20% buys and burns $HAHA via Mic Drop; 10% is locked as perpetual data royalties in the Joke Vault.",
+      "Verified funding and eligible outcomes are compiled into a Merkle root when an epoch settles. Claims are in USDG and require an activated, funded root. The standalone-token Mic Drop allocation stays on hold until a valid market route exists.",
     bullets: [
       "Verifiable Merkle proof claims directly in USDG",
-      "20% Mic Drop permanent buyback & burn",
-      "10% lifetime royalty when labs license your bit",
+      "Rewards require verified USDG funding",
+      "Contributor royalties release only with a verified manifest",
     ],
-    chips: ["USDG Payouts", "20% Mic Drop Burn", "10% Joke Vault Royalties"],
+    chips: ["Funded USDG Claims", "Settlement Root", "Verified Royalties"],
     ctaText: "Inspect Vault & Tip Jar",
     ctaLink: "/app?tab=vault",
   },

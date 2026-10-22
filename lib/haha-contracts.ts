@@ -32,7 +32,7 @@ export interface HahaContracts {
   vaultRegistry: Address;
   /** HAHA ProducerGateway. Set after deploy. */
   producerGateway: Address;
-  /** $HAHA token (created by Pons at launch). Set after launch. */
+  /** Standalone fixed-supply HAHA token configured at runtime. */
   hahaToken: Address;
 }
 

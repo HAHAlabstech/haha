@@ -12,11 +12,11 @@ interface FaqItem {
 const FAQS: FaqItem[] = [
   {
     q: "What is HAHA and how does it work?",
-    a: "HAHA is an open comedy club and adversarial AI alignment lab. Comedians walk up to the mic and deliver jokes, deadpan observations, and double entendres designed to stump the Straight Man AI. When a bit passes the AI's literal filter, it enters a blind human crowd quorum. Verified wins earn real USDG rewards daily from the Tip Jar.",
+    a: "HAHA is an open comedy club and adversarial AI alignment lab. Comedians submit jokes for the Straight Man AI and blind human Crowd. Verified wins can qualify for USDG rewards only with verified USDG funding and an activated settlement root.",
   },
   {
     q: "How does a comedian get paid?",
-    a: "When your bit beats the Straight Man and gets verified by the blind Crowd jury (≥60% consensus), it qualifies for that day's Tip Jar distribution. At midnight UTC, rewards are compiled into a Merkle root on Robinhood Chain, allowing you to claim real USDG tokens directly to your wallet.",
+    a: "When your bit meets the rules and is verified by the blind Crowd jury (≥60% consensus), it may qualify for a settlement. Payouts depend on verified USDG funding, finalization, and the activated Merkle root; they are not guaranteed or necessarily daily.",
   },
   {
     q: "What does it cost to play (Open Mic vs Pro Stage)?",
@@ -24,7 +24,7 @@ const FAQS: FaqItem[] = [
   },
   {
     q: "Who are the Crowd and how is jury judging kept fair?",
-    a: "Verified human jurors judge blind: two answers are displayed side-by-side with zero author or AI labels. Jurors must pass a 10-case blind calibration quiz (8/10 pass requirement) and maintain a minimum stake in $HAHA. Random honeypots and consensus checks prevent bot collusion, and dishonest accounts forfeit their stake.",
+    a: "Jurors judge two answers side-by-side without author or AI labels. Access requires a connected, signed-in wallet and a 10-case blind calibration quiz (8/10 pass requirement); there is currently no HAHA minimum for juror access. A separate 10 HAHA lock applies only to above-quota bits when that feature is used.",
   },
   {
     q: "Why is human humor valuable enough for AI labs to license?",
@@ -32,11 +32,11 @@ const FAQS: FaqItem[] = [
   },
   {
     q: "What is the Joke Vault & lifetime royalties?",
-    a: "Every verified bit becomes provenance-signed, immutable data in the Joke Vault. When frontier AI labs license datasets from the Vault, revenue flows directly back: 30% to replenish the Tip Jar pool, 20% to Mic Drop burns, and 10% perpetual royalties to the original contributing comedians forever.",
+    a: "Verified bits may be included in licensed datasets. When a B2B payment is received, configured shares are recorded through the Producer Gateway; the 20% Mic Drop allocation remains on hold while no verified standalone-token buyback route is active. Contributor royalties remain reserved until their batch manifest is verified.",
   },
   {
-    q: "What is a Mic Drop ($HAHA buyback & burn)?",
-    a: "The 20% protocol fee that automatically buys $HAHA on Robinhood Chain and burns it permanently — verifiable on-chain in the Tip Jar and contract telemetry.",
+    q: "Is HAHA buyback active?",
+    a: "No. The standalone HAHA token has no configured market route, so the Mic Drop allocation remains on hold. No creator-fee revenue or automatic token buybacks are assumed.",
   },
   {
     q: "Can I appeal a verdict?",
@@ -44,11 +44,11 @@ const FAQS: FaqItem[] = [
   },
   {
     q: "Which blockchain and wallet do I need?",
-    a: "HAHA operates natively on Robinhood Chain (Testnet 46630 now, Mainnet 4663 at launch). Any EIP-6963 browser wallet (MetaMask, Coinbase Wallet, Rabby, etc.) connects seamlessly with zero seed phrases leaving your device.",
+    a: "HAHA currently operates on Robinhood Chain mainnet (chain ID 4663). An EIP-6963 browser wallet can connect; always verify the requested network and transaction details in your wallet. There is no HAHA trading pool in the app today. This site should never request your seed phrase.",
   },
   {
     q: "Is this financial advice or guaranteed income?",
-    a: "No. Rewards vary and depend entirely on the daily Tip Jar pool and consensus results. Nothing on this platform promises any guaranteed amount, and nothing here is financial advice.",
+    a: "No. Rewards are variable and depend on verified USDG funding, eligibility, and settlement. Payouts are not guaranteed; nothing here is financial advice.",
   },
 ];
 

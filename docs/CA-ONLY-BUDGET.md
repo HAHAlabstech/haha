@@ -33,8 +33,9 @@ Measured on mainnet and the 4663 fork:
 | --- | ---: | --- |
 | Foundation deploy (already paid) | **≈ 0.00018680253188 ETH** | observed operator balance delta, nonce 1→7 |
 | Standalone token + CrowdStaking (already paid) | **0.00003890465 ETH** | actual receipt fees combined |
-| Current balance | **0.001762392788522 ETH** | measured after the two new deployments |
-| Suggested reserve | **0.005 ETH** | leaves an operational buffer; top-up **0.003237607211478 ETH** |
+| Balance after token/staking deploys (historical) | **0.001762392788522 ETH** | before owner's 0.0018 ETH top-up |
+| Current measured balance | **0.003562392788522 ETH** | after 0.0018 ETH top-up; nonce 9 |
+| Suggested reserve | **0.005 ETH** | operational target; remaining difference **0.001437607211478 ETH** |
 
 Optional hardening (not required): a second key held OFF the VPS for admin
 roles would cost 0 extra gas — only create it if the owner changes their mind.
@@ -105,22 +106,23 @@ requirement — the owner chose single-wallet operation on 2026-10-22.
 No ETH/USD price conversion is shown because the budget is denominated in ETH
 and no pricing quote was captured with this measurement.
 
-## Deployed standalone token (temporary pre-Pons phase)
+## Standalone token and product status
 
 - Fixed-supply token `0xd2Da320EF90FB76809587C830A33a49512bA90D9`, tx
   `0x89a2a1e6961d2bb09724ed8a9163b42910953e2c500d36505bdb5d0067ed7dd3`:
   1,000,000,000 initial HAHA, all held by the operator, no mint function.
 - CrowdStaking `0xe861a2c5d2114A76779d91d416c750bE7D3f7d88`, tx
   `0x6c8222ca48bb305c3f1fef7b7a0da577e3ccf55153d3a43d75355225b39a525a`, is
-  bound to that standalone token. Current live operator balance after both
-  deployments: **0.001762392788522 ETH**; top-up to the suggested 0.005 ETH
-  operating buffer is **0.003237607211478 ETH**.
+  bound to that standalone token. The operator later added 0.0018 ETH; live
+  balance is **0.003562392788522 ETH** and the gap to the suggested 0.005 ETH
+  operating buffer is **0.001437607211478 ETH**.
 - Actual token deployment receipt gas cost: **0.000012163983 ETH**; staking
   deployment: **0.000026740667 ETH**. The mainnet foundation suite was deployed
   earlier. Fork gas estimates are maxima/simulation results, not actual fees.
-- This token has no market or Pons pool, and the entire supply is still in one
-  wallet. MicDrop remains unbound, route unset and HOLD. Stakers need tokens
-  transferred from the owner until a market/distribution is provided.
-- If a separate Pons CA later replaces it, old token balances/stakes will not
-  migrate automatically; deploy a new CrowdStaking and update config. The old
-  token remains on-chain.
+- This standalone token has no market pool and all initial supply remains in
+  one wallet. No pool was created because available ETH should remain as gas
+  reserve, not become dust liquidity. MicDrop is inactive/HOLD and no creator
+  fees are assumed. Juror access does not require HAHA stake; the extra-bit lock
+  is separate.
+- TipJar remains at 0 USDG with no verified receipts or reward rows. Rewards
+  are not claimable until verified funding and settlement.

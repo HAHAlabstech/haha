@@ -108,13 +108,14 @@ export default function VaultMethodPage() {
           <Card>
             <ul className="space-y-2 text-sm leading-relaxed text-zinc-300">
               <li>· 30% replenishes the Tip Jar pool (back to winning comedians and jurors)</li>
-              <li>· 20% funds MicDrop burns</li>
-              <li>· 10% perpetual royalties to the original contributing comedians</li>
+              <li>· 20% is held by MicDrop; no buyback or burn is active for standalone HAHA</li>
+              <li>· 10% contributor royalty reserve; distribution requires a verified batch manifest</li>
               <li>· The remainder covers operations and the ProducerGateway split</li>
             </ul>
             <p className="mt-4 text-xs leading-relaxed text-zinc-400">
               Comedian payouts are variable by design: the Tip Jar is a share of
-              real inflows, not a promised amount.
+                verified USDG inflows, not a promised amount. No Pons creator fees
+                are counted or expected in standalone mode.
             </p>
           </Card>
         </section>

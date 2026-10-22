@@ -19,7 +19,7 @@ import LandingFaq from "@/components/landing/LandingFaq";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 export default function HomePage() {
-  const [dailyPoolUSDG, setDailyPoolUSDG] = useState("2,840");
+  const [dailyPoolUSDG, setDailyPoolUSDG] = useState("—");
   const [bitsTotal, setBitsTotal] = useState("8,120");
   const [winRate, setWinRate] = useState("38.4%");
 
