@@ -470,7 +470,7 @@ export default function StageView() {
               </div>
               <p className="mt-1 font-serif text-base text-white">Claim USDG</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
-                Winning bits &amp; consensus jurors claim daily USDG in Tip Jar.
+                Eligible creators and jurors may claim funded USDG after settlement.
               </p>
             </Link>
           </div>
@@ -538,8 +538,8 @@ export default function StageView() {
                 </p>
                 <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">
                   <strong className="text-white">Judge the Crowd</strong> —
-                  pass the 10-case calibration quiz (8/10) to share in the 20%
-                  juror pool when the Crowd reaches consensus.
+                  pass the 10-case calibration quiz (8/10) to vote. Any reward
+                  depends on verified USDG funding and settlement; it is not guaranteed.
                 </p>
               </div>
               <Link

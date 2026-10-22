@@ -136,10 +136,15 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
    optional `FeeSplitter` harvest remains OFF unless on-chain recipient
    entitlement is actually observed. B2B/treasury USDG receipts are the reward
    source; see `docs/CA-ONLY-BUDGET.md`.
-5. Current standalone HAHA/CrowdStaking are live. If the later Pons CA replaces
-   the interim token, run `DeployCrowdStakingMainnet.s.sol` with that CA. The
-   script refuses the public-mint MockHAHA runtime hash; existing standalone
-   stakes/balances do not migrate automatically.
+5. Current production mode is standalone HAHA. Pons integration is out of
+   scope; do not run `inspect-pons-ca.mjs`, bind a Pons token, or enable creator
+   fees for this release. MicDrop remains unbound/HOLD because there is no
+   standalone buyback route.
+6. Juror access is signed-in wallet + calibration; no HAHA juror minimum is
+   enforced. Do not show USD value for the token without a verified market.
+7. No pool was created. Available operator ETH is reserved for gas/operations;
+   the app must not imply token trading or payout availability in the empty
+   USDG state.
 6. Phase 2, cold-admin actions after the 48h timelock (run from an address
    distinct from the hot operator; the current `.env.mainnet` violates this
    separation and deploy simulation now rejects it):

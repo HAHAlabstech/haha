@@ -45,7 +45,9 @@ interface AssignmentPayload {
 interface StakeCheckInfo {
   mode: string;
   stake_wei?: string;
-  staked_enough?: boolean;
+  extra_bit_stake_wei?: string;
+  stake_verified?: boolean;
+  juror_access_mode?: string;
   crowd_tier?: string;
   onboarding_passed?: boolean;
 }
@@ -263,11 +265,7 @@ export default function CrowdView() {
           <div>
             <dt>Access</dt>
             <dd>
-              {account && stakeInfo
-                ? stakeInfo.mode === "staked"
-                  ? "Staked $HAHA"
-                  : "Calibration + allowlist"
-                : "—"}
+              {account && stakeInfo ? "Wallet + calibration" : "—"}
             </dd>
           </div>
           <div>
@@ -324,7 +322,7 @@ export default function CrowdView() {
               </div>
               <p className="mt-1 font-serif text-base text-white">Connect &amp; Sign In</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
-                Robinhood Testnet session.
+                Robinhood Chain wallet session. Confirm the network before signing.
               </p>
             </div>
 
@@ -385,7 +383,7 @@ export default function CrowdView() {
               </div>
               <p className="mt-1 font-serif text-base text-white">Earn USDG Share</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
-                Consensus jurors split 20% of daily fees.
+                May share funded USDG rewards after settlement; payouts are not guaranteed.
               </p>
             </Link>
           </div>
@@ -402,8 +400,9 @@ export default function CrowdView() {
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-300">
                   Pass the 10-case blind quiz (8/10 required, ~5 minutes, retakes
-                  allowed) to unlock juror ballots and share in the 20% juror
-                  pool when the Crowd reaches consensus.
+                  allowed) to unlock juror ballots. A reward share is possible
+                  only when verified USDG funding and an active settlement root
+                  exist. Juror access does not require a HAHA balance.
                 </p>
               </div>
               <Link

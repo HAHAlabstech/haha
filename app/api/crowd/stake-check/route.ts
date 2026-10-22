@@ -3,10 +3,11 @@ import { createPublicClient, http } from "viem";
 import { getChainForEnv } from "@/lib/haha-chains";
 import { crowdStakingAbi, getServerContracts, isDeployed } from "@/lib/haha-contracts";
 import { getPrisma, readChainEnv } from "@/lib/server";
+import { buildCrowdStakeStatus } from "@/lib/crowd-stake-status";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/crowd/stake-check?wallet=0x... -> checks on-chain CrowdStaking + DB tier (with allowlist fallback).
+// GET /api/crowd/stake-check?wallet=0x... -> reports calibration and optional on-chain stake telemetry.
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const wallet = (searchParams.get("wallet") ?? "").toLowerCase();
@@ -27,13 +28,13 @@ export async function GET(req: Request) {
       : (chain.rpcUrls.default.http[0] as string);
 
   let stakeWei = 0n;
-  let minJurorStakeWei = 0n;
+  let extraBitStakeWei = 0n;
   let onchainChecked = false;
 
   if (rpcUrl && isDeployed(contracts, "crowdStaking")) {
     try {
       const client = createPublicClient({ chain, transport: http(rpcUrl) });
-      const [s, minS] = await Promise.all([
+      const [s, extraBit] = await Promise.all([
         client.readContract({
           address: contracts.crowdStaking,
           abi: crowdStakingAbi,
@@ -47,10 +48,10 @@ export async function GET(req: Request) {
         }),
       ]);
       stakeWei = s as bigint;
-      minJurorStakeWei = minS as bigint;
+      extraBitStakeWei = extraBit as bigint;
       onchainChecked = true;
     } catch {
-      // Fall back to allowlist / DB mode if RPC is unreachable
+      // Keep stake telemetry unverified if the RPC is unreachable.
     }
   }
 
@@ -67,18 +68,16 @@ export async function GET(req: Request) {
     // non-fatal
   }
 
-  const stakedEnough =
-    onchainChecked && minJurorStakeWei > 0n && stakeWei >= minJurorStakeWei;
   return NextResponse.json(
     {
-      ok: true,
-      mode: stakedEnough ? "staked" : "allowlist",
       wallet,
-      stake_wei: stakeWei.toString(),
-      min_juror_stake_wei: minJurorStakeWei.toString(),
-      staked_enough: stakedEnough,
-      crowd_tier: dbTier,
-      onboarding_passed: onboardingPassed,
+      ...buildCrowdStakeStatus({
+        stakeWei,
+        extraBitStakeWei,
+        stakeVerified: onchainChecked,
+        crowdTier: dbTier,
+        onboardingPassed,
+      }),
     },
     { headers: { "cache-control": "no-store" } },
   );

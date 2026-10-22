@@ -43,12 +43,18 @@ async function alert(text) {
 }
 
 async function run(job) {
+  const launchMode=(process.env.PONS_LAUNCH_MODE||"standalone").trim().toLowerCase();
+  const ponsMode=launchMode==="pons";
   const client = rpcClient();
-  const findings = {};
+  const findings = ponsMode ? {productMode:"pons"} : {
+    productMode:"standalone",
+    standaloneToken:process.env.HAHA_TOKEN_ADDRESS||null,
+    buybackReadiness:"HOLD: standalone token has no configured market route",
+  };
   // On mainnet the only launcher input is the token CA. Verify the Pons
   // factory record and the token-specific curve before synchronizing MicDrop.
   // Unknown/ungraduated/not-bound => HOLD; do not infer pair/tax/recipient.
-  if (process.env.CHAIN_ENV === "mainnet" && process.env.HAHA_TOKEN_ADDRESS && process.env.PONS_FACTORY_ADDRESS) {
+  if (ponsMode && process.env.CHAIN_ENV === "mainnet" && process.env.HAHA_TOKEN_ADDRESS && process.env.PONS_FACTORY_ADDRESS) {
     try {
       const token=getAddress(process.env.HAHA_TOKEN_ADDRESS.trim());
       const factory=getAddress(process.env.PONS_FACTORY_ADDRESS.trim());
@@ -124,9 +130,9 @@ async function run(job) {
       }
     } catch(err) {
       const reason=String(err.message||err).slice(0,200);
-      if((process.env.PONS_LAUNCH_MODE||"pons").toLowerCase()==="standalone") {
+      if(launchMode==="standalone") {
         findings.ponsLaunch={registered:false,mode:"standalone",token:process.env.HAHA_TOKEN_ADDRESS};
-        findings.buybackReadiness="HOLD: standalone token has no Pons curve/pool; no creator fees or buyback assumed";
+        findings.buybackReadiness="HOLD: standalone token has no configured market route; no creator fees or buyback assumed";
       } else {
         findings.ponsLaunchError=reason;
         await alert(`HAHA CA is not a verified Pons launch in the configured factory; MicDrop stays HOLD (${findings.ponsLaunchError})`);
@@ -134,7 +140,7 @@ async function run(job) {
     }
   }
   const splitter = process.env.FEE_SPLITTER_ADDRESS;
-  if (splitter) {
+  if (ponsMode && splitter) {
     try {
       findings.poolGraduated = await client.readContract({ address: getAddress(splitter), abi: FEE_SPLITTER_ABI, functionName: "poolGraduated" });
     } catch (err) { findings.splitterError = String(err.message).slice(0, 200); }

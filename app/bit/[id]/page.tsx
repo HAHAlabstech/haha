@@ -595,7 +595,7 @@ export default function BitPage({
                 {bit?.outcome ? (
                   <p className="text-xs leading-relaxed text-zinc-400">
                     {bit.outcome.result === "killed_it"
-                      ? "This is a Crowd verdict, not a paid balance yet. Rewards settle at 00:00 UTC; check Tip Jar after the new root activates."
+                      ? "This is a Crowd verdict, not a paid balance. Any payout requires verified USDG funding and an activated settlement root."
                       : (bit.retrial_round ?? 0) < 2
                         ? "This is a Crowd verdict. If you disagree, you can file one Round-2 appeal below."
                         : "Final verdict after Round 2. No further appeal is available for this bit."}
@@ -828,7 +828,7 @@ export default function BitPage({
               </div>
               <p className="mt-4 text-sm leading-relaxed text-zinc-300">
                 {bit.outcome.result === "killed_it"
-                  ? "The Crowd sided with you. Rewards settle daily at 00:00 UTC and appear in Tip Jar after the new root activates. A verdict is not a paid balance by itself."
+                  ? "The Crowd sided with you. A verdict is not a paid balance; any reward requires verified USDG funding and an activated settlement root."
                   : (bit.retrial_round ?? 0) < 2
                     ? "The Crowd did not side with you. If you believe the blind jury missed context, you can file one Round-2 appeal below."
                     : "The Round-2 Crowd verdict is final. No further appeal is available for this bit."}
