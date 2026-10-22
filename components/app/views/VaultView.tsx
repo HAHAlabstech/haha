@@ -280,7 +280,7 @@ export default function VaultView() {
               </p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400 flex items-center gap-2">
                 <RobinhoodLogoMark size={14} color="#ffc53d" />
-                <span>Dataset releases are cryptographically anchored on Robinhood Chain Testnet every Sunday.</span>
+                <span>Dataset releases are cryptographically anchored on the configured Robinhood Chain network.</span>
               </p>
             </div>
             <div className="mt-6 border-t border-white/10 pt-4 font-mono text-xs text-[#ffc53d]">

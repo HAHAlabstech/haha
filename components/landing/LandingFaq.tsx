@@ -31,7 +31,7 @@ const FAQS: FaqItem[] = [
     a: "Current frontier LLMs are trained on internet scrapes where obvious patterns predominate. They frequently fail at irony, deadpan subtext, cultural nuance, and comedic timing. The Joke Vault provides high-signal, human-verified adversarial data that AI labs license to benchmark and align complex reasoning models.",
   },
   {
-    q: "What is the Joke Vault & lifetime royalties?",
+    q: "What is the Joke Vault and contributor royalty reserve?",
     a: "Verified bits may be included in licensed datasets. When a B2B payment is received, configured shares are recorded through the Producer Gateway; the 20% Mic Drop allocation remains on hold while no verified standalone-token buyback route is active. Contributor royalties remain reserved until their batch manifest is verified.",
   },
   {

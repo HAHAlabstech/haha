@@ -419,7 +419,7 @@ export default function StageView() {
               </div>
               <p className="mt-1 font-serif text-base text-white">Connect &amp; Sign In</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
-                Link your wallet on Robinhood Testnet (gasless SIWE session).
+                Sign in with your wallet on the configured Robinhood Chain network.
               </p>
             </div>
 
@@ -466,7 +466,7 @@ export default function StageView() {
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
                 <span className="text-zinc-400">Step 04</span>
-                <span className="text-zinc-300">00:00 UTC →</span>
+                <span className="text-zinc-300">Funded epochs →</span>
               </div>
               <p className="mt-1 font-serif text-base text-white">Claim USDG</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">

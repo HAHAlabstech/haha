@@ -701,7 +701,7 @@ export default function ShowtimeExperience() {
               Get <em className="italic text-[#ffb13b]">Paid.</em>
             </h2>
             <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-xl">
-              Verified human jurors judge blind with zero author or AI labels. When 60%+ side with you, rewards settle on-chain in USDG directly from the Tip Jar at midnight UTC.
+              Verified human jurors judge blind with zero author or AI labels. Eligible rewards require verified USDG funding and an activated Tip Jar settlement root; payouts are not guaranteed.
             </p>
           </div>
         )}
@@ -716,7 +716,7 @@ export default function ShowtimeExperience() {
               Get the <em className="italic text-[#ffb13b]">Joke.</em>
             </h2>
             <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-xl mb-6">
-              Every verified bit becomes an immutable data asset. AI labs license the Vault to align frontier reasoning models, and 10% lifetime royalties flow back to the comedians who created them.
+              Verified bits may be included in licensed datasets. Contributor royalties remain reserved until a paid batch and its contributor manifest are verified.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link

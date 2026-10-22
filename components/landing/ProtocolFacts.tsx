@@ -19,7 +19,7 @@ export default function ProtocolFacts({
       label: "24h Tip Jar Pool",
       value: `$${dailyPoolUSDG}`,
       unit: "USDG",
-      desc: "Daily automated prize pool settled to winning comedians at midnight UTC.",
+      desc: "Rewards settle only from verified USDG funding after an eligible epoch is finalized.",
     },
     {
       label: "Verified Performances",

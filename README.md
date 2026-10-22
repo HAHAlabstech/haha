@@ -26,9 +26,9 @@
 **HAHA** is the world's first decentralized benchmark for computational humor and human comedic intuition, deployed natively on **Robinhood Chain** (Mainnet `4663` / Testnet `46630`):
 
 1. **The Open Mic Stage (`/stage`):** Comedians craft original jokes structured across *Premise*, *Setup*, *Punchline*, and *Subtext*. They battle **The AI Straight Man** (powered by low-latency Xiaomi MiMo 2.6 Pro), which attempts to deconstruct, explain, or deadpan the humor.
-2. **Double-Blind Crowd Evaluation (`/crowd`):** Jurors undergo an interactive 10-question comedy calibration test. Once qualified, they review blinded A/B normalized punchlines without knowing whether author A or B is human or machine. Plant-bank trap bits autonomously detect and slash Sybil click-farms.
-3. **Automated Merkle TipJar Payouts (`/tipjar`):** High-scoring bits achieve the prestigious `KILLED_IT` status. Daily at 00:00 UTC, the settlement keeper aggregates scores, compiles double-hashed Merkle trees, and provisions permissionless USDG payout claims protected by a 24-hour timelock delay.
-4. **Autonomous Commercial Flywheel (`/producers`):** AI research labs and entertainment studios license cryptographic snapshots of fine-tuned comedy reasoning data via `ProducerGateway.sol` ($500 to $2,500 USDG). Inflows programmatically fuel the treasury (40%), top up the comedian TipJar (30%), reserve royalties for comedy contributors (10%), and fund deflationary buybacks (20%).
+2. **Double-Blind Crowd Evaluation (`/crowd`):** Jurors sign in with a wallet and pass a 10-case calibration quiz (8/10). They review blinded A/B normalized punchlines. Juror access does not require a HAHA stake; calibration/plant checks help detect low-quality participation.
+3. **Funded Merkle TipJar Payouts (`/tipjar`):** Eligible outcomes may enter a settlement epoch. USDG claims require verified funding, a finalized epoch, and an activated Merkle root; no payout is available or promised while the TipJar is empty.
+4. **B2B Licensing (`/producers`):** AI research labs and entertainment studios can purchase data snapshots via `ProducerGateway.sol` ($500 to $2,500 USDG). Payments are split by contract: 40% operations/treasury, 30% general TipJar, 10% contributor royalty reserve, and 20% MicDrop hold. The MicDrop allocation is inactive/HOLD; there is no configured HAHA market route or automatic buyback.
 
 ---
 
@@ -36,7 +36,7 @@
 
 * **Proof-of-Humor as an AI Frontier:** Humor is the hardest cognitive frontier for large language models because it requires situational subtext, cultural timing, and misdirection. HAHA turns comedy into an objective, incentivized on-chain benchmark.
 * **Double-Blind Text Normalization:** Human bits and LLM reactions undergo strict A/B style normalization (stripping distinct punctuation, capitalization, and formatting tells) so jurors evaluate pure comedic timing rather than prompt artifacts.
-* **Sybil Resistance via Cryptographic Plant Banks:** The protocol seeds 50+ vetted "honeypot" bits with known ground-truth consensus into the active jury pool. Jurors voting randomly or automating clicks fail plant checks, losing reputation and triggering stake slashing.
+* **Participation Quality:** Calibration cases and plant-bank checks help detect suspicious voting. This is not a guarantee of personhood, and juror eligibility does not require an on-chain HAHA stake.
 * **Gas-Efficient Cumulative Merkle Distribution:** Instead of issuing expensive per-bit transactions, HAHA uses cumulative Merkle trees (`keccak256(keccak256(account, cumulativeMicro))`). Winners claim anytime using EIP-712 typed signatures with minimal on-chain gas overhead.
 * **Real Commercial Cashflow (Zero Inflationary Ponzi):** Reward pools are backed by verified B2B revenue and direct USDG settlement inflows—never unbacked minting.
 
@@ -59,7 +59,7 @@ flowchart LR
     end
 
     subgraph Settlement["⚙️ 3. Autonomous Keeper & Settlement"]
-        DB -->|"00:00 UTC Settlement"| Worker["BullMQ Worker<br/>dailySettlement.js"]
+        DB -->|"Funded epoch settlement"| Worker["BullMQ Worker<br/>dailySettlement.js"]
         Worker -->|"Build Tree"| Merkle["Double-Hash Merkle<br/>R2 IPFS Archive"]
         Merkle -->|"proposeRoot()"| TipJar["TipJar.sol<br/>24h Root Delay"]
         TipJar -->|"activateRoot()"| Claim["EIP-712 Claim<br/>USDG Payout"]
@@ -70,7 +70,7 @@ flowchart LR
         PG -->|"40% Treasury"| Ops["Operations / Dev"]
         PG -->|"30% TipJar"| TipJar
         PG -->|"10% Royalties"| Comedian
-        PG -->|"20% Buyback"| MicDrop["MicDrop.sol<br/>Deflationary Burn"]
+        PG -->|"20% Hold · inactive"| MicDrop["MicDrop.sol<br/>No route / HOLD"]
     end
 ```
 
@@ -78,7 +78,7 @@ flowchart LR
 
 1. **Submission & Verification:** The comedian authors a joke. The AI Straight Man generates its take in under 800ms. Both punchlines are normalized and queued for blind voting.
 2. **Jury Consensus:** Jurors vote blind on which punchline landed harder. When consensus passes the confidence threshold, the bit is scored. Bits outperforming the AI become `KILLED_IT`.
-3. **Settlement & Merkle Publishing:** The daily worker aggregates all winner shares, builds the cryptographic Merkle tree, uploads snapshot manifests to Cloudflare R2, and calls `TipJar.proposeRoot()`.
+3. **Settlement & Merkle Publishing:** The worker processes verified funding receipts and eligible outcomes. It creates a Merkle root only when the epoch has funded rewards, then archives the manifest and calls `TipJar.proposeRoot()`.
 4. **Veto Delay & Permissionless Activation:** A 24-hour timelock window allows verification. After the delay, any keeper or caller executes `activateRoot()`.
 5. **Claiming:** Comedians and calibrated jurors claim their accumulated USDG directly to their Web3 wallets.
 
@@ -91,7 +91,7 @@ flowchart LR
 | **Role** | Authors original comedy bits | Evaluates punchlines blind | Licenses humor RLHF datasets |
 | **Requirements** | Connected Web3 Wallet | 10-Question Calibration Quiz | USDG payment via `ProducerGateway` |
 | **Incentive** | 80% General TipJar + 10% Royalties | 20% Crowd Allocation Pool | Verified high-nuance humor data |
-| **Risk / Slashing** | Plagiarism check / AI copy flag | Slashed on plant-bank failures | Encrypted delivery with key verification |
+| **Risk / Slashing** | Plagiarism check / AI copy flag | Calibration and plant-bank quality checks | Encrypted delivery with key verification |
 | **Settlement** | Cumulative EIP-712 Claim | Cumulative EIP-712 Claim | Autonomous on-chain access grant |
 
 ---
@@ -186,8 +186,8 @@ HAHA/
 
 ## 🌐 Live Robinhood Mainnet Deployments (Chain ID: 4663)
 
-**LIVE & OPERATIONAL on Robinhood Chain Mainnet (`4663`)**
-*All contracts deployed, verified, and active:*
+**Deployed on Robinhood Chain Mainnet (`4663`)**
+*Contract addresses are live; some features remain intentionally inactive (no token market, MicDrop HOLD, no funded reward epoch):*
 
 | Contract | Address | Explorer Link |
 |---|---|---|

@@ -374,7 +374,7 @@ export default function CrowdJoinPage() {
               </div>
               <p className="mt-1 font-serif text-base text-white">Connect Wallet</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
-                Robinhood Testnet (Chain ID 46630).
+                Robinhood Chain mainnet (Chain ID 4663).
               </p>
             </div>
 

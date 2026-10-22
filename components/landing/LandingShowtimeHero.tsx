@@ -69,14 +69,14 @@ const CHAPTERS = [
     tag: "Blind Quorum",
     titleLead: "Get ",
     titleEm: "Paid.",
-    desc: "Verified human jurors judge blind with zero author or AI labels. When 60%+ side with you, rewards settle on-chain in USDG directly from the Tip Jar at midnight UTC.",
+    desc: "Verified human jurors judge blind with zero author or AI labels. Eligible rewards require verified USDG funding and an activated Tip Jar settlement root; payouts are not guaranteed.",
   },
   {
     num: "04",
     tag: "The Joke Vault",
     titleLead: "The Joke ",
     titleEm: "Vault.",
-    desc: "Every verified bit becomes an immutable data asset in the Joke Vault. Frontier AI labs license the Vault to align reasoning models, and 10% lifetime royalties flow back to the comedians forever.",
+    desc: "Verified bits may be included in licensed datasets. Contributor royalties remain reserved until a paid batch and its contributor manifest are verified.",
   },
 ];
 

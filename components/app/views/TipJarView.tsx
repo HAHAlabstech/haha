@@ -510,7 +510,7 @@ export default function TipJarView() {
               </div>
               <p className="mt-1 font-serif text-base text-white">Connect &amp; Sign In</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
-                Robinhood Testnet session.
+                Robinhood Chain mainnet session. Confirm the network before signing.
               </p>
             </div>
 
@@ -560,12 +560,12 @@ export default function TipJarView() {
                 >
                   {reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n
                     ? "Claim Ready"
-                    : "00:00 UTC Daily"}
+                    : "Waiting for funded root"}
                 </span>
               </div>
               <p className="mt-1 font-serif text-base text-white">Claim USDG</p>
               <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400">
-                One-click Merkle claim on Robinhood Testnet.
+                One-click Merkle claim on Robinhood Chain after a funded root activates.
               </p>
             </div>
           </div>
@@ -621,7 +621,7 @@ export default function TipJarView() {
                     Querying Cumulative Merkle Tree…
                   </p>
                   <p className="mt-1.5 text-xs text-zinc-400">
-                    Verifying settled USDG rewards from TipJar.sol on Robinhood Testnet.
+                    Verifying settled USDG rewards from TipJar.sol on Robinhood Chain.
                   </p>
                   <div className="mt-4 mx-auto max-w-xs h-0.5 bg-white/10 overflow-hidden rounded-full">
                     <div className="h-full w-1/3 bg-gradient-to-r from-emerald-400 via-[#ffc53d] to-amber-200 animate-hahaProgress" />
@@ -735,8 +735,7 @@ export default function TipJarView() {
                       <p className="text-sm leading-relaxed text-zinc-400">
                         Everything in this cumulative allocation has already
                         been paid to your wallet. New rewards appear here after
-                        the next daily settlement (00:00 UTC, active ~10
-                        minutes later).
+                        the next funded settlement epoch after its root activates.
                       </p>
                     </div>
                   ) : claimReady ? (
