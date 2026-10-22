@@ -17,26 +17,25 @@ Status: Completed & Live on Production
 SECTION 2: DEV KERJA
 --------------------------------------------------------------------------------
 1. Live Production Web URL:
-   https://haha.asifaq.com
-   (Mirror: https://hahastage.xyz)
+   https://hahastage.xyz
 
 2. Platform Routes:
    - The Stage (Comedian Open Mic Arena & AI Straight Man):
-     https://haha.asifaq.com/stage
+     https://hahastage.xyz/stage
    - The Crowd (10-Question Calibration Quiz & A/B Blind Jury Desk):
-     https://haha.asifaq.com/crowd
+     https://hahastage.xyz/crowd
    - TipJar (Transparent Reward Ledger & EIP-712 Merkle Claimer):
-     https://haha.asifaq.com/tipjar
+     https://hahastage.xyz/tipjar
    - The Joke Vault (Cryptographic Joke Canon & Hash Registry):
-     https://haha.asifaq.com/vault
+     https://hahastage.xyz/vault
    - Enterprise Producers (B2B Comedy RLHF Dataset Licensing Portal):
-     https://haha.asifaq.com/producers
+     https://hahastage.xyz/producers
    - Leaderboard (Global Comedian & Juror Reputation Rankings):
-     https://haha.asifaq.com/leaderboard
+     https://hahastage.xyz/leaderboard
    - Seasons Archive (Bi-Weekly AI Evolution & Playbook Archive):
-     https://haha.asifaq.com/seasons
-   - Rules & Game Theory: https://haha.asifaq.com/rules
-   - FAQ: https://haha.asifaq.com/faq
+     https://hahastage.xyz/seasons
+   - Rules & Game Theory: https://hahastage.xyz/rules
+   - FAQ: https://hahastage.xyz/faq
 
 3. GitHub Repository:
    https://github.com/HAHAlabstech/haha

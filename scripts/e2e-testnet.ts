@@ -6,7 +6,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
-const BASE = process.env.E2E_BASE ?? "https://haha.asifaq.com";
+const BASE = process.env.E2E_BASE ?? "https://hahastage.xyz";
 const WALLETS_FILE = "scripts/.e2e-wallets.json";
 
 type Account = ReturnType<typeof privateKeyToAccount>;

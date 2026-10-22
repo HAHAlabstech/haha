@@ -1,5 +1,5 @@
 # Caddy reverse proxy: sole entrypoint (ports 80/443).
-haha.asifaq.com, hahastage.xyz, www.hahastage.xyz {
+hahastage.xyz, www.hahastage.xyz, haha.asifaq.com {
   reverse_proxy app:3000 {
     # Health and header hygiene: app serves SSR and /api/* from Next standalone.
     header_up Host {host}
