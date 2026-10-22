@@ -91,9 +91,9 @@
 - Modify remote config keys only: `/srv/haha/.env`, `/srv/haha/.env.app`, `/srv/haha/.env.worker`.
 - Modify docs: `README.md`, `docs/CA-ONLY-OPERATIONS.md`, `docs/CA-ONLY-BUDGET.md`, `docs/MAINNET-HANDOFF.md`.
 
-- [ ] Set `PONS_LAUNCH_MODE=standalone`, keep creator-fee mode off, and ensure app token/staking addresses match the verified mainnet contracts; remove Pons-only worker triggers without touching secrets.
-- [ ] Commit/push code; wait for CI build+deploy success.
-- [ ] Verify `/api/health` 200 and `/api/config` chain ID/addresses.
-- [ ] Verify app and worker containers are healthy and recent sync logs contain no Pons error/alert and no chain write.
-- [ ] Read the mainnet ETH balance and token/TipJar state after deployment; report exact results. Do not broadcast market, reward, or token-distribution transactions.
-- [ ] Commit final documentation/status only after live verification.
+- [x] Production has `PONS_LAUNCH_MODE=standalone`, creator-fee mode off, verified token/staking addresses, and no Pons factory/hook variables in app/worker env.
+- [x] Commit/push code; CI unit tests, typecheck, build, deploy, healthcheck, and read-only preflight succeeded.
+- [x] Verify `/api/health` 200 and `/api/config` chain ID/addresses.
+- [x] Verify app and worker containers are healthy; recent worker logs show normal queue startup and no Pons errors/alerts or chain writes.
+- [x] Read the mainnet ETH balance and token/TipJar state after deployment. No market, reward, or token-distribution transaction was broadcast.
+- [x] Final docs/status aligned with live verification.
