@@ -1134,11 +1134,11 @@ export default function CyberStraightMan3D({
     canvas.addEventListener("pointerdown", onDown);
 
     const REACTIONS = [
-      "“Wait. Are you saying the comedy protocol reached mathematical determinism?” — Conf: 99.4%",
-      "“Spectrogram anomaly: Punchline frequency spike detected at 14.2 kHz.” — Conf: 98.9%",
-      "“Evaluating semantic entropy of current routine: Variance approaching zero.” — Conf: 99.2%",
-      "“Straight Man logic core recalibrated: Deadpan smirk threshold lowered by 3.2%.” — Conf: 97.8%",
-      "“Critical glitch: Humor detection algorithm registered unexpected amusement.” — Smile Emote Triggered",
+      "“Wait. Are you saying comedy reached mathematical determinism?” [Conf: 99.4%]",
+      "“Spectrogram anomaly: Punchline frequency spike detected at 14.2 kHz.” [Conf: 98.9%]",
+      "“Evaluating semantic entropy of current routine: Variance approaching zero.” [Conf: 99.2%]",
+      "“Straight Man logic core recalibrated: Deadpan smirk threshold lowered by 3.2%.” [Conf: 97.8%]",
+      "“Critical glitch: Humor detection algorithm registered unexpected amusement.” (Smile Emote Triggered)",
     ];
 
     const onUp = () => {
@@ -1359,7 +1359,7 @@ export default function CyberStraightMan3D({
         <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#0a0a0e]/80 border border-[#ffc53d]/30 backdrop-blur-md">
           <span className="w-2 h-2 rounded-full bg-[#ffc53d] animate-pulse shadow-[0_0_8px_#ffc53d]" />
           <span className="text-xs font-mono tracking-widest text-[#ffc53d] uppercase font-semibold">
-            THE STRAIGHT MAN v2 — FRONTIER CYBER-CORE
+            THE STRAIGHT MAN v2 // FRONTIER CYBER-CORE
           </span>
         </div>
 

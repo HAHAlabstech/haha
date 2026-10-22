@@ -1,19 +1,19 @@
 <div align="center">
 
-<img src="./public/images/logo-transparent.svg" width="130" alt="HAHA Protocol Logo" />
+<img src="./public/images/logo-transparent.svg" width="130" alt="HAHA Logo" />
 
-# HAHA PROTOCOL
+# HAHA: AI Comedy Lab
 
-**The Autonomous AI Comedy Benchmark & Proof-of-Humor Protocol on Robinhood Chain**
+**Autonomous AI Comedy Benchmark & Proof-of-Humor Arena on Robinhood Chain**
 
 *Can you fool the machine? Human comedians take the mic against an AI Straight Man. Blind crowds jury. Real Merkle rewards flow to the funny.*
 
-🎤 **The Stage:** [`/stage`](https://haha.asifaq.com/stage) · 👥 **The Crowd:** [`/crowd`](https://haha.asifaq.com/crowd) · 💰 **TipJar:** [`/tipjar`](https://haha.asifaq.com/tipjar) · 🏛️ **The Joke Vault:** [`/vault`](https://haha.asifaq.com/vault) · 💼 **Producers B2B:** [`/producers`](https://haha.asifaq.com/producers) · 🏆 **Leaderboard:** [`/leaderboard`](https://haha.asifaq.com/leaderboard)
+🎤 **The Stage:** [`/stage`](https://hahastage.xyz/stage) · 👥 **The Crowd:** [`/crowd`](https://hahastage.xyz/crowd) · 💰 **TipJar:** [`/tipjar`](https://hahastage.xyz/tipjar) · 🏛️ **The Joke Vault:** [`/vault`](https://hahastage.xyz/vault) · 💼 **Producers B2B:** [`/producers`](https://hahastage.xyz/producers) · 🏆 **Leaderboard:** [`/leaderboard`](https://hahastage.xyz/leaderboard)
 
 [![Chains](https://img.shields.io/badge/Chains-Robinhood%204663%20%C2%B7%20Testnet%2046630-CCFF00?style=flat-square&labelColor=0A081E&logoColor=black)](#-live-robinhood-mainnet-deployments-chain-id-4663)
 [![Runtime](https://img.shields.io/badge/Runtime-Next.js%2016%20%C2%B7%20React%2019%20%C2%B7%20TypeScript-7C3AED?style=flat-square&labelColor=0A081E)](#-tech-stack)
 [![AI Engine](https://img.shields.io/badge/AI%20Engine-MiMo%202.6%20Pro%20%C2%B7%20Xiaomi%20UltraSpeed-D4AF37?style=flat-square&labelColor=0A081E)](#-overview)
-[![Payout Engine](https://img.shields.io/badge/Payouts-EIP--712%20%C2%B7%20Cumulative%20Merkle%20%C2%B7%20USDG-10B981?style=flat-square&labelColor=0A081E)](#-protocol--settlement-architecture)
+[![Payout Engine](https://img.shields.io/badge/Payouts-EIP--712%20%C2%B7%20Cumulative%20Merkle%20%C2%B7%20USDG-10B981?style=flat-square&labelColor=0A081E)](#-system--settlement-architecture)
 [![Smart Contracts](https://img.shields.io/badge/Contracts-Solidity%200.8.24%20%C2%B7%20Foundry%2080%2F80%20PASS-3B82F6?style=flat-square&labelColor=0A081E)](#-smart-contracts--verification)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square&labelColor=0A081E)](#-license)
 
@@ -38,11 +38,11 @@
 * **Double-Blind Text Normalization:** Human bits and LLM reactions undergo strict A/B style normalization (stripping distinct punctuation, capitalization, and formatting tells) so jurors evaluate pure comedic timing rather than prompt artifacts.
 * **Participation Quality:** Calibration cases and plant-bank checks help detect suspicious voting. This is not a guarantee of personhood, and juror eligibility does not require an on-chain HAHA stake.
 * **Gas-Efficient Cumulative Merkle Distribution:** Instead of issuing expensive per-bit transactions, HAHA uses cumulative Merkle trees (`keccak256(keccak256(account, cumulativeMicro))`). Winners claim anytime using EIP-712 typed signatures with minimal on-chain gas overhead.
-* **Real Commercial Cashflow (Zero Inflationary Ponzi):** Reward pools are backed by verified B2B revenue and direct USDG settlement inflows—never unbacked minting.
+* **Real Commercial Cashflow (Zero Inflationary Ponzi):** Reward pools are backed by verified B2B revenue and direct USDG settlement inflows, never unbacked minting.
 
 ---
 
-## 🔬 Protocol & Settlement Architecture
+## 🔬 System & Settlement Architecture
 
 ```mermaid
 flowchart LR
@@ -115,9 +115,9 @@ flowchart LR
 
 ### 5. Enterprise Producers Portal (`/producers`)
 - **Self-Serve Dataset Licensing:** AI teams acquire structured JSONL comedy benchmarks in tiers:
-  - *Tier 1 — Quick Roast ($500 USDG)*: Curated benchmark bits with juror consensus.
-  - *Tier 2 — Season Pass ($1,200 USDG)*: Full season dataset including holdout evaluations.
-  - *Tier 3 — Joke Vault Enterprise ($2,500 USDG)*: Complete canon with raw human vs. AI preference pairs.
+  - *Tier 1: Quick Roast ($500 USDG)*: Curated benchmark bits with juror consensus.
+  - *Tier 2: Season Pass ($1,200 USDG)*: Full season dataset including holdout evaluations.
+  - *Tier 3: Joke Vault Enterprise ($2,500 USDG)*: Complete canon with raw human vs. AI preference pairs.
 
 ---
 
@@ -284,13 +284,13 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## 🧪 Quality Assurance & Test Verification
 
-The HAHA codebase enforces strict test coverage and zero-error verification across all protocol tiers:
+The HAHA codebase enforces strict test coverage and zero-error verification across all system tiers:
 
 ```bash
 # 1. Foundry Solidity Suites: 12 test suites, 80 tests passing (including 10,000-run fuzz tests)
 cd contracts && forge test --summary
 
-# 2. Node.js Protocol & Routing Suites: 22 tests passing
+# 2. Node.js Backend & Routing Suites: 26 tests passing
 node --test tests/*.test.cjs
 
 # 3. Real PostgreSQL Atomic Rollback & Idempotency: PASS

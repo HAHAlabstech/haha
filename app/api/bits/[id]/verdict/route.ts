@@ -113,7 +113,7 @@ export async function POST(
     });
 
     // 5 blind jurors: onboarded real wallets, not the author or colluding
-    // accounts. Seed/probe wallets (0x000…xxxx) are excluded — they are
+    // accounts. Seed/probe wallets (0x000...xxxx) are excluded; they are
     // fixtures, not people, and would hold assignments forever.
     const rawCandidates = await prisma.user.findMany({
       where: {

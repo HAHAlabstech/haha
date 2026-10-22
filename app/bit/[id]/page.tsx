@@ -230,7 +230,7 @@ export default function BitPage({
         setError(data.error ?? `Appeal failed (${res.status})`);
         return;
       }
-      setAppealStatus("Appeal submitted — Round 2 Crowd retrial queued.");
+      setAppealStatus("Appeal submitted: Round 2 Crowd retrial queued.");
       setAppealReason("");
       await loadBit();
     } catch (e) {
@@ -649,7 +649,7 @@ export default function BitPage({
           </section>
         ) : null}
 
-        {/* Next action — exactly one primary action for this state. */}
+        {/* Next action: exactly one primary action for this state. */}
         <section aria-label="Next action">
           <SectionTitle
             eyebrow="Next step"
@@ -796,7 +796,7 @@ export default function BitPage({
               </p>
               <p className="mt-3 text-sm leading-relaxed text-zinc-300">
                 Your reveal is locked. Five blind jurors decide; a thin result
-                expands to seven. You can close this tab — the verdict will be
+                expands to seven. You can close this tab; the verdict will be
                 here when you return.
               </p>
             </Card>
@@ -864,7 +864,7 @@ export default function BitPage({
           </div>
         </section>
 
-        {/* Appeal Panel — only a Crowd loss can be appealed. */}
+        {/* Appeal Panel: only a Crowd loss can be appealed. */}
         {canAppeal ? (
           <section aria-label="Appeal">
             <SectionTitle

@@ -37,7 +37,7 @@ interface ProviderEntry {
 }
 
 /**
- * EIP-6963 wallet picker modal. Raw EIP-1193 only — no wagmi, no
+ * EIP-6963 wallet picker modal. Raw EIP-1193 only (no wagmi, no
  * rainbowkit, no ethers, no hosted connectors. No secrets involved.
  */
 export default function WalletModal({
@@ -284,7 +284,7 @@ export default function WalletModal({
 
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           {((): React.ReactNode => {
-            // Veil-style catalog: well-known wallets with logos — detected
+            // Veil-style catalog: well-known wallets with logos; detected
             // ones are active connect rows, the rest are install links.
             const catalogRows = KNOWN_WALLETS.map((w) => {
               const entry =

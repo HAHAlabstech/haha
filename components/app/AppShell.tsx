@@ -17,7 +17,7 @@ export default function AppShell({ initialTab = "stage" }: AppShellProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams?.get("tab") as AppTab | null;
   const [activeTab, setActiveTab] = useState<AppTab>(tabParam || initialTab);
-  const [dailyPool, setDailyPool] = useState("—");
+  const [dailyPool, setDailyPool] = useState("-");
   const [, startTransition] = useTransition();
 
   useEffect(() => {

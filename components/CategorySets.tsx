@@ -199,7 +199,7 @@ export default function CategorySets() {
             </div>
             <div>
               <dt>Crowd Signal</dt>
-              <dd>Instant recognition on the final 2–3 words.</dd>
+              <dd>Instant recognition on the final 2-3 words.</dd>
             </div>
             <div>
               <dt>Action</dt>
@@ -325,7 +325,7 @@ export default function CategorySets() {
           <div className="side">01 · Anatomy of the Flip</div>
           <div className="body">
             <p className="lead">
-              A great punchline doesn&apos;t invent a new world — it reveals
+              A great punchline doesn&apos;t invent a new world; it reveals
               that you were standing in a different room the entire time.
             </p>
             <p>
@@ -576,7 +576,7 @@ export default function CategorySets() {
                   tone: "Subterranean Frost",
                 },
                 {
-                  polite: "“Per my last email—”",
+                  polite: "“Per my last email...”",
                   ai: "AI Sentiment: +0.72 Helpful Cross-Reference",
                   real: "REAL SUBTEXT: Can you read, or are we just clicking buttons today?",
                   threshold: 0.75,

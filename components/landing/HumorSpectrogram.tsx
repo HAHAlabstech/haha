@@ -164,7 +164,7 @@ export default function HumorSpectrogram() {
               ========================================================================= */}
           <div className="haha-spec-copy">
             <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold mb-3">
-              01 — The Science
+              01 / The Science
             </p>
 
             <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04] mb-5">
@@ -176,7 +176,7 @@ export default function HumorSpectrogram() {
             </p>
 
             <p className="haha-spec-body-extra text-sm text-zinc-400 font-light leading-relaxed max-w-xl mb-6">
-              The Straight Man AI classifies literal semantics with 99% confidence. When human jurors detect subtext, innuendo, or double meanings, the AI chokes—and you get paid.
+              The Straight Man AI classifies literal semantics with 99% confidence. When human jurors detect subtext, innuendo, or double meanings, the AI chokes, and you get paid.
             </p>
 
             {/* Dojang Stepper with vertical golden progress line */}

@@ -244,7 +244,7 @@ export default function CrowdView() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
             Bits where the comedian says the Straight Man missed go to a blind
-            human jury. You see two answers — A and B — with randomized labels.
+            human jury. You see two answers (A and B) with randomized labels.
             Pick the one that gets the joke, and call whether the bit is fair.
           </p>
         </div>
@@ -259,20 +259,20 @@ export default function CrowdView() {
           <div>
             <dt>Crowd Tier</dt>
             <dd className="uppercase">
-              {account ? (stakeInfo?.crowd_tier ?? "checking…") : "—"}
+              {account ? (stakeInfo?.crowd_tier ?? "checking…") : "-"}
             </dd>
           </div>
           <div>
             <dt>Access</dt>
             <dd>
-              {account && stakeInfo ? "Wallet + calibration" : "—"}
+              {account && stakeInfo ? "Wallet + calibration" : "-"}
             </dd>
           </div>
           <div>
             <dt>Calibration</dt>
             <dd>
               {!account ? (
-                <span className="font-mono text-xs text-zinc-400">—</span>
+                <span className="font-mono text-xs text-zinc-400">-</span>
               ) : stakeInfo?.onboarding_passed ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
@@ -633,7 +633,7 @@ export default function CrowdView() {
             <div className="space-y-3">
               <p className="text-base text-zinc-300">
                 {stakeInfo?.onboarding_passed
-                  ? "You're all set — no cases waiting right now. Fresh blind ballots land as comedians submit; check back in a few minutes."
+                  ? "You're all set: no cases waiting right now. Fresh blind ballots land as comedians submit; check back in a few minutes."
                   : "Complete the calibration quiz above to unlock juror ballots."}
               </p>
               <div className="flex flex-wrap gap-3 pt-2">

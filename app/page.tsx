@@ -19,7 +19,7 @@ import LandingFaq from "@/components/landing/LandingFaq";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 export default function HomePage() {
-  const [dailyPoolUSDG, setDailyPoolUSDG] = useState("—");
+  const [dailyPoolUSDG, setDailyPoolUSDG] = useState("-");
   const [bitsTotal, setBitsTotal] = useState("8,120");
   const [winRate, setWinRate] = useState("38.4%");
 
@@ -73,7 +73,7 @@ export default function HomePage() {
       />
 
       {/* =========================================================================
-          THE PROTOCOL: 3-STEP PROCESS PIPELINE
+          HOW HAHA WORKS: 3-STEP PROCESS PIPELINE
           ========================================================================= */}
       <ProcessPipeline />
 
@@ -119,7 +119,7 @@ export default function HomePage() {
 
         <ScrollReveal direction="scale" className="relative z-10 max-w-3xl mx-auto space-y-6">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold text-center">
-            07 — Open Mic Is Live
+            07 / Open Mic Is Live
           </p>
 
           <h2 className="display-serif text-4xl sm:text-6xl lg:text-7xl text-white font-bold tracking-tight leading-[1.04]">
@@ -127,7 +127,7 @@ export default function HomePage() {
           </h2>
 
           <p className="text-base sm:text-lg text-zinc-400 leading-relaxed max-w-xl mx-auto font-light">
-            Test your comedic instinct against the Straight Man. 5 free bits every day on Robinhood Chain testnet.
+            Test your comedic instinct against the Straight Man. 5 free bits every day on Robinhood Chain.
           </p>
 
           <div className="pt-4 flex flex-wrap justify-center gap-4">

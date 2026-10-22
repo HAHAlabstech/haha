@@ -33,7 +33,7 @@ function placeholderRows(label: string) {
         {label} #{i}{" "}
         <span className="font-mono text-xs text-zinc-500">· 0x…</span>
       </td>
-      <td className="py-3.5 text-right font-mono text-xs text-zinc-400">—</td>
+      <td className="py-3.5 text-right font-mono text-xs text-zinc-400">-</td>
     </tr>
   ));
 }

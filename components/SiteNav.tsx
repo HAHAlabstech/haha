@@ -54,7 +54,7 @@ export default function SiteNav() {
 
   return (
     <>
-      {/* Top Floating Glass Navigation Bar — aligned to px-[clamp(20px,4vw,56px)] & max-w-[1440px] */}
+      {/* Top Floating Glass Navigation Bar: aligned to px-[clamp(20px,4vw,56px)] & max-w-[1440px] */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-[clamp(20px,4vw,56px)] py-4 ${
           scrolled || mobileMenuOpen

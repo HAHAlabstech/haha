@@ -4,7 +4,7 @@ import AppShell from "@/components/app/AppShell";
 import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
 
 export const metadata: Metadata = {
-  title: "HAHA App — Comedy Lab Console",
+  title: "HAHA App: Comedy Lab Console",
   description:
     "The official Web3 comedy app on Robinhood Chain. Walk up to the mic, blind judge the crowd, explore the Joke Vault, and claim USDG rewards.",
 };

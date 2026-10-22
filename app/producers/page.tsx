@@ -34,7 +34,7 @@ const PLANS = [
     tag: "BATCH RELEASE",
     name: "Snapshot License",
     price: "$2,500",
-    body: "One cryptographic batch of the dataset — per category or the full Vault. Merkle-rooted manifest included.",
+    body: "One cryptographic batch of the dataset, per category or the full Vault. Merkle-rooted manifest included.",
   },
   {
     id: "subscription",
@@ -62,7 +62,7 @@ const PLANS = [
   },
 ] as const;
 
-/** MockUSDG faucet — testnet only. */
+/** MockUSDG faucet: testnet only. */
 const mockUsdgAbi = [
   {
     type: "function",
@@ -306,7 +306,7 @@ export default function ProducersPage() {
       }
       const amount = priceMicro ?? 0n;
       if (amount <= 0n) {
-        setBuyError("Could not read the on-chain plan price — try again.");
+        setBuyError("Could not read the on-chain plan price. Please try again.");
         return;
       }
 
@@ -449,7 +449,7 @@ export default function ProducersPage() {
             The human nuance data <em>AI can&apos;t scrape.</em>
           </>
         }
-        lede="The Joke Vault is a provenance-signed corpus of humor, subtext, embodied common sense, and syntactic ambiguity — licensed on-chain to labs building models that actually get the joke."
+        lede="The Joke Vault is a provenance-signed corpus of humor, subtext, embodied common sense, and syntactic ambiguity, licensed on-chain to labs building models that actually get the joke."
       />
 
       <section aria-label="Plans">
@@ -565,7 +565,7 @@ export default function ProducersPage() {
                     </span>{" "}
                     · USDG:{" "}
                     <span className="text-white">
-                      {balanceMicro === null ? "—" : fmtUsdg(balanceMicro)}
+                      {balanceMicro === null ? "-" : fmtUsdg(balanceMicro)}
                     </span>
                   </p>
                 ) : null}
@@ -613,7 +613,7 @@ export default function ProducersPage() {
             </div>
             {!gatewayReady ? (
               <p className="mt-3 font-mono text-[11px] text-[#ffc53d]">
-                ProducerGateway is not configured on this network — checkout is
+                ProducerGateway is not configured on this network: checkout is
                 disabled.
               </p>
             ) : null}

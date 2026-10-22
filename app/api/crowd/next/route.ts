@@ -81,7 +81,7 @@ export async function GET(req: Request) {
       if (c.bit.user_id === juror.id) return false;
       const author = c.bit.user;
       // Related-account heuristic: exclude only when >=2 independent signals
-      // match. IP-only is NOT enough — CGNAT/office NAT would otherwise
+      // match. IP-only is NOT enough; CGNAT/office NAT would otherwise
       // filter every juror on the same network out of the entire crowd.
       let signals = 0;
       if (juror.device_hash && author.device_hash && juror.device_hash === author.device_hash) signals++;

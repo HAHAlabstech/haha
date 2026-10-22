@@ -84,7 +84,7 @@ export default function ProfilePage({
   const crowdLabel =
     CROWD_TIER_LABELS[data?.profile.crowd_tier ?? "walk_in"] ?? "Walk-in";
 
-  let earnedDisplay = "—";
+  let earnedDisplay = "-";
   if (data?.stats) {
     try {
       const val = Number(BigInt(data.stats.earned_usdg_micro || "0")) / 1e6;
@@ -124,15 +124,15 @@ export default function ProfilePage({
           {[
             {
               label: "Bits Performed",
-              value: data ? data.stats.bits_count.toString() : "—",
+              value: data ? data.stats.bits_count.toString() : "-",
             },
             {
               label: "Verified Stumpers",
-              value: data ? data.stats.killed_it_count.toString() : "—",
+              value: data ? data.stats.killed_it_count.toString() : "-",
             },
             {
               label: "Crowd Ballots",
-              value: data ? data.stats.crowd_votes_count.toString() : "—",
+              value: data ? data.stats.crowd_votes_count.toString() : "-",
             },
             { label: "Earned (USDG)", value: earnedDisplay },
           ].map((s) => (

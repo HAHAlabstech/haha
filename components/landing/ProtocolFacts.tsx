@@ -61,7 +61,7 @@ export default function ProtocolFacts({
         {/* Section Eyebrow & Title */}
         <ScrollReveal className="mb-14 max-w-2xl">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
-            02 — Protocol Telemetry
+            02 / Arena Telemetry
           </p>
           <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
             Live on-chain metrics. <em className="italic text-[#ffc53d]">Audited in real-time.</em>
@@ -72,7 +72,7 @@ export default function ProtocolFacts({
               <RobinhoodLogoMark size={13} color="#ffc53d" />
               <span>Robinhood Chain</span>
             </span>
-            <span>testnet with verifiable state transitions.</span>
+            <span>with verifiable state transitions.</span>
           </p>
         </ScrollReveal>
 

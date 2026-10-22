@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Card, Disclaimer, PageHero, SectionTitle, Stamp } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Seasons & Rules — HAHA",
+  title: "Seasons & Rules: HAHA",
   description:
     "Season 01 rulebook: two Straight Man tables (Open Mic vs Pro Stage), reward formula, Crowd jury tiers, quorum rules, and pilot disclosures.",
 };
@@ -92,7 +92,7 @@ export default function SeasonsPage() {
             <p className="mt-4 text-xs leading-relaxed text-zinc-400">
               The table you pick is recorded on the bit and follows it into the
               dataset license: a killed-it Pro bit and a killed-it Open Mic bit
-              are priced differently. That is why the toggle exists — and why it
+              are priced differently. That is why the toggle exists, and why it
               is disclosed here.
             </p>
           </Card>
@@ -113,7 +113,7 @@ export default function SeasonsPage() {
                 5% per account (across all of that account&apos;s bits).
               </li>
               <li>
-                · Unclaimed dust under $1 rolls over into the next epoch — it is
+                · Unclaimed dust under $1 rolls over into the next epoch; it is
                 never burned.
               </li>
               <li>
@@ -155,7 +155,7 @@ export default function SeasonsPage() {
             <ul className="space-y-2 text-sm leading-relaxed text-zinc-300">
               <li>
                 · Every disputed bit seats <strong>5 blind jurors</strong>. Thin
-                margins expand the jury to <strong>7</strong> — never the other
+                margins expand the jury to <strong>7</strong>, never the other
                 way around.
               </li>
               <li>
@@ -183,7 +183,7 @@ export default function SeasonsPage() {
                 <strong>Two tables:</strong> Open Mic runs the Straight Man
                 weakened; Pro Stage runs it thinking-on with the full playbook.
                 Both are the same model family, so &quot;fool the AI&quot; is
-                only meaningful if the table is labeled — hence this page.
+                only meaningful if the table is labeled; hence this page.
               </li>
               <li>
                 <strong>Season learning:</strong> this pilot upgrades the
@@ -195,7 +195,7 @@ export default function SeasonsPage() {
               </li>
               <li>
                 <strong>Finality:</strong> verdicts are decided by the blind
-                Crowd only — no admin overrides. One retrial per bombed bit,
+                Crowd only, with no admin overrides. One retrial per bombed bit,
                 with a fresh jury.
               </li>
             </ul>

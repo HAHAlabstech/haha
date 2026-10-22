@@ -309,7 +309,7 @@ export default function ProcessPipeline() {
           <div className="flex items-center justify-between w-full border-b border-white/10 pb-3 sm:pb-4 mb-3 sm:mb-6">
             <div className="flex items-center gap-3">
               <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold">
-                03 — The Protocol Workflow
+                03 / How HAHA Works
               </span>
               <span className="text-zinc-600 hidden sm:inline">/</span>
               <span className="font-mono text-xs uppercase tracking-wider text-zinc-400 hidden sm:inline">
@@ -370,7 +370,7 @@ export default function ProcessPipeline() {
                           key={b}
                           className="flex items-baseline gap-3 text-xs sm:text-[13px] text-zinc-400 font-light"
                         >
-                          <span className="text-zinc-600 font-mono text-[11px] shrink-0 select-none">—</span>
+                          <span className="text-zinc-600 font-mono text-[11px] shrink-0 select-none">·</span>
                           <span>{b}</span>
                         </li>
                       ))}

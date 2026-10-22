@@ -670,7 +670,7 @@ export default function TipJarView() {
                         Already Claimed
                       </span>
                       <p className="display-serif mt-1 text-3xl text-zinc-300 tabular-nums">
-                        {claimedKnown ? `$${claimedUsdg.toFixed(2)}` : "—"}
+                        {claimedKnown ? `$${claimedUsdg.toFixed(2)}` : "-"}
                       </p>
                       <span className="font-mono text-[10px] text-zinc-500">
                         {claimedStatus === "loading"
@@ -687,7 +687,7 @@ export default function TipJarView() {
                       <p className="display-serif mt-1 text-3xl text-[#ffc53d] tabular-nums">
                         {availableUsdg !== null
                           ? `$${availableUsdg.toFixed(2)}`
-                          : "—"}
+                          : "-"}
                       </p>
                       <span className="font-mono text-[10px] text-zinc-500">
                         {claimedStatus === "loading"
@@ -731,7 +731,7 @@ export default function TipJarView() {
 
                   {fullyClaimed ? (
                     <div className="space-y-2">
-                      <Stamp tone="green">All caught up — fully claimed</Stamp>
+                      <Stamp tone="green">All caught up: fully claimed</Stamp>
                       <p className="text-sm leading-relaxed text-zinc-400">
                         Everything in this cumulative allocation has already
                         been paid to your wallet. New rewards appear here after
@@ -816,10 +816,10 @@ export default function TipJarView() {
                         {txStatus === "confirmed"
                           ? "Claim confirmed on-chain."
                           : txStatus === "reverted"
-                            ? "Claim reverted — no funds moved."
+                            ? "Claim reverted: no funds moved."
                             : txStatus === "unknown"
                               ? "Claim submitted; confirmation still pending."
-                              : "Claim submitted — waiting for confirmation…"}
+                              : "Claim submitted, waiting for confirmation…"}
                       </p>
                       <a
                         href={

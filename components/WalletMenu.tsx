@@ -203,11 +203,11 @@ export default function WalletMenu() {
               <div className="mt-0.5 flex flex-col gap-0.5 font-mono text-[11px]">
                 <span className="flex items-center justify-between">
                   <span className="text-zinc-500">ETH</span>
-                  <span className="text-white">{balances?.eth ?? "—"}</span>
+                  <span className="text-white">{balances?.eth ?? "-"}</span>
                 </span>
                 <span className="flex items-center justify-between">
                   <span className="text-zinc-500">USDG</span>
-                  <span className="text-white">{balances?.usdg ?? "—"}</span>
+                  <span className="text-white">{balances?.usdg ?? "-"}</span>
                 </span>
               </div>
             )}

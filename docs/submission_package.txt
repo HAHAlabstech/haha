@@ -1,0 +1,172 @@
+================================================================================
+PROJECT SUBMISSION & HANDOVER REPORT: HAHA
+Target Chain: Robinhood Chain (EVM) Mainnet 4663
+Generated: October 2026
+================================================================================
+
+--------------------------------------------------------------------------------
+SECTION 1: BRIEF
+--------------------------------------------------------------------------------
+Status: Completed & Live on Production
+- Repository: https://github.com/HAHAlabstech/haha
+- Branch: main (production)
+- Project: HAHA: Autonomous AI Comedy Lab & Proof-of-Humor Benchmark on Robinhood Chain
+
+
+--------------------------------------------------------------------------------
+SECTION 2: DEV KERJA
+--------------------------------------------------------------------------------
+1. Live Production Web URL:
+   https://hahastage.xyz
+
+2. Platform Routes:
+   - The Stage (Comedian Open Mic Arena & AI Straight Man):
+     https://hahastage.xyz/stage
+   - The Crowd (10-Question Calibration Quiz & A/B Blind Jury Desk):
+     https://hahastage.xyz/crowd
+   - TipJar (Transparent Reward Ledger & EIP-712 Merkle Claimer):
+     https://hahastage.xyz/tipjar
+   - The Joke Vault (Cryptographic Joke Canon & Hash Registry):
+     https://hahastage.xyz/vault
+   - Enterprise Producers (B2B Comedy RLHF Dataset Licensing Portal):
+     https://hahastage.xyz/producers
+   - Leaderboard (Global Comedian & Juror Reputation Rankings):
+     https://hahastage.xyz/leaderboard
+   - Seasons Archive (Bi-Weekly AI Evolution & Playbook Archive):
+     https://hahastage.xyz/seasons
+   - Rules & Game Theory: https://hahastage.xyz/rules
+   - FAQ: https://hahastage.xyz/faq
+
+3. GitHub Repository:
+   https://github.com/HAHAlabstech/haha
+   Branch: main
+
+4. Tech Stack & Architecture:
+   - Frontend: Next.js 16.4.2 (App Router, Turbopack) + React 19 + TypeScript 5 (Strict)
+   - Styling: Tailwind CSS v4 + Framer Motion + Canvas Visualizers + Veil-style 2-Row Wallet Modal
+   - Smart Contracts: Solidity 0.8.24 (Cancun, Foundry Forge pipeline, Solc 0.8.24)
+   - AI Engine: Xiaomi MiMo 2.6 Pro (Low-Latency UltraSpeed Endpoint, <800ms streaming)
+   - Web3 Client: Viem 2.x + Wagmi + EIP-6963 Multi-Wallet Provider + EIP-712 Typed Data
+   - Payout Architecture: TipJar.sol cumulative double-hashed Merkle trees
+     (`keccak256(keccak256(account, cumulativeMicro))`) with 24-hour root delay timelocks
+   - B2B Gateway: ProducerGateway.sol with automated 40/30/10/20 revenue routing
+     (40% Treasury, 30% TipJar, 10% Contributor Royalties, 20% MicDrop buybacks)
+   - AMM / Buyback Adapter: V4BuybackAdapter.sol + MicDrop.sol (Uniswap V4 multi-hop routing)
+   - Database: PostgreSQL 16 with pgvector extension (HNSW cosine similarity embeddings)
+   - Worker & Queues: Redis 7 + BullMQ cluster
+     (daily-settlement, five-minute-ops, sync-chain, weekly-vault)
+   - Storage: Cloudflare R2 (S3-compatible encrypted immutable dataset snapshots)
+   - Production Infrastructure: Ubuntu 24.04 LTS VPS (Tencent Cloud 43.134.60.117)
+     Docker Compose cluster (`haha-app`, `haha-worker`, `haha-db`, `haha-redis`, `haha-caddy`)
+
+5. Documentation Index:
+   - Main Repository README: https://github.com/HAHAlabstech/haha/blob/main/README.md
+   - Project Narrative: https://github.com/HAHAlabstech/haha/blob/main/haha-narrative.md
+   - Mainnet Handoff Runbook: https://github.com/HAHAlabstech/haha/blob/main/docs/MAINNET-HANDOFF.md
+   - Capital & Gas Budget: https://github.com/HAHAlabstech/haha/blob/main/docs/CA-ONLY-BUDGET.md
+   - Operating Runbook: https://github.com/HAHAlabstech/haha/blob/main/docs/CA-ONLY-OPERATIONS.md
+   - OpenCode Session History: https://github.com/HAHAlabstech/haha/blob/main/docs/audits/opencode_full_session_prompts.md
+
+
+--------------------------------------------------------------------------------
+SECTION 3: QUALITY ASSURANCE (QA) REPORT
+--------------------------------------------------------------------------------
+[PASS] 1. Code Quality & Compilation:
+   - Strict TypeScript compilation: Zero errors (`npm run typecheck` / `tsc --noEmit` exit 0).
+   - Production Build: Next.js 16 Turbopack compiled 51 static & dynamic routes cleanly (`npm run build`).
+   - Clean modular architecture: contracts in `contracts/`, worker jobs in `worker/jobs/`,
+     backend libraries in `worker/lib/`, UI pages in `app/`, operational tools in `scripts/`.
+
+[PASS] 2. Responsive UI & UX Design:
+   - Desktop & Mobile: Fully responsive comedy arena, interactive microphone desk,
+     distraction-free A/B voting panel, live telemetry, and transparent reward tracker.
+   - Connect Wallet Modal: Custom Veil-inspired 2-row multi-wallet grid with icons,
+     connection status, balance display, and clean disconnect flows.
+   - Zero-Friction User Flow: Clear breadcrumbs from landing -> calibration quiz -> crowd jury.
+
+[PASS] 3. End-to-End Application Flow (proven LIVE on mainnet 4663):
+   - Comedian Open Mic submission -> MiMo 2.6 Pro Straight Man reaction in <800ms.
+   - A/B punchline normalization (stripping AI capitalization/punctuation tells).
+   - Juror onboarding gauntlet (10-question calibration quiz).
+   - Sybil-proof jury voting with 50+ ground-truth plant-bank honeypot bits.
+   - Daily 00:00 UTC settlement building double-hashed Merkle trees.
+   - 24-Hour root proposal delay timelock before keeper activation.
+   - EIP-712 typed signature reward claims directly in canonical USDG.
+   - B2B snapshot licensing ($500-$2,500 USDG) with autonomous 40/30/10/20 revenue routing.
+
+[PASS] 4. Automated Test Verification:
+   - Foundry Smart Contract Suites: 12 test suites, 80 tests passed, 0 failed, 0 skipped
+     (`forge test` with 10,000-run fuzz tests).
+   - Node.js Backend & Routing Tests: 26 tests passed (`node --test tests/*.test.cjs`).
+   - Real PostgreSQL Database Verification: Atomic funding, idempotent retries,
+     royalty reservations, and rollback successfully tested (`node scripts/verify-funding-db.cjs`).
+   - Mainnet Preflight Gate Check: All on-chain assertions PASS for Chain 4663
+     (`node scripts/preflight-mainnet.mjs`).
+
+[PASS] 5. Repository & Operational Security:
+   - Git working tree clean, synced with origin/main.
+   - Sensitive environment variables (`.env`, `.env.app`, `.env.worker`) strictly gitignored.
+   - Private keys never exposed in source code.
+   - Non-custodial smart contracts: contracts never hold user capital arbitrarily;
+     claims are strictly pull-based directly to recipient wallets.
+
+
+--------------------------------------------------------------------------------
+SECTION 4: ON-CHAIN MAINNET CONTRACT ADDRESSES (ROBINHOOD CHAIN 4663)
+--------------------------------------------------------------------------------
+
+Network: Robinhood Chain Mainnet (EVM)
+Chain ID: 4663
+Native Currency: ETH
+Blockscout Explorer: https://robinhoodchain.blockscout.com
+Production Deployer / Operator: 0xAeA64dd878A8F1746e920e5725E41dcA0057B651
+
+1. HAHA Token (Real, Fixed-Supply 1B, Non-Mintable ERC-20):
+   Address: 0xd2Da320EF90FB76809587C830A33a49512bA90D9
+   Tx Hash: 0x89a2a1e6961d2bb09724ed8a9163b42910953e2c500d36505bdb5d0067ed7dd3
+   Explorer: https://robinhoodchain.blockscout.com/address/0xd2Da320EF90FB76809587C830A33a49512bA90D9
+   Details: 100% of the 1,000,000,000 supply held in operator wallet; zero mint function.
+
+2. CrowdStaking (Juror & Comedian Staking Engine):
+   Address: 0xe861a2c5d2114A76779d91d416c750bE7D3f7d88
+   Tx Hash: 0x6c8222ca48bb305c3f1fef7b7a0da577e3ccf55153d3a43d75355225b39a525a
+   Explorer: https://robinhoodchain.blockscout.com/address/0xe861a2c5d2114A76779d91d416c750bE7D3f7d88
+   Details: Bound to standalone HAHA token 0xd2Da...90D9; automated slash resolution.
+
+3. TipJar (Cumulative Merkle USDG Reward Vault):
+   Address: 0xda4762e4205aFf2d8CB9177cDcE6d69A23068bbE
+   Explorer: https://robinhoodchain.blockscout.com/address/0xda4762e4205aFf2d8CB9177cDcE6d69A23068bbE
+   Details: Double-hash leaf verification, 24-hour root activation delay, EIP-712 claims.
+
+4. ProducerGateway (B2B Comedy RLHF Licensing & Revenue Splitter):
+   Address: 0x71826870a70064F0657EF527AFd9d1029Ae950de
+   Explorer: https://robinhoodchain.blockscout.com/address/0x71826870a70064F0657EF527AFd9d1029Ae950de
+   Details: Tiered purchases ($500-$2500) autonomously split 40% Treasury / 30% TipJar / 10% Royalties / 20% MicDrop.
+
+5. MicDrop (Autonomous Buyback & Burn Engine):
+   Address: 0x57dDE4efC1868A153be6b8d040d13A8d28993949
+   Explorer: https://robinhoodchain.blockscout.com/address/0x57dDE4efC1868A153be6b8d040d13A8d28993949
+   Details: Mathematical buyback limits (max 2% pool reserve, max 1% price impact).
+
+6. V4BuybackAdapter (Uniswap V4 Multi-Hop Routing Adapter):
+   Address: 0x9754F06cA930B9190Dc622D26532Db77E6B76E2c
+   Explorer: https://robinhoodchain.blockscout.com/address/0x9754F06cA930B9190Dc622D26532Db77E6B76E2c
+   Details: Executes multi-hop swaps (USDG -> Native ETH -> HAHA) via Robinhood Universal Router.
+
+7. VaultRegistry (On-Chain Joke Snapshot Registry):
+   Address: 0x27e5ADf5F3BfEBFA7B7B81619CA68a97CD1866D6
+   Explorer: https://robinhoodchain.blockscout.com/address/0x27e5ADf5F3BfEBFA7B7B81619CA68a97CD1866D6
+   Details: Monotonically increasing snapshot IDs, keccak256 hash anchoring of comedy canon.
+
+8. FeeSplitter (Fee Sweeper & Revenue Distributor):
+   Address: 0xE9a827aC2834fFD30DDa5b7d710dbfbE43afe144
+   Explorer: https://robinhoodchain.blockscout.com/address/0xE9a827aC2834fFD30DDa5b7d710dbfbE43afe144
+   Details: 70% TipJar / 30% MicDrop automated split with native ETH receive protection.
+
+9. USDG Canonical Token (Robinhood Chain Stablecoin):
+   Address: 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168
+   Explorer: https://robinhoodchain.blockscout.com/address/0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168
+   Details: 6 decimals standard EVM ERC-20 stablecoin.
+
+Full broadcast ledger: contracts/broadcast/DeployMainnet.s.sol/4663/run-latest.json
+================================================================================

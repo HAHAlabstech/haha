@@ -4,7 +4,7 @@ import SiteLayoutWrapper from "@/components/SiteLayoutWrapper";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HAHA — Humans Are Hard to Automate",
+  title: "HAHA: Humans Are Hard to Automate",
   description:
     "Tell a joke that fools the AI and get paid. An open comedy club & AI lab where people stump the Straight Man AI, verified by a human crowd.",
   icons: {

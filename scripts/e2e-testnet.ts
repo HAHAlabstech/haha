@@ -1,12 +1,12 @@
 /**
- * HAHA E2E (testnet) — real SIWE signatures, full bit → verdict → crowd → outcome.
+ * HAHA E2E (testnet): real SIWE signatures, full bit -> verdict -> crowd -> outcome.
  * Persists test wallets so the jury pool stays deterministic across runs.
  * Usage: npx tsx scripts/e2e-testnet.ts
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
-const BASE = process.env.E2E_BASE ?? "https://haha.asifaq.com";
+const BASE = process.env.E2E_BASE ?? "https://hahastage.xyz";
 const WALLETS_FILE = "scripts/.e2e-wallets.json";
 
 type Account = ReturnType<typeof privateKeyToAccount>;

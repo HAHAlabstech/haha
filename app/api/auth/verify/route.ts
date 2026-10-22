@@ -169,7 +169,7 @@ export async function POST(req: Request) {
         expiresAt: expiresAt.toISOString(),
         turnstile: turnstile.stub ? "stub-accepted" : "verified",
         ...(turnstile.stub
-          ? { warning: "TURNSTILE_SECRET_KEY unset — stub accept" }
+          ? { warning: "TURNSTILE_SECRET_KEY unset: stub accept" }
           : {}),
       },
       {

@@ -1108,11 +1108,11 @@ export default function ClubStage3D() {
     c3.addEventListener("pointerdown", onDown);
 
     const REACTIONS = [
-      "“Wait. Are you saying the horse actually studied medicine?” — Conf: 98.4%",
-      "“Subtext parsing error: 'fine.' detected with fatal terminal period.” — Conf: 99.1%",
-      "“Newtonian mechanics confirmed: water does not decelerate with dashboard.” — Conf: 97.5%",
-      "“Checking semantic dictionary for dual reading… stand by.” — Conf: 96.0%",
-      "“...Oh. Wait. Was that entire routine at my expense?” — Smile Glitch Detected",
+      "“Wait. Are you saying the horse actually studied medicine?” [Conf: 98.4%]",
+      "“Subtext parsing error: 'fine.' detected with fatal terminal period.” [Conf: 99.1%]",
+      "“Newtonian mechanics confirmed: water does not decelerate with dashboard.” [Conf: 97.5%]",
+      "“Checking semantic dictionary for dual reading... stand by.” [Conf: 96.0%]",
+      "“...Oh. Wait. Was that entire routine at my expense?” (Smile Glitch Detected)",
     ];
 
     const onUp = () => {

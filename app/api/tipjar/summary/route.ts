@@ -99,7 +99,7 @@ export async function GET() {
       }
     }
   } catch {
-    // RPC unreachable — fall back to 0 strings.
+    // RPC unreachable: fall back to 0 strings.
   }
 
   let micDropEvents: {

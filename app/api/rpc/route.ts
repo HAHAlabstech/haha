@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Server-only JSON-RPC proxy for Robinhood Chain (46630 testnet / 4663
- * mainnet). Keyed upstreams (Alchemy) live here — never in NEXT_PUBLIC_*
+ * mainnet). Keyed upstreams (Alchemy) live here, never in NEXT_PUBLIC_*
  * or the client bundle. The client talks to this route; the fanout
  * (Alchemy -> PublicNode -> public RPC) lives in lib/server-rpc.
  */

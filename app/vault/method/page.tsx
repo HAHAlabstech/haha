@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Card, Disclaimer, PageHero, SectionTitle, Stamp } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Vault Methodology & Pricing — HAHA",
+  title: "Vault Methodology & Pricing: HAHA",
   description:
     "Replacement-cost methodology behind the Joke Vault valuation: per-entry pricing (preliminary), weekly Merkle anchoring, deduplication, and license royalty flows.",
 };
@@ -11,12 +11,12 @@ const PRICING = [
   {
     outcome: "killed_it",
     value: "$12.00",
-    note: "Bit that fooled the Straight Man and passed the blind Crowd quorum — high-signal adversarial data.",
+    note: "Bit that fooled the Straight Man and passed the blind Crowd quorum: high-signal adversarial data.",
   },
   {
     outcome: "bombed",
     value: "$2.50",
-    note: "Settled, labeled failure — still useful negative signal for preference training.",
+    note: "Settled, labeled failure: still useful negative signal for preference training.",
   },
   {
     outcome: "heckled_off / rejected",
@@ -36,7 +36,7 @@ export default function VaultMethodPage() {
               Replacement-cost <em>pricing.</em>
             </>
           }
-          lede="The corpus valuation is not an opinion — it is the sum of per-entry replacement costs of the same human judgment gathered at market rates. Here is exactly how each entry is priced, anchored, and licensed."
+          lede="The corpus valuation is not an opinion; it is the sum of per-entry replacement costs of the same human judgment gathered at market rates. Here is exactly how each entry is priced, anchored, and licensed."
         />
 
         <section aria-label="Per-entry pricing">
@@ -47,7 +47,7 @@ export default function VaultMethodPage() {
             <div className="mb-4 flex items-center gap-2">
               <Stamp tone="amber">Preliminary</Stamp>
               <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-                Methodology under research — figures are not final
+                Methodology under research (figures are not final)
               </span>
             </div>
             <div className="divide-y divide-white/10">
@@ -71,7 +71,7 @@ export default function VaultMethodPage() {
               ))}
             </div>
             <p className="mt-4 font-mono text-[10px] uppercase leading-relaxed tracking-widest text-zinc-500">
-              Source note: vendor tariff research is pending — these figures
+              Source note: vendor tariff research is pending; these figures
               stay marked preliminary until third-party dataset pricing sources
               are attached.
             </p>
@@ -86,7 +86,7 @@ export default function VaultMethodPage() {
             <ul className="space-y-2 text-sm leading-relaxed text-zinc-300">
               <li>
                 · Settled entries are hashed into weekly Merkle roots published
-                to <code className="text-white">VaultRegistry.sol</code> —
+                to <code className="text-white">VaultRegistry.sol</code>:
                 the corpus is verifiable without trusting this frontend.
               </li>
               <li>

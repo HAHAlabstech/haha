@@ -67,7 +67,7 @@ export default function VaultTerminal() {
         <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-end mb-16">
           <ScrollReveal direction="left">
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
-              04 — The Data Engine
+              04 / The Data Engine
             </p>
             <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
               The Joke Vault: <em className="italic text-[#ffc53d]">Provenance-signed nuance data.</em>
@@ -110,7 +110,7 @@ export default function VaultTerminal() {
           </ScrollReveal>
         </div>
 
-        {/* 4 Category Taxonomy Cards — Pure Editorial Typography */}
+        {/* 4 Category Taxonomy Cards: Pure Editorial Typography */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {CATEGORIES.map((cat, idx) => (
             <ScrollReveal key={cat.key} delayMs={idx * 100} className="h-full">
@@ -146,7 +146,7 @@ export default function VaultTerminal() {
               <span><b className="text-white font-normal">30%</b> Daily Tip Jar</span>
               <span><b className="text-white font-normal">20%</b> $HAHA Mic Drop Burn</span>
               <span><b className="text-white font-normal">10%</b> Comedian Royalties</span>
-              <span><b className="text-white font-normal">40%</b> Protocol Treasury</span>
+              <span><b className="text-white font-normal">40%</b> Platform Treasury</span>
             </div>
           </div>
         </ScrollReveal>

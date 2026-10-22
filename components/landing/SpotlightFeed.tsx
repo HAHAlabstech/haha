@@ -160,7 +160,7 @@ export default function SpotlightFeed() {
         <ScrollReveal className="flex flex-wrap items-end justify-between gap-6 mb-16">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
-              05 — Live Stage Feed
+              05 / Live Stage Feed
             </p>
             <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
               Recent Battles in <em className="italic text-[#ffc53d]">the Room.</em>

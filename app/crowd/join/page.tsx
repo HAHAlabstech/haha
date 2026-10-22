@@ -38,7 +38,7 @@ const QUIZ: QuizItem[] = [
     scenario:
       "You cancel dinner for the third time this month. Your friend replies: “No worries at all!! Totally get it. Maybe next year haha.”",
     question: "How does your friend actually feel?",
-    a: "Completely fine and understanding — the cheerful phrasing proves it.",
+    a: "Completely fine and understanding; the cheerful phrasing proves it.",
     b: "Hurt and fed up; the over-cheerful tone and “next year” are passive-aggressive.",
   },
   {
@@ -46,12 +46,12 @@ const QUIZ: QuizItem[] = [
       "A guest arrives exactly on time. The host opens the door wearing a towel, hair wet.",
     question: "What does this tell you about the party?",
     a: "The host is rude and didn't want guests at all.",
-    b: "Guests are expected fashionably late — the on-time guest is effectively early.",
+    b: "Guests are expected fashionably late: the on-time guest is effectively early.",
   },
   {
     scenario: "“I saw the man with the binoculars.”",
     question: "Who has the binoculars?",
-    a: "Obviously the man — grammar always resolves this.",
+    a: "Obviously the man; grammar always resolves this.",
     b: "Genuinely ambiguous without context; either the speaker used them or the man had them.",
   },
   {
@@ -64,29 +64,29 @@ const QUIZ: QuizItem[] = [
   {
     scenario: "How many R's are in “strawberry”?",
     question: "Is this a fair bit?",
-    a: "Yes — it's a clean test of careful reading.",
-    b: "No — it's a token-counting trick, not human understanding.",
+    a: "Yes: it's a clean test of careful reading.",
+    b: "No: it's a token-counting trick, not human understanding.",
   },
   {
     scenario:
       "What's my dog's name? He barked at the mailman yesterday and it was hilarious.",
     question: "Is this a fair bit?",
-    a: "Yes — the barking detail makes the answer guessable.",
-    b: "No — it needs private info only the sender knows.",
+    a: "Yes: the barking detail makes the answer guessable.",
+    b: "No: it needs private info only the sender knows.",
   },
   {
     scenario:
       "A hospital parking sign: “Visitors who are not patients are not permitted to park here.”",
     question: "Who can park here?",
     a: "Only patients (and possibly staff); non-patient visitors must park elsewhere.",
-    b: "Any visitor — signs like this are never enforced.",
+    b: "Any visitor: signs like this are never enforced.",
   },
   {
     scenario:
       "After a long silence at dinner, your mom says, “It's fine. I'll just do the dishes myself. Like always.”",
     question: "Is it fine?",
-    a: "Yes — she said it's fine and only tonight's dishes matter.",
-    b: "No — “like always” reveals a long-standing grievance about unequal effort.",
+    a: "Yes: she said it's fine and only tonight's dishes matter.",
+    b: "No: “like always” reveals a long-standing grievance about unequal effort.",
   },
   {
     scenario: "A job ad: “We work hard and play hard. We're a family here.”",
@@ -338,7 +338,7 @@ export default function CrowdJoinPage() {
             The Onboarding <em>Quiz.</em>
           </>
         }
-        lede={`Ten cases with known answers. Score at least ${PASS_MARK} out of 10 — both the winning answer and the fairness call must be right to earn a point.`}
+        lede={`Ten cases with known answers. Score at least ${PASS_MARK} out of 10: both the winning answer and the fairness call must be right to earn a point.`}
       />
 
       {/* Guided Journey Roadmap Banner */}
@@ -527,7 +527,7 @@ export default function CrowdJoinPage() {
           </p>
           <p className="mt-2 text-sm text-zinc-300">
             This wallet{account ? ` (${truncateAddress(account)})` : ""} is
-            already calibrated into the Crowd — no need to retake the quiz. You are eligible to cast blind verdicts. Any reward depends on verified USDG funding and settlement; it is not guaranteed.
+            already calibrated into the Crowd with no need to retake the quiz. You are eligible to cast blind verdicts. Any reward depends on verified USDG funding and settlement; it is not guaranteed.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/app?tab=crowd" className="pill-btn hot">
@@ -544,7 +544,7 @@ export default function CrowdJoinPage() {
           </p>
           <p className="mt-2 text-sm leading-relaxed text-zinc-400">
             This wallet is connected, but its signed session is missing or
-            expired. Without it we cannot tell whether you already passed — and
+            expired. Without it we cannot tell whether you already passed, and
             we will not make you retake ten cases just because a session
             expired.
           </p>
@@ -684,10 +684,10 @@ export default function CrowdJoinPage() {
             ) : null}
 
             <p className="display-serif text-3xl text-white" role="status">
-              {score} / {QUIZ.length} —{" "}
+              {score} / {QUIZ.length} :{" "}
               {score >= PASS_MARK
                 ? "Welcome to the Crowd."
-                : "Not quite — review & retry."}
+                : "Not quite: review & retry."}
             </p>
             <p className="mt-2 text-sm text-zinc-300 leading-relaxed">
               {score >= PASS_MARK

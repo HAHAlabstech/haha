@@ -109,7 +109,7 @@ export async function POST(
       where: {
         onboarding_passed: true,
         id: { notIn: [...excluded] },
-        // Seed/probe wallets are fixtures, not people — same rule as the
+        // Seed/probe wallets are fixtures, not people; same rule as the
         // verdict route; a retrial seated on fixtures can never settle.
         NOT: { wallet: { startsWith: "0x000000000000000000000000" } },
       },

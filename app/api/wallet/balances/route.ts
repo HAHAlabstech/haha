@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Read-only wallet balances for the wallet menu chip (ETH native +
- * USDG). Served via the server-side RPC fanout — the browser never
+ * USDG). Served via the server-side RPC fanout: the browser never
  * talks to keyed upstreams, matching /api/rpc policy.
  */
 

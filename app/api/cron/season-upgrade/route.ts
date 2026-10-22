@@ -14,7 +14,7 @@ function cronAuth(req: Request): NextResponse | null {
   return null;
 }
 
-// POST /api/cron/season-upgrade — thin enqueue ack; the BullMQ worker owns execution.
+// POST /api/cron/season-upgrade: thin enqueue ack; the BullMQ worker owns execution.
 export async function POST(req: Request) {
   const denied = cronAuth(req);
   if (denied) return denied;

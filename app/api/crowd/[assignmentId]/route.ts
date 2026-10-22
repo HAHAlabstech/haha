@@ -229,7 +229,7 @@ export async function POST(
         where: {
           onboarding_passed: true,
           id: { notIn: [...excluded] },
-          // Signless seed wallets can never sign a ballot — seating them as
+          // Signless seed wallets can never sign a ballot: seating them as
           // extension jurors blocked the 7-vote finalize for the full SLA.
           NOT: { wallet: { startsWith: "0x000000000000000000000000" } },
         },
@@ -247,7 +247,7 @@ export async function POST(
       );
       shuffleInPlace(candidates);
       const picked = candidates.slice(0, EXTENSION_VOTES);
-      const expires_at = new Date(Date.now() + 30 * 60 * 1000); // SLA 30 min — same as the primary quorum (plan §7); stale extensions blocked liveness.
+      const expires_at = new Date(Date.now() + 30 * 60 * 1000); // SLA 30 min (same as the primary quorum; stale extensions blocked liveness).
       await prisma.$transaction(
         picked.map((j) =>
           prisma.crowdAssignment.create({
@@ -359,7 +359,7 @@ export async function POST(
     }
 
     // Share card render (5-min-ops settles render inline; app-settled bits
-    // enqueue — enqueue failure must never fail the vote itself).
+    // enqueue: enqueue failure must never fail the vote itself).
     try {
       await enqueueJob("share-card", "render", { bitId: assignment.bit_id });
     } catch (e) {

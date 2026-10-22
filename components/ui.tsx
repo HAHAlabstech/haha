@@ -100,7 +100,7 @@ export function Stamp({
 export function Disclaimer() {
   return (
     <p className="mt-10 rounded-xl border border-white/10 bg-[#0c0c12]/80 p-4 font-mono text-[11px] uppercase tracking-[0.13em] leading-relaxed text-zinc-500 backdrop-blur-md">
-      Rewards vary and depend on the Tip Jar — nothing here is a promise of any
+      Rewards vary and depend on the Tip Jar; nothing here is a promise of any
       amount. Nothing on this page is financial advice.
     </p>
   );

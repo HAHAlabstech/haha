@@ -53,7 +53,7 @@ export async function GET() {
       .slice(0, 10);
 
     // Jurors: rank by ACTUAL votes cast (aggregate first), then fetch those
-    // users — the crowd_rep-ordered pre-select pushed real voters out of the
+    // users: the crowd_rep-ordered pre-select pushed real voters out of the
     // candidate set entirely (seed wallets fill the take:15 window).
     const jurorIds = [...voteMap.entries()]
       .sort((a, b) => b[1] - a[1])

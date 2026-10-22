@@ -9,7 +9,7 @@ import { getServerContracts } from "@/lib/haha-contracts";
 export const dynamic = "force-dynamic";
 
 function readChainEnv(): ChainEnv {
-  // Server-only env (never NEXT_PUBLIC_* — those freeze at build time).
+  // Server-only env (never NEXT_PUBLIC_*, which freeze at build time).
   const raw = (process.env.CHAIN_ENV ?? "").toLowerCase();
   return raw === "mainnet" ? "mainnet" : "testnet";
 }
@@ -17,7 +17,7 @@ function readChainEnv(): ChainEnv {
 /**
  * Runtime client config. Served at request time (not build time) so one
  * Docker image works for both testnet (46630) and mainnet (4663).
- * No secrets are ever included here — only chain metadata + public
+ * No secrets are ever included here: only chain metadata + public
  * contract addresses.
  */
 export async function GET() {

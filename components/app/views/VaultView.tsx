@@ -194,8 +194,8 @@ export default function VaultView() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
             Each bit that fools the Straight Man and passes a human Crowd
-            quorum — normally 5 blind judges, expanding to 7 when the result is
-            thin — is hashed into The Joke Vault: a cryptographically anchored
+            quorum (normally 5 blind judges, expanding to 7 when the result is
+            thin) is hashed into The Joke Vault: a cryptographically anchored
             corpus of human wit, subtext, physical common sense, and ambiguity.
           </p>
         </div>
@@ -204,7 +204,7 @@ export default function VaultView() {
           <div>
             <dt>Verified Entries</dt>
             <dd className="font-mono text-xl text-white tabular-nums">
-              {summary ? totalVerified.toLocaleString("en-US") : "—"}
+              {summary ? totalVerified.toLocaleString("en-US") : "-"}
             </dd>
           </div>
           <div>
@@ -259,7 +259,7 @@ export default function VaultView() {
                 {summary ? fmtUsd(summary.replacementMicroUsd) : "$0.00"}
               </span>
               <span className="font-mono text-xs uppercase tracking-widest text-zinc-400">
-                modeled cost to recreate — not revenue
+                modeled cost to recreate (not revenue)
               </span>
             </div>
             <p className="mt-5 border-t border-white/10 pt-4 font-mono text-xs text-zinc-400">
@@ -326,7 +326,7 @@ export default function VaultView() {
           ) : (
             <p className="text-sm leading-relaxed text-zinc-400">
               {snapshots.length === 1
-                ? "One snapshot has been published. A trend line will appear after the second real snapshot — we do not invent interim points."
+                ? "One snapshot has been published. A trend line will appear after the second real snapshot; we do not invent interim points."
                 : "No Vault snapshots have been published yet. This chart stays empty until the first real weekly release; no placeholder curve is shown."}
             </p>
           )}

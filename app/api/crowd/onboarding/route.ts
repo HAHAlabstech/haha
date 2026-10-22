@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const MAX_BODY_BYTES = 64 * 1024;
 const PASS_RATIO = 0.8;
 
-// Calibration answer key — server-side only. The UI quiz (static cases in
+// Calibration answer key: server-side only. The UI quiz (static cases in
 // app/crowd/join/page.tsx) renders these same 10 items without shipping the
 // answers in the client bundle; grading here must match what the user sees.
 const CALIB_KEY: Array<"A" | "B"> = [
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     const prisma = getPrisma();
 
     // Grade ONLY the per-item answers against the server-side key above.
-    // The legacy correct/total self-report path is removed — it was forgeable.
+    // The legacy correct/total self-report path is removed: it was forgeable.
     if (!Array.isArray(b.answers)) {
       return bad("answers must be an array", 400);
     }

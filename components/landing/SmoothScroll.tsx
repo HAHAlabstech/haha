@@ -20,13 +20,13 @@ function computeTargetScrollY(el: HTMLElement, id: string): number {
     "(min-width: 1024px) and (min-height: 680px)",
   ).matches;
 
-  // #waveform (01 — The Science) overlaps the hero by -160vh and zooms in over 60vh (--lp-zin).
+  // #waveform (01 / The Science) overlaps the hero by -160vh and zooms in over 60vh (--lp-zin).
   // Scrolling +65vh into #waveform lands right where --zk === 1 and Step 01 is active.
   if (id === "waveform" && isDesktopPinned) {
     return baseTop + window.innerHeight * 0.65;
   }
 
-  // #how-it-works (03 — The Protocol Workflow) uses a sticky 100vh stage inside a 340vh runway.
+  // #how-it-works (03 / How HAHA Works) uses a sticky 100vh stage inside a 340vh runway.
   // Landing at baseTop aligns the sticky stage flush with the viewport top.
   if (id === "how-it-works") {
     return baseTop;

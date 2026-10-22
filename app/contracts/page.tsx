@@ -7,7 +7,7 @@ import {
 } from "@/lib/deployed-contracts";
 
 export const metadata: Metadata = {
-  title: "Contracts — HAHA Mainnet",
+  title: "Contracts: HAHA Mainnet",
   description:
     "Current HAHA product contract addresses on Robinhood Chain mainnet, with roles and Blockscout links.",
 };

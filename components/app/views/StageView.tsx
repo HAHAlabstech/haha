@@ -88,7 +88,7 @@ const IDEAS: Record<CategoryId, string[]> = {
   ],
   double_meaning: [
     "Hospital parking sign: “Visitors who are not patients may not park here.” Who can park here?",
-    "“I saw the man with the binoculars.” Who has the binoculars — and how would you know?",
+    "“I saw the man with the binoculars.” Who has the binoculars, and how would you know?",
     "Job ad: “We work hard and play hard. We're a family here.” What is it really saying?",
   ],
 };
@@ -102,7 +102,7 @@ const TEMPLATES = [
 
 const RULES = [
   "It makes sense: once explained, most people say “oh, right.”",
-  "A stranger could get it — no private info only you know.",
+  "A stranger could get it; no private info only you know.",
   "No cheap tricks: no spelling games, letter-counting, or gotchas without meaning.",
   "No real people: no names or details of actual individuals.",
   "No harm: no hate, explicit content, or graphic violence.",
@@ -532,12 +532,12 @@ export default function StageView() {
                   First time here? Two ways to play
                 </p>
                 <p className="mt-2.5 text-sm leading-relaxed text-zinc-300">
-                  <strong className="text-white">Perform a bit</strong> —
+                  <strong className="text-white">Perform a bit:</strong>{" "}
                   write a setup below and see if the Straight Man gets the joke.
                   Free, takes about a minute.
                 </p>
                 <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">
-                  <strong className="text-white">Judge the Crowd</strong> —
+                  <strong className="text-white">Judge the Crowd:</strong>{" "}
                   pass the 10-case calibration quiz (8/10) to vote. Any reward
                   depends on verified USDG funding and settlement; it is not guaranteed.
                 </p>
