@@ -42,7 +42,7 @@
 - Modify: `app/api/crowd/stake-check/route.ts`
 - Modify: `components/app/views/CrowdView.tsx`
 - Modify: `app/crowd/join/page.tsx`
-- Test: add `tests/stake-check.test.cjs` using extracted pure response/eligibility helpers.
+- Test: `tests/stake-check.test.ts` using the extracted pure response/eligibility helper.
 
 **Interfaces:**
 - Keep existing response keys for compatibility.
