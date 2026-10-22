@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { requireWalletSession } from "@/lib/server";
 import { getChainForEnv } from "@/lib/haha-chains";
 import { readChainEnv } from "@/lib/server";
+import { crowdQueueBitFilter } from "@/lib/crowd-queue";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ export async function GET(req: Request) {
     const candidates = await prisma.crowdAssignment.findMany({
       where: {
         juror_id: juror.id,
-        bit: { chain_id: chainId },
+        bit: crowdQueueBitFilter(chainId),
         vote: null,
         expires_at: { gt: new Date() },
       },

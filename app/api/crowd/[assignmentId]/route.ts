@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { type VoteChoice, type FairnessChoice } from "@prisma/client";
 import { getChainForEnv } from "@/lib/haha-chains";
+import { canAcceptCrowdVote } from "@/lib/crowd-queue";
 import {
   bad,
   enqueueJob,
@@ -90,6 +91,7 @@ export async function POST(
           select: {
             id: true,
             chain_id: true,
+            status: true,
             user_id: true,
             is_plant_bank: true,
             plant_correct_pos: true,
@@ -107,6 +109,7 @@ export async function POST(
     });
     if (!assignment) return bad("assignment not found", 404);
     if (assignment.bit.chain_id !== chainId) return bad("assignment belongs to a different chain configuration", 409);
+    if (!canAcceptCrowdVote(assignment.bit.status)) return bad("assignment is no longer open", 409);
     if (assignment.juror.wallet.toLowerCase() !== wallet) {
       return bad("assignment belongs to another juror", 403);
     }
