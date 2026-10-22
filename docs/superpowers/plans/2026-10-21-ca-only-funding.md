@@ -51,4 +51,5 @@ Files: deploy script, `.env.example`, read-only capital report script, `docs/MAI
 - [x] Node tests **16/16**, isolated Postgres settlement test **1/1**, Prisma validation/generation, Next typecheck/build, Foundry **79/79**, mainnet preflight and fork-only simulation pass; `git diff --check` clean.
 - [x] Review CA-only constraints, old testnet/TipJar scope, hot/cold mismatch, live temporary token identity, and `.env.mainnet` ignore rule.
 - [x] Record actual gas measurement and budget; clearly separate optional USDG seed from customer-funded receipts.
-- [ ] Keep deployment/production migration pending: no new mainnet broadcast; current env has same hot/cold address; actual Pons HAHA CA/pool still not available. Buyback remains HOLD until an actual Pons pool and fresh route/reserve quote exist.
+- [x] Mainnet foundation suite + standalone fixed-supply HAHA + CrowdStaking deployed by the owner wallet; production app/worker are cut over and healthy. Standalone supply is held by the operator.
+- [ ] Await actual Pons CA/pool before replacing MicDrop binding or enabling buyback. This is an on-chain asset/lifecycle dependency; no launcher communication is required. The temporary MockHAHA is not used by production.

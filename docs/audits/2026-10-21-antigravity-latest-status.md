@@ -1,5 +1,11 @@
 # Latest workspace and Antigravity status — 21 Oct 2026
 
+> **Superseded 22 Oct 2026:** the core mainnet suite, standalone fixed-supply
+> HAHA token and CrowdStaking have since been deployed, and the app has been
+> cut over to 4663. See `docs/CA-ONLY-BUDGET.md` and the 22 Oct mainnet runbook
+> entry for fresh direct state. The read-only observations below are retained
+> as the before-deployment baseline.
+
 ## Scope
 
 Read-only session/on-chain inspection plus local `forge test --summary`.

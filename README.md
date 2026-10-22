@@ -60,9 +60,8 @@ Claim error `InvalidProof()` ⇒ on-chain root ≠ DB (check `Epoch.merkle_root`
 - Reward funding is imported from successful USDG transfers/events emitted by
   the configured `ProducerGateway` or explicit `fundRewards` deposits. It is
   unique per chain/tx/log; unbound batch royalties stay reserved.
-- See `docs/CA-ONLY-BUDGET.md` for measured fork gas, current operator balance,
-  optional USDG seed and usage-based service costs. No new mainnet broadcast is
-  part of the current task.
+- See `docs/CA-ONLY-BUDGET.md` for actual deployments, current operator balance,
+  optional USDG seed and usage-based service costs.
 
 ## QA Wallet Bridge (End-to-End Testing without MetaMask)
 
@@ -80,9 +79,15 @@ CDP `initScript` injects EIP-6963 provider per navigation (lost on reload; `init
 | VaultRegistry | `0x27e5ADf5F3BfEBFA7B7B81619CA68a97CD1866D6` |
 | ProducerGateway | `0x71826870a70064F0657EF527AFd9d1029Ae950de` |
 | USDG (6dp) | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
+| Standalone fixed-supply HAHA | `0xd2Da320EF90FB76809587C830A33a49512bA90D9` |
+| CrowdStaking (bound to standalone HAHA) | `0xe861a2c5d2114A76779d91d416c750bE7D3f7d88` |
 
-CrowdStaking menunggu real Pons CA; buyback route unset (HOLD). Root delay
-mainnet 24h, timelock 48h. Testnet addresses (historis):
+The standalone token has 1B initial supply, all at the operator wallet; it has
+no mint function and no market/pool. The former public-mint MockHAHA remains
+on-chain but is not configured. MicDrop is unbound and buyback route unset
+(HOLD) until the Pons CA graduates and a route/quote is configured. If a later
+Pons CA replaces the interim token, deploy a new CrowdStaking and do not assume
+balances migrate. Root delay mainnet 24h, timelock 48h. Testnet addresses:
 
 | Contract | Testnet 46630 |
 | --- | --- |

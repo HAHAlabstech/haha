@@ -1,10 +1,10 @@
 # CA-only operating flow
 
-The launcher is not contacted. The HAHA operator receives only the token CA.
-Current configuration defaults to `CREATOR_FEE_MODE=off`; fee entitlement is
-never inferred from the token address.
-Set `PONS_LAUNCH_MODE=standalone` for the fixed-supply pre-Pons token; switch to
-`pons` only after the actual CA resolves through the factory.
+The launcher is not contacted. The project currently runs with a standalone
+fixed-supply HAHA token (1B initial, held by the operator) and its own
+CrowdStaking deployment. `CREATOR_FEE_MODE=off`; fee entitlement is never
+inferred from a token address. `PONS_LAUNCH_MODE=standalone` is set until the
+external launcher supplies the later Pons CA.
 
 ## When the actual Pons CA is delivered
 
@@ -18,17 +18,19 @@ Set `PONS_LAUNCH_MODE=standalone` for the fixed-supply pre-Pons token; switch to
    prints its curve, pair asset, tax, fee recipient and launch phase. It does
    not sign or send. `NotGraduated` / `Swept` means no V4 buyback pool yet.
 
-2. Never use the current provisional CA as the product token. It is the
-   public-mint `MockHAHA` runtime and `DeployCrowdStakingMainnet.s.sol` rejects
-   its code hash.
+2. The previous public-mint `MockHAHA` at `0xe992...` is not configured and is
+   rejected by the staking deployment script. The current app token is
+   `0xd2Da...`; full initial supply is held by the operator and no public pool
+   or liquidity has been created.
 
-3. Deploy/record the core suite only after hot and cold addresses differ. The
-   current mainnet env violates that rule. Keep `WORKER_CHAIN_WRITES=off` until
-   the suite is deployed and addresses/config are verified.
+3. The core suite, standalone HAHA and standalone-token CrowdStaking are already
+   deployed and configured in production. Owner selected single-wallet
+   operation; the operator is also admin/treasury. Do not redeploy the suite.
 
-4. Bind the actual CA with `MicDrop.proposeHahaToken(address)` and confirm after
-   the configured timelock. This binds token identity only; it does not inspect
-   or assume pair/tax/recipient.
+4. When the actual Pons CA arrives, bind it with
+   `MicDrop.proposeHahaToken(address)` and confirm after the configured
+   timelock. This replaces the MicDrop binding only; pair/tax/recipient are
+   read from the factory and never assumed.
 
 5. Buyback remains HOLD unless `phase=PoolCreated`. Derive the Pons V4 pool key
    from the factory launch record. For a native-ETH quote token, also supply a
@@ -43,6 +45,10 @@ Set `PONS_LAUNCH_MODE=standalone` for the fixed-supply pre-Pons token; switch to
    state for conversion. A reserve refresh is not an execution quote or a
    TWAP; keeper buyback execution remains HOLD without a fresh min-out quote.
    See `docs/CA-ONLY-BUDGET.md` for the conditional refresh-gas budget.
+
+6. Replacing the standalone token requires deploying a new CrowdStaking
+   contract because its token is immutable, then changing the app staking/token
+   config. Existing standalone balances/stakes do not migrate automatically.
 
 ## USDG reward funding
 
@@ -69,6 +75,8 @@ Set `PONS_LAUNCH_MODE=standalone` for the fixed-supply pre-Pons token; switch to
 - Settlement reads chain-scoped receipts, persists payouts/root, and retries
   finalized epochs without replacing prior reward rows. Claims remain
   USDG-only.
+- The current TipJar has 0 USDG and production has no funding receipts/Reward
+  rows. No payout is expected until B2B revenue or an owner seed is deposited.
 
 ## Not verified from a CA alone
 

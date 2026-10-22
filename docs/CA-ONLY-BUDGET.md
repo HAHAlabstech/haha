@@ -1,8 +1,8 @@
-# CA-only capital budget (pre-mainnet estimate)
+# CA-only capital budget (live mainnet status, 22 Oct 2026)
 
-Status: design/code verification only. No suite broadcast was performed. The
-temporary mainnet token is the public-mint `MockHAHA`; do **not** use it as the
-CrowdStaking token or infer Pons liquidity from it.
+Status: foundation suite and the standalone fixed-supply HAHA + CrowdStaking
+are live on 4663; the production app is configured to these addresses. The
+separate public-mint `MockHAHA` remains on-chain but is no longer configured.
 
 ## Capital to prepare
 
@@ -14,13 +14,14 @@ treasury and admin. The deploy script now **warns** instead of rejecting
 `hot == cold`; a zero address still fails the preflight. Trade-off: a leaked
 VPS key controls every role.
 
-Measured on the real 4663 fork (block 94.4M, max fee 0.041492001 gwei):
+Measured on mainnet and the 4663 fork:
 
 - Full foundation deployment: **11,101,298 gas ≈ 0.0004606 ETH** (TipJar,
   FeeSplitter, MicDrop, V4BuybackAdapter, VaultRegistry, ProducerGateway; no
   CrowdStaking).
-- Daily settlement writes two small operator txs (proposeRoot + activateRoot),
-  roughly **0.0005–0.001 ETH/month** at the sampled fee.
+- Current settlement has no funded receipts, so it publishes no root and
+  spends no root transaction gas. Once a funded epoch exists, root proposal
+  and activation spend gas per epoch, not per user claim.
 - `MicDrop.setPoolReserve` refresh: 71,516 gas, ≤ every 10 min while a buyback
   route is set → **≈ 0.0128 ETH/month** extra; **$0 while the route is unset**
   (HOLD, the current state).
@@ -30,16 +31,19 @@ Measured on the real 4663 fork (block 94.4M, max fee 0.041492001 gwei):
 
 | Scenario | Amount | Note |
 | --- | ---: | --- |
-| Deploy only | **0.00046 ETH** | current balance 0.00199 ETH covers ~4× |
-| + 1 month ops, buyback HOLD | **≈ 0.0015 ETH** | deploy + root txs |
-| Suggested top-up | **0.005 ETH** | ~10× deploy plus month-1 ops, absorbs base-fee spikes |
+| Foundation deploy (already paid) | **≈ 0.00018680253188 ETH** | observed operator balance delta, nonce 1→7 |
+| Standalone token + CrowdStaking (already paid) | **0.00003890465 ETH** | actual receipt fees combined |
+| Current balance | **0.001762392788522 ETH** | measured after the two new deployments |
+| Suggested reserve | **0.005 ETH** | leaves an operational buffer; top-up **0.003237607211478 ETH** |
 
 Optional hardening (not required): a second key held OFF the VPS for admin
 roles would cost 0 extra gas — only create it if the owner changes their mind.
 
 ### USDG for rewards (owner choice)
 
-- Contract deployment requires **$0 USDG** reward seed.
+- The contracts require **$0 USDG** reward seed. Current live TipJar balance is
+  **0 USDG**; there are **0** mainnet funding receipts, **0** mainnet Reward
+  rows, and no claimable rewards.
 - With **$0 seed**, claims stay empty until a verified B2B or treasury funding
   receipt arrives; no reward amount is promised.
 - Optional cold-start example: deposit **1,000 USDG**. Settlement treats this
@@ -100,3 +104,23 @@ requirement — the owner chose single-wallet operation on 2026-10-22.
 
 No ETH/USD price conversion is shown because the budget is denominated in ETH
 and no pricing quote was captured with this measurement.
+
+## Deployed standalone token (temporary pre-Pons phase)
+
+- Fixed-supply token `0xd2Da320EF90FB76809587C830A33a49512bA90D9`, tx
+  `0x89a2a1e6961d2bb09724ed8a9163b42910953e2c500d36505bdb5d0067ed7dd3`:
+  1,000,000,000 initial HAHA, all held by the operator, no mint function.
+- CrowdStaking `0xe861a2c5d2114A76779d91d416c750bE7D3f7d88`, tx
+  `0x6c8222ca48bb305c3f1fef7b7a0da577e3ccf55153d3a43d75355225b39a525a`, is
+  bound to that standalone token. Current live operator balance after both
+  deployments: **0.001762392788522 ETH**; top-up to the suggested 0.005 ETH
+  operating buffer is **0.003237607211478 ETH**.
+- Actual token deployment receipt gas cost: **0.000012163983 ETH**; staking
+  deployment: **0.000026740667 ETH**. The mainnet foundation suite was deployed
+  earlier. Fork gas estimates are maxima/simulation results, not actual fees.
+- This token has no market or Pons pool, and the entire supply is still in one
+  wallet. MicDrop remains unbound, route unset and HOLD. Stakers need tokens
+  transferred from the owner until a market/distribution is provided.
+- If a separate Pons CA later replaces it, old token balances/stakes will not
+  migrate automatically; deploy a new CrowdStaking and update config. The old
+  token remains on-chain.

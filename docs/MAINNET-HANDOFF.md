@@ -1,6 +1,6 @@
 # HAHA — Mainnet Handoff Runbook (4663 Robinhood Chain)
 
-Status: **DEPLOYED & LIVE (21 Okt 2026, ~17:50 UTC)** — owner broadcast override.
+Status: **DEPLOYED & LIVE (22 Oct 2026)** — owner broadcast override.
 Foundation deployed by `0xAeA64dd878A8F1746e920e5725E41dcA0057B651`
 (single-wallet, hot=cold per owner decision):
 
@@ -10,12 +10,19 @@ Foundation deployed by `0xAeA64dd878A8F1746e920e5725E41dcA0057B651`
 - V4BuybackAdapter `0x9754F06cA930B9190Dc622D26532Db77E6B76E2c`
 - VaultRegistry `0x27e5ADf5F3BfEBFA7B7B81619CA68a97CD1866D6`
 - ProducerGateway `0x71826870a70064F0657EF527AFd9d1029Ae950de`
-- USDG `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` (6dp); CrowdStaking deferred (real Pons CA)
+- USDG `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` (6dp)
+- Standalone fixed HAHA `0xd2Da320EF90FB76809587C830A33a49512bA90D9` (1B initial; all held by operator)
+- CrowdStaking `0xe861a2c5d2114A76779d91d416c750bE7D3f7d88` (bound to standalone HAHA)
 
 Production cutover: VPS env `CHAIN_ENV=mainnet` + addresses, containers
-recreated from GHCR image `8957318`, `/api/config` serves 4663, worker ticks
+recreated from GHCR image `179023f`, `/api/config` serves 4663, worker ticks
 scoped `4663` and `done`. Testnet data remains in DB under `chain_id=46630`.
 Deploy txs: `contracts/broadcast/DeployMainnet.s.sol/4663/run-latest.json`.
+Standalone token tx `0x89a2a1e6961d2bb09724ed8a9163b42910953e2c500d36505bdb5d0067ed7dd3`;
+CrowdStaking tx `0x6c8222ca48bb305c3f1fef7b7a0da577e3ccf55153d3a43d75355225b39a525a`.
+MicDrop remains unbound/HOLD until the eventual Pons CA/pool; the standalone
+token has no Pons curve/liquidity. Full capital breakdown is in
+`docs/CA-ONLY-BUDGET.md`.
 This runbook below is retained as the checklist record; broadcast is done.
 This runbook is the complete go-live checklist. It distills the testnet
 runtime findings (sesi 19–21 Okt 2026, plan §8.1) into launch steps.
@@ -129,9 +136,10 @@ Sequence lives in `contracts/script/DeployMainnet.s.sol`:
    optional `FeeSplitter` harvest remains OFF unless on-chain recipient
    entitlement is actually observed. B2B/treasury USDG receipts are the reward
    source; see `docs/CA-ONLY-BUDGET.md`.
- 5. After the real Pons CA is received, run `DeployCrowdStakingMainnet.s.sol`
-   separately. It refuses the observed temporary public-mint MockHAHA runtime
-   hash. Never bind staking to that temporary token.
+5. Current standalone HAHA/CrowdStaking are live. If the later Pons CA replaces
+   the interim token, run `DeployCrowdStakingMainnet.s.sol` with that CA. The
+   script refuses the public-mint MockHAHA runtime hash; existing standalone
+   stakes/balances do not migrate automatically.
 6. Phase 2, cold-admin actions after the 48h timelock (run from an address
    distinct from the hot operator; the current `.env.mainnet` violates this
    separation and deploy simulation now rejects it):
