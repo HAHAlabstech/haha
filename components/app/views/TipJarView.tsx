@@ -491,7 +491,7 @@ export default function TipJarView() {
                 ? "Step 01: Connect Wallet"
                 : reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n
                   ? "Step 04: Rewards Available to Claim"
-                  : "Steps 02-03: Perform or Judge to Earn Allocations"}
+                  : "Perform or judge; payouts require funded USDG"}
             </span>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

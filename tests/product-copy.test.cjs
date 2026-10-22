@@ -18,6 +18,7 @@ test('public copy does not promise Pons buyback or require HAHA for juror access
  assert.doesNotMatch(productCopy,/Robinhood Testnet session|Robinhood Testnet \(Chain ID 46630\)|Robinhood Testnet\./i);
  assert.doesNotMatch(productCopy,/rewards settle on-chain .* at midnight UTC|10% lifetime royalties flow back|10% lifetime royalties flow back/i);
  assert.doesNotMatch(productCopy,/fund deflationary buybacks|triggering stake slashing|all contracts deployed, verified, and active/i);
+ assert.doesNotMatch(productCopy,/Get\s+<em[^>]*>Paid\./i);
 });
 
 test('reward copy says payouts depend on funded USDG rather than guaranteeing daily rewards',()=>{

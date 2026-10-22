@@ -691,14 +691,14 @@ export default function ShowtimeExperience() {
           </div>
         )}
 
-        {/* Slide 03: Get Paid */}
+        {/* Slide 03: Blind Consensus */}
         {activeSlide === 2 && (
           <div className="max-w-2xl pointer-events-auto animate-fadeIn">
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
               Chapter 03 · Blind Consensus
             </span>
             <h2 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
-              Get <em className="italic text-[#ffb13b]">Paid.</em>
+              Win the <em className="italic text-[#ffb13b]">Room.</em>
             </h2>
             <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-xl">
               Verified human jurors judge blind with zero author or AI labels. Eligible rewards require verified USDG funding and an activated Tip Jar settlement root; payouts are not guaranteed.
