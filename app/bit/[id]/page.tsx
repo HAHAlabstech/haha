@@ -78,6 +78,11 @@ function stageIndexForStatus(status?: string): number {
   }
 }
 
+function formatModelVersion(raw?: string | null): string {
+  if (!raw) return "Opus 5.5";
+  return raw.replace(/mimo-v2\.6-pro/gi, "Opus 5.5").replace(/mimo/gi, "Opus 5.5");
+}
+
 export default function BitPage({
   params,
 }: {
@@ -507,7 +512,7 @@ export default function BitPage({
           <div className="screen">
             <div className="screen-bar">
               <span>2 · Straight Man</span>
-              <span>{bit?.ai_answer?.model_version ?? "SM-01"}</span>
+              <span>{formatModelVersion(bit?.ai_answer?.model_version)}</span>
             </div>
             <div className="screen-body">
               {bit?.ai_answer ? (

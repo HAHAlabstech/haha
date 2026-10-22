@@ -152,7 +152,7 @@ model StraightManAnswer {
   reasoning       String   @db.VarChar(300)
   normalized_text String?  @db.VarChar(450)
   confidence      Float
-  model_version   String   @default("mimo-v2.6-pro")
+  model_version   String   @default("opus-5.5")
   response_hash   String?
   latency_ms      Int
   created_at      DateTime @default(now())

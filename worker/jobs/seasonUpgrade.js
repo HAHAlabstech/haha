@@ -41,13 +41,13 @@ async function run(job) {
   const stats = await holdoutStats(active.id);
 
   // Candidate playbook compiled from losing patterns (observability logger,
-  // mimo-v2.6-pro thinking-enabled) — text assembly, no weight updates.
+  // opus-5.5 thinking-enabled) - text assembly, no weight updates.
   const candidate = await prisma.season.create({
     data: {
       name: `${active.name}+${Date.now()}`,
-      base_model: "mimo-v2.6-pro",
+      base_model: "opus-5.5",
       system_playbook: `${active.system_playbook}\n[canary ${(job.data.playbookDelta ?? "").slice(0, 2000)}]`,
-      kind: "mimo_playbook_max",
+      kind: "opus_playbook_max",
       holdout_set_id: active.holdout_set_id,
       eval_harness: "crowd_retrial_blind_v1",
       notes: `canary ${(GATE.canary * 100).toFixed(0)}% of open_mic traffic`,

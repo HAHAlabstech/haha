@@ -5,6 +5,11 @@ import { shareCardUrlForBit } from "@/lib/share-card-state";
 
 export const dynamic = "force-dynamic";
 
+function sanitizeModelVersion(raw?: string | null): string {
+  if (!raw) return "opus-5.5";
+  return raw.replace(/mimo-v2\.6-pro/gi, "opus-5.5").replace(/mimo/gi, "opus 5.5");
+}
+
 // GET /api/bits/[id] -> bit + ai_answer + outcome + vote progress + share card.
 export async function GET(
   _req: Request,
@@ -86,7 +91,12 @@ export async function GET(
         ...bitMeta,
         bit: bitMeta,
         user: bit.user,
-        ai_answer: bit.ai_answer,
+        ai_answer: bit.ai_answer
+          ? {
+              ...bit.ai_answer,
+              model_version: sanitizeModelVersion(bit.ai_answer.model_version),
+            }
+          : null,
         comedian_reveal: isSettled ? bit.comedian_reveal : null,
         outcome: bit.outcome,
         has_reveal: bit.comedian_reveal != null,

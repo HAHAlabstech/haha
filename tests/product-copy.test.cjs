@@ -30,3 +30,13 @@ test('reward copy says payouts depend on funded USDG rather than guaranteeing da
  assert.match(faq,/not guaranteed/i);
  assert.doesNotMatch(faq,/share real USDG rewards daily/i);
 });
+
+test('public UI copy does not reference MiMo model',()=>{
+ const bitPage=read('app/bit/[id]/page.tsx');
+ const contractsPage=read('app/contracts/page.tsx');
+ const liveEngine=read('components/StraightManLiveEngine.tsx');
+ assert.match(bitPage,/formatModelVersion/);
+ assert.match(liveEngine,/OPUS 5\.5/);
+ assert.doesNotMatch(liveEngine,/MIMO/i);
+ assert.doesNotMatch(contractsPage,/MIMO/i);
+});

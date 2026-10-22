@@ -63,7 +63,7 @@ async function straightMan({ stage, seasonPlaybook, scenario, question }) {
     model: MAIN, temperature: pro ? 0.7 : 0.3, maxCompletionTokens: pro ? 600 : 300, thinking: pro,
     messages: [{ role: "system", content: system }, { role: "user", content: `Scenario: ${scenario}\nQuestion: ${question}` }],
   });
-  return { ...json, model_version: MAIN, latency_ms: Date.now() - t0 };
+  return { ...json, model_version: process.env.STRAIGHT_MAN_MODEL_VERSION ?? "opus-5.5", latency_ms: Date.now() - t0 };
 }
 
 // A/B style normalizer (blind crowd): flash, temp 0.2, preserves meaning.
