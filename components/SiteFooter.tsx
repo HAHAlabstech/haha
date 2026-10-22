@@ -100,6 +100,9 @@ export default function SiteFooter() {
             >
               For Producers
             </Link>
+            <Link href="/contracts" className="hover:text-[#ffc53d] transition-colors">
+              Contracts
+            </Link>
             <Link href="/app?tab=stage" className="hover:text-[#ffc53d] transition-colors">
               App Console
             </Link>

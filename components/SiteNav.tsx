@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: "/#vault", label: "Joke Vault" },
   { href: "/#telemetry", label: "Live Feed" },
   { href: "/#faq", label: "FAQ" },
+  { href: "/contracts", label: "Contracts" },
 ];
 
 export default function SiteNav() {
