@@ -362,18 +362,18 @@ export default function StageView() {
             Walk up to the <em>mic.</em>
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">
-            Pick a comedy set, paint the scene, and ask the Straight Man one sharp question. If it answers with literal confidence and the Crowd laughs, you earn tonight&apos;s Tip Jar share.
+            Pick a comedy set, paint the scene, and ask the Straight Man one sharp question. If it misses, the Crowd can review the bit. Any USDG reward depends on verified funding and settlement; none is promised.
           </p>
         </div>
 
         <dl className="case-meta-grid">
           <div>
             <dt>Open Mic</dt>
-            <dd>Free · 5 bits / day · 1.0× reward</dd>
+            <dd>Free · 5 bits / day · 1.0× score weight</dd>
           </div>
           <div>
             <dt>Pro Stage</dt>
-            <dd>2.5× reward · full playbook</dd>
+            <dd>2.5× score weight · full playbook</dd>
           </div>
           <div>
             <dt>Quorum</dt>
@@ -393,7 +393,7 @@ export default function StageView() {
         <div className="haha-glass-panel rounded-2xl p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3.5 mb-4">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold">
-              How To Play &amp; Earn · 4-Step Flow
+              How To Play · 4-Step Flow
             </span>
             <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
               {!account
