@@ -398,12 +398,31 @@ export async function ensureSiweSession(
     return { ok: false, error: "No wallet provider connected." };
   }
   let account = accountArg ?? sharedState.account;
-  if (!account) {
-    const accs = await connectProvider(provider).catch(() => []);
-    account = accs[0] ?? null;
+  // localStorage and provider events can lag an account switch (especially
+  // after a reload). Always reconcile against the provider immediately before
+  // reusing a session or asking it to sign, or personal_sign may target a
+  // stale address that the wallet no longer controls.
+  let accs = await getAccounts(provider).catch(() => []);
+  if (accs.length === 0) accs = await connectProvider(provider).catch(() => []);
+  const currentAccount = accs[0] ?? null;
+  if (
+    currentAccount &&
+    (!account || account.toLowerCase() !== currentAccount.toLowerCase())
+  ) {
+    account = currentAccount;
+    setSharedWalletState({
+      account,
+      provider,
+      sessionToken: null,
+    });
+  } else if (currentAccount) {
+    // Preserve the provider's checksum-cased form for SIWE message parsing.
+    account = currentAccount;
+  } else {
+    account = null;
   }
   if (!account) {
-    return { ok: false, error: "Connect your wallet first." };
+    return { ok: false, error: "No account is currently authorized in the connected wallet. Reconnect and try again." };
   }
 
   if (isTokenValidForAccount(sharedState.sessionToken, account)) {
@@ -509,4 +528,3 @@ export function disconnectWallet(): void {
     sessionToken: null,
   });
 }
-
