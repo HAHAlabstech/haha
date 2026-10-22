@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Mic, Users, Database, ArrowUpRight } from "lucide-react";
 import { scrollToId } from "@/components/landing/SmoothScroll";
+import { XLogoMark } from "@/components/XLogo";
 
 export default function SiteFooter() {
   const pathname = usePathname();
@@ -26,7 +27,7 @@ export default function SiteFooter() {
               <span>Curtain Call · Humans Are Hard to Automate</span>
             </div>
             <h2 className="display-serif mt-4 text-4xl text-white md:text-6xl tracking-tight leading-[1.05]">
-              Tell a joke that fools the AI &mdash; <em className="text-[#ffc53d]">and get paid.</em>
+              Tell a joke that fools the AI: <em className="text-[#ffc53d]">and get paid.</em>
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-3 md:justify-end">
@@ -65,7 +66,7 @@ export default function SiteFooter() {
             />
             <span>&copy; HAHA &middot; Season 01 &middot; The Straight Man &amp; The Joke Vault</span>
           </div>
-          <nav className="flex flex-wrap gap-5" aria-label="Footer">
+          <nav className="flex flex-wrap items-center gap-5" aria-label="Footer">
             <Link
               href="/#how-it-works"
               onClick={(e) => handleFooterNav(e, "/#how-it-works")}
@@ -103,9 +104,17 @@ export default function SiteFooter() {
             <Link href="/contracts" className="hover:text-[#ffc53d] transition-colors">
               Contracts
             </Link>
-            <Link href="/app?tab=stage" className="hover:text-[#ffc53d] transition-colors">
-              App Console
-            </Link>
+            <a
+              href="https://x.com/HAHAlabstech"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Follow HAHA on X (@HAHAlabstech)"
+              className="hover:text-[#ffc53d] transition-colors flex items-center gap-1.5 text-zinc-300"
+              title="Follow @HAHAlabstech on X"
+            >
+              <XLogoMark size={12} />
+              <span>@HAHAlabstech</span>
+            </a>
           </nav>
           <span className="text-zinc-500">Good night &middot; Drive safe &middot; Tip your waitstaff</span>
         </div>

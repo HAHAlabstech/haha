@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import WalletMenu from "@/components/WalletMenu";
 import { RobinhoodLogoMark } from "@/components/RobinhoodLogo";
+import { XLogoMark } from "@/components/XLogo";
 
 export type AppTab = "stage" | "crowd" | "vault" | "tipjar" | "leaderboard";
 
@@ -74,7 +75,7 @@ export default function AppHeader({
             <Link
               href="/#how-it-works"
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-zinc-400 transition hover:bg-white/5 hover:text-white"
-              title="How the Stage → Straight Man → Crowd loop works"
+              title="How the Stage -> Straight Man -> Crowd loop works"
             >
               <HelpCircle className="h-3 w-3" />
               <span className="hidden md:inline">Flow</span>
@@ -110,7 +111,7 @@ export default function AppHeader({
             })}
           </nav>
 
-          {/* Right: Network info + Pool + Wallet Menu */}
+          {/* Right: Network info + Pool + X Logo + Wallet Menu */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {/* Live Pool Pill */}
             <div className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#ffc53d]/25 bg-[#ffc53d]/10 px-3 py-1 font-mono text-[10px] text-[#ffc53d]">
@@ -123,6 +124,18 @@ export default function AppHeader({
               <RobinhoodLogoMark size={14} color="#ffc53d" />
               <span className="font-semibold tracking-wide text-zinc-200">Robinhood Chain</span>
             </div>
+
+            {/* X (Twitter) Link */}
+            <a
+              href="https://x.com/HAHAlabstech"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Follow HAHA on X (@HAHAlabstech)"
+              title="Follow @HAHAlabstech on X"
+              className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-full border border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+            >
+              <XLogoMark size={13} className="text-zinc-300 hover:text-white transition-colors" />
+            </a>
 
             {/* Wallet Menu (logo + address + balances + disconnect) */}
             <WalletMenu />

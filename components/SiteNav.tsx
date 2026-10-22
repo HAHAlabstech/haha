@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Mic, ArrowUpRight, Menu, X } from "lucide-react";
 import WalletMenu from "./WalletMenu";
 import { scrollToId } from "@/components/landing/SmoothScroll";
+import { XLogoMark } from "./XLogo";
 
 const NAV_LINKS = [
   { href: "/#waveform", label: "The Science" },
@@ -102,6 +103,18 @@ export default function SiteNav() {
 
           {/* Right Action Buttons */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* X (Twitter) Link */}
+            <a
+              href="https://x.com/HAHAlabstech"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Follow HAHA on X (@HAHAlabstech)"
+              title="Follow @HAHAlabstech on X"
+              className="flex items-center justify-center h-9 w-9 rounded-full border border-white/10 bg-[#12121a]/70 text-zinc-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all backdrop-blur-md"
+            >
+              <XLogoMark size={13} className="text-zinc-300 hover:text-white transition-colors" />
+            </a>
+
             <WalletMenu />
 
             <Link
@@ -141,6 +154,19 @@ export default function SiteNav() {
                 {link.label}
               </Link>
             ))}
+            <a
+              href="https://x.com/HAHAlabstech"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between px-4 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <span className="flex items-center gap-2.5">
+                <XLogoMark size={13} className="text-zinc-300" />
+                <span>Follow @HAHAlabstech</span>
+              </span>
+              <ArrowUpRight className="w-3.5 h-3.5 text-zinc-500" />
+            </a>
             <Link
               href="/app"
               onClick={() => setMobileMenuOpen(false)}
