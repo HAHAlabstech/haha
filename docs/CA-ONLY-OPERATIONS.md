@@ -3,6 +3,8 @@
 The launcher is not contacted. The HAHA operator receives only the token CA.
 Current configuration defaults to `CREATOR_FEE_MODE=off`; fee entitlement is
 never inferred from the token address.
+Set `PONS_LAUNCH_MODE=standalone` for the fixed-supply pre-Pons token; switch to
+`pons` only after the actual CA resolves through the factory.
 
 ## When the actual Pons CA is delivered
 

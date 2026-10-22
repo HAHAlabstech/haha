@@ -123,8 +123,14 @@ async function run(job) {
         } else findings.micDropTokenBound=false;
       }
     } catch(err) {
-      findings.ponsLaunchError=String(err.message||err).slice(0,200);
-      await alert(`HAHA CA is not a verified Pons launch in the configured factory; MicDrop stays HOLD (${findings.ponsLaunchError})`);
+      const reason=String(err.message||err).slice(0,200);
+      if((process.env.PONS_LAUNCH_MODE||"pons").toLowerCase()==="standalone") {
+        findings.ponsLaunch={registered:false,mode:"standalone",token:process.env.HAHA_TOKEN_ADDRESS};
+        findings.buybackReadiness="HOLD: standalone token has no Pons curve/pool; no creator fees or buyback assumed";
+      } else {
+        findings.ponsLaunchError=reason;
+        await alert(`HAHA CA is not a verified Pons launch in the configured factory; MicDrop stays HOLD (${findings.ponsLaunchError})`);
+      }
     }
   }
   const splitter = process.env.FEE_SPLITTER_ADDRESS;
