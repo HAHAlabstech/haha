@@ -45,7 +45,7 @@ SECTION 2: DEV KERJA
    - Frontend: Next.js 16.4.2 (App Router, Turbopack) + React 19 + TypeScript 5 (Strict)
    - Styling: Tailwind CSS v4 + Framer Motion + Canvas Visualizers + Veil-style 2-Row Wallet Modal
    - Smart Contracts: Solidity 0.8.24 (Cancun, Foundry Forge pipeline, Solc 0.8.24)
-   - AI Engine: Xiaomi MiMo 2.6 Pro (Low-Latency UltraSpeed Endpoint, <800ms streaming)
+   - AI Engine: Opus 5.5 (Low-Latency UltraSpeed Endpoint, <800ms streaming)
    - Web3 Client: Viem 2.x + Wagmi + EIP-6963 Multi-Wallet Provider + EIP-712 Typed Data
    - Payout Architecture: TipJar.sol cumulative double-hashed Merkle trees
      (`keccak256(keccak256(account, cumulativeMicro))`) with 24-hour root delay timelocks
@@ -85,7 +85,7 @@ SECTION 3: QUALITY ASSURANCE (QA) REPORT
    - Zero-Friction User Flow: Clear breadcrumbs from landing -> calibration quiz -> crowd jury.
 
 [PASS] 3. End-to-End Application Flow (proven LIVE on mainnet 4663):
-   - Comedian Open Mic submission -> MiMo 2.6 Pro Straight Man reaction in <800ms.
+   - Comedian Open Mic submission -> Opus 5.5 Straight Man reaction in <800ms.
    - A/B punchline normalization (stripping AI capitalization/punctuation tells).
    - Juror onboarding gauntlet (10-question calibration quiz).
    - Sybil-proof jury voting with 50+ ground-truth plant-bank honeypot bits.

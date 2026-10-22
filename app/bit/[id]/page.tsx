@@ -148,7 +148,8 @@ export default function BitPage({
         bit.status === "screening" ||
         (bit.status === "answered" && !bit.ai_answer) ||
         bit.status === "in_crowd" ||
-        bit.status === "disputed"
+        bit.status === "disputed" ||
+        (Boolean(bit.outcome) && !bit.share_card_url)
       ) {
         void loadBit();
       }

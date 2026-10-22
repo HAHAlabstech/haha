@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
 import { type PrismaClient, type Category } from "@prisma/client";
-import { cardUrl } from "@/lib/shareUrl";
+import { shareCardUrlForBit } from "@/lib/share-card-state";
 import { getChainForEnv } from "@/lib/haha-chains";
 import {
   bad,
@@ -127,15 +127,24 @@ export async function GET() {
           category: true,
           scenario: true,
           question: true,
+          status: true,
           stage: true,
           created_at: true,
           season: { select: { name: true } },
           ai_answer: { select: { answer: true } },
           outcome: { select: { win_strength: true, juror_count: true } },
+          share_card_r2_url: true,
         },
       }),
     ]);
-    const spotlightOut = spotlight.map((b) => ({ ...b, card_url: cardUrl(b.id) }));
+    const spotlightOut = spotlight.map(({ share_card_r2_url, ...b }) => ({
+      ...b,
+      card_url: shareCardUrlForBit({
+        status: b.status,
+        hasOutcome: b.outcome != null,
+        storedUrl: share_card_r2_url,
+      }),
+    }));
     return NextResponse.json(
       { bitsToday, killedToday, spotlight: spotlightOut },
       { headers: { "cache-control": "no-store" } },

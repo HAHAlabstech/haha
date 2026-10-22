@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPrisma, readChainEnv } from "@/lib/server";
 import { getChainForEnv } from "@/lib/haha-chains";
-import { cardUrl } from "@/lib/shareUrl";
+import { shareCardUrlForBit } from "@/lib/share-card-state";
 
 export const dynamic = "force-dynamic";
 
@@ -101,9 +101,11 @@ export async function GET(
           fairWeight,
           totalWeight,
         },
-        share_card_url: isSettled
-          ? (cardUrl(bit.id, { holdout: bit.is_holdout }) ?? bit.share_card_r2_url)
-          : null,
+        share_card_url: shareCardUrlForBit({
+          status: bit.status,
+          hasOutcome: bit.outcome != null,
+          storedUrl: bit.share_card_r2_url,
+        }),
       },
       { headers: { "cache-control": "no-store" } },
     );

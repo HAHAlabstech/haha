@@ -12,7 +12,7 @@
 
 [![Chains](https://img.shields.io/badge/Chains-Robinhood%204663%20%C2%B7%20Testnet%2046630-CCFF00?style=flat-square&labelColor=0A081E&logoColor=black)](#-live-robinhood-mainnet-deployments-chain-id-4663)
 [![Runtime](https://img.shields.io/badge/Runtime-Next.js%2016%20%C2%B7%20React%2019%20%C2%B7%20TypeScript-7C3AED?style=flat-square&labelColor=0A081E)](#-tech-stack)
-[![AI Engine](https://img.shields.io/badge/AI%20Engine-MiMo%202.6%20Pro%20%C2%B7%20Xiaomi%20UltraSpeed-D4AF37?style=flat-square&labelColor=0A081E)](#-overview)
+[![AI Engine](https://img.shields.io/badge/AI%20Engine-Opus%205.5%20%C2%B7%20UltraSpeed-D4AF37?style=flat-square&labelColor=0A081E)](#-overview)
 [![Payout Engine](https://img.shields.io/badge/Payouts-EIP--712%20%C2%B7%20Cumulative%20Merkle%20%C2%B7%20USDG-10B981?style=flat-square&labelColor=0A081E)](#-system--settlement-architecture)
 [![Smart Contracts](https://img.shields.io/badge/Contracts-Solidity%200.8.24%20%C2%B7%20Foundry%2080%2F80%20PASS-3B82F6?style=flat-square&labelColor=0A081E)](#-smart-contracts--verification)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square&labelColor=0A081E)](#-license)
@@ -25,7 +25,7 @@
 
 **HAHA** is the world's first decentralized benchmark for computational humor and human comedic intuition, deployed natively on **Robinhood Chain** (Mainnet `4663` / Testnet `46630`):
 
-1. **The Open Mic Stage (`/stage`):** Comedians craft original jokes structured across *Premise*, *Setup*, *Punchline*, and *Subtext*. They battle **The AI Straight Man** (powered by low-latency Xiaomi MiMo 2.6 Pro), which attempts to deconstruct, explain, or deadpan the humor.
+1. **The Open Mic Stage (`/stage`):** Comedians craft original jokes structured across *Premise*, *Setup*, *Punchline*, and *Subtext*. They battle **The AI Straight Man** (powered by low-latency Opus 5.5), which attempts to deconstruct, explain, or deadpan the humor.
 2. **Double-Blind Crowd Evaluation (`/crowd`):** Jurors sign in with a wallet and pass a 10-case calibration quiz (8/10). They review blinded A/B normalized punchlines. Juror access does not require a HAHA stake; calibration/plant checks help detect low-quality participation.
 3. **Funded Merkle TipJar Payouts (`/tipjar`):** Eligible outcomes may enter a settlement epoch. USDG claims require verified funding, a finalized epoch, and an activated Merkle root; no payout is available or promised while the TipJar is empty.
 4. **B2B Licensing (`/producers`):** AI research labs and entertainment studios can purchase data snapshots via `ProducerGateway.sol` ($500 to $2,500 USDG). Payments are split by contract: 40% operations/treasury, 30% general TipJar, 10% contributor royalty reserve, and 20% MicDrop hold. The MicDrop allocation is inactive/HOLD; there is no configured HAHA market route or automatic buyback.
@@ -48,7 +48,7 @@
 flowchart LR
     subgraph StageFlow["🎤 1. The Stage (Human vs Machine)"]
         Comedian([Human Comedian]) -->|"Submit Bit<br/>Premise + Punchline"| Stage["/stage<br/>Open Mic"]
-        Stage -->|"Trigger AI"| MiMo["🤖 MiMo 2.6 Pro<br/>Straight Man LLM"]
+        Stage -->|"Trigger AI"| MiMo["🤖 Opus 5.5<br/>Straight Man LLM"]
         MiMo -->|"Deadpan / Rebuttal"| Norm["A/B Normalizer<br/>Anti-Fingerprint"]
     end
 
@@ -176,7 +176,7 @@ HAHA/
 - **Styling & Motion:** Tailwind CSS v4 + Framer Motion + Lucide Icons + Canvas Visualizers
 - **Web3 EVM Client:** Viem 2.x + Wagmi + EIP-6963 Multi-Wallet Provider + EIP-712 Signatures
 - **Smart Contracts:** Solidity `0.8.24` + Foundry Forge (via WSL Ubuntu 22.04)
-- **AI / LLM Engine:** Xiaomi MiMo 2.6 Pro (Low-Latency UltraSpeed Endpoint)
+- **AI / LLM Engine:** Opus 5.5 (Low-Latency UltraSpeed Endpoint)
 - **Database & Search:** PostgreSQL 16 with `pgvector` (HNSW cosine similarity embeddings)
 - **Queue & Scheduling:** Redis 7 + BullMQ Worker Cluster
 - **Storage:** Cloudflare R2 (S3-compatible immutable encrypted dataset snapshots)

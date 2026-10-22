@@ -164,8 +164,11 @@ async function ensureCardForBit(prisma, bitId, putR2) {
     holdout: bit.is_holdout,
     seasonName: bit.season?.name,
   });
-  await putR2(cardKey(bitId, { holdout: bit.is_holdout }), png, "image/png", { cacheControl: "public, max-age=300" });
-  return { bitId, url: cardUrl(bitId, { holdout: bit.is_holdout }), bytes: png.length };
+  const key = cardKey(bitId, { holdout: bit.is_holdout });
+  await putR2(key, png, "image/png", { cacheControl: "public, max-age=300" });
+  const url = cardUrl(bitId, { holdout: bit.is_holdout });
+  await prisma.bit.update({ where: { id: bitId }, data: { share_card_r2_url: url } });
+  return { bitId, url, bytes: png.length };
 }
 
 module.exports = { renderShareCard, ensureCardForBit, cardKey, cardUrl };

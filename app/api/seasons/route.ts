@@ -7,8 +7,8 @@ const FALLBACK_SEASONS = [
   {
     id: "S1",
     name: "Straight Man S1",
-    base_model: "mimo-v2.6-pro",
-    kind: "mimo_playbook_max",
+    base_model: "opus-5.5",
+    kind: "opus_playbook_max",
     holdout_n: 0,
     holdout_score: 0,
     is_active: true,
