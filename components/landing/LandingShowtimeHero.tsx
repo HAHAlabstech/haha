@@ -67,8 +67,8 @@ const CHAPTERS = [
   {
     num: "03",
     tag: "Blind Quorum",
-    titleLead: "Get ",
-    titleEm: "Paid.",
+    titleLead: "Win the ",
+    titleEm: "Room.",
     desc: "Verified human jurors judge blind with zero author or AI labels. Eligible rewards require verified USDG funding and an activated Tip Jar settlement root; payouts are not guaranteed.",
   },
   {
