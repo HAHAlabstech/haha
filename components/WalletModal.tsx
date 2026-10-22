@@ -55,6 +55,63 @@ export default function WalletModal({
   const [runtime, setRuntime] = useState<HahaRuntimeConfig | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [shouldRender, setShouldRender] = useState(open);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      setIsClosing(false);
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "hidden";
+      }
+    } else if (shouldRender) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+        if (typeof document !== "undefined") {
+          document.body.style.overflow = "";
+        }
+      }, 200);
+      return () => {
+        clearTimeout(timer);
+        if (typeof document !== "undefined") {
+          document.body.style.overflow = "";
+        }
+      };
+    }
+    return () => {
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
+    };
+  }, [open, shouldRender]);
+
+  const handleClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+      setShouldRender(false);
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
+    }, 200);
+  }, [isClosing, onClose]);
+
+  useEffect(() => {
+    if (!shouldRender || isClosing) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [shouldRender, isClosing, handleClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -158,7 +215,7 @@ export default function WalletModal({
           await ensureSiweSession(entry.provider, accs[0]).catch(() => {});
         }
         onConnected?.(accs);
-        if (accs.length > 0) onClose();
+        if (accs.length > 0) handleClose();
       } catch (e) {
         setError(
           e instanceof Error ? e.message : "Connection rejected in wallet.",
@@ -167,7 +224,7 @@ export default function WalletModal({
         setBusy(null);
       }
     },
-    [onClose, onConnected, runtime],
+    [handleClose, onConnected, runtime],
   );
 
   const refreshAccounts = useCallback(async () => {
@@ -191,7 +248,7 @@ export default function WalletModal({
     }
   }, [activeProvider, runtime]);
 
-  if (!open) return null;
+  if (!shouldRender) return null;
 
   const expectedChain = runtime?.chainId ?? 46_630;
   const onWrongChain = chainId !== null && chainId !== expectedChain;
@@ -199,14 +256,18 @@ export default function WalletModal({
 
   return (
     <div
-      className="fixed inset-0 z-90 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+      className={`fixed inset-0 z-90 flex items-center justify-center bg-black/80 p-4 ${
+        isClosing ? "animate-hahaFadeOut" : "animate-hahaFadeIn"
+      }`}
       role="dialog"
       aria-modal="true"
       aria-label="Connect wallet"
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
-        className="w-full max-w-xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:p-6"
+        className={`w-full max-w-xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:p-6 ${
+          isClosing ? "animate-hahaModalExit" : "animate-hahaModalEnter"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
@@ -233,7 +294,7 @@ export default function WalletModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close"
             className="pill-btn cursor-pointer"
             style={{ padding: "6px 12px" }}

@@ -143,7 +143,7 @@ export default function SiteNav() {
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-3 p-4 rounded-2xl bg-[#0c0c12]/95 border border-white/10 backdrop-blur-2xl shadow-2xl flex flex-col gap-2">
+          <div className="md:hidden mt-3 p-4 rounded-2xl bg-[#0c0c12]/95 border border-white/10 backdrop-blur-2xl shadow-2xl flex flex-col gap-2 animate-hahaDropdownEnter">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}

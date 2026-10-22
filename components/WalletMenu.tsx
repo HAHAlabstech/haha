@@ -162,7 +162,7 @@ export default function WalletMenu() {
       {account && menuOpen && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-[60] w-[264px] max-w-[calc(100vw-24px)] rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-1.5 shadow-2xl backdrop-blur-2xl"
+          className="absolute right-0 top-[calc(100%+8px)] z-[60] w-[264px] max-w-[calc(100vw-24px)] rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-1.5 shadow-2xl backdrop-blur-2xl animate-hahaDropdownEnter"
         >
           {/* Header: connected wallet + chain */}
           <div className="border-b border-white/[0.08] px-3 pb-2 pt-2.5 font-mono text-[10px] uppercase tracking-[0.14em]">

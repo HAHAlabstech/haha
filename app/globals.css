@@ -1868,6 +1868,115 @@ body::before {
   animation: hahaSpinSlow 14s linear infinite;
 }
 
+/* ==========================================================================
+   MODAL & POPUP FLUID ACCELERATED TRANSITIONS
+   ========================================================================== */
+
+@keyframes hahaFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(16px);
+  }
+}
+
+@keyframes hahaFadeOut {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(16px);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+}
+
+@keyframes hahaModalEnter {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.93, 0.93, 1) translate3d(0, 24px, 0);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes hahaModalExit {
+  0% {
+    opacity: 1;
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale3d(0.95, 0.95, 1) translate3d(0, 16px, 0);
+    filter: blur(4px);
+  }
+}
+
+@keyframes hahaDropdownEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) scale(0.97);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes hahaDropdownExit {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.97);
+    filter: blur(2px);
+  }
+}
+
+.animate-hahaFadeIn {
+  animation: hahaFadeIn 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, backdrop-filter;
+}
+
+.animate-hahaFadeOut {
+  animation: hahaFadeOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  will-change: opacity, backdrop-filter;
+}
+
+.animate-hahaModalEnter {
+  animation: hahaModalEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform, filter;
+}
+
+.animate-hahaModalExit {
+  animation: hahaModalExit 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  will-change: opacity, transform, filter;
+}
+
+.animate-hahaDropdownEnter {
+  animation: hahaDropdownEnter 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform, filter;
+}
+
+.animate-hahaDropdownExit {
+  animation: hahaDropdownExit 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  will-change: opacity, transform, filter;
+}
+
+
 
 
 
