@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getPrisma } from "@/lib/server";
+import { getPrisma, readChainEnv } from "@/lib/server";
+import { getChainForEnv } from "@/lib/haha-chains";
 import { cardUrl } from "@/lib/shareUrl";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +16,9 @@ export async function GET(
   }
   try {
     const prisma = getPrisma();
-    const bit = await prisma.bit.findUnique({
-      where: { id },
+    const chainId = getChainForEnv(readChainEnv()).id;
+    const bit = await prisma.bit.findFirst({
+      where: { id, chain_id: chainId },
       include: {
         user: { select: { wallet: true, handle: true, comedian_tier: true } },
         ai_answer: true,
@@ -109,4 +111,3 @@ export async function GET(
     return NextResponse.json({ error: "bit unavailable" }, { status: 503 });
   }
 }
-

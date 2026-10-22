@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getChainForEnv } from "@/lib/haha-chains";
+import { readChainEnv } from "@/lib/server";
+import { buildChainDataScope } from "@/lib/chain-data-scope";
 
 export const revalidate = 30;
 
@@ -27,9 +30,10 @@ function jsonBig(data: unknown, status = 200) {
 export async function GET() {
   try {
     const prisma = getPrisma();
+    const scope = buildChainDataScope(getChainForEnv(readChainEnv()).id);
     const counts = await prisma.bit.groupBy({
       by: ["category"],
-      where: { status: "killed_it" },
+      where: { ...scope.killedBits, is_holdout: false },
       _count: { _all: true },
     });
     const pricing = await prisma.vaultPricing.findMany({
@@ -49,6 +53,7 @@ export async function GET() {
       replacementMicroUsd += BigInt(n) * (priceByCat.get(c.category) ?? 0n);
     }
     const revenue = await prisma.revenueEvent.aggregate({
+      where: scope.revenue,
       _sum: { amount_micro_usd: true },
     });
     return jsonBig({

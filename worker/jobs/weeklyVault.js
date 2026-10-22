@@ -8,6 +8,7 @@
 
 const { randomBytes, createCipheriv } = require("node:crypto");
 const { PrismaClient } = require("@prisma/client");
+const { resolveChainConfig } = require("../lib/chain");
 const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
@@ -59,10 +60,11 @@ function unwrapDek(wrapped) {
 }
 
 async function run(job) {
+  const { chainId } = resolveChainConfig();
   const rows = await prisma.$queryRaw`
     SELECT b.id, b.category, b.stage, b.question, r.answer, r.explanation, o.result, o.win_strength, o.fair_ratio, u.wallet
     FROM "Bit" b JOIN "User" u ON u.id=b.user_id JOIN "ComedianReveal" r ON r.bit_id=b.id JOIN "Outcome" o ON o.bit_id=b.id
-    WHERE o.result IN ('killed_it','bombed') AND b.is_holdout = false`;
+    WHERE b.chain_id = ${chainId} AND o.result IN ('killed_it','bombed') AND b.is_holdout = false`;
   const pricing = await prisma.vaultPricing.findMany();
   const priceOf = (cat, res) => pricing.find((p) => p.category === cat && p.outcome === res)?.ref_price_micro_usd ?? 0n;
   let total = 0n;
@@ -92,6 +94,7 @@ async function run(job) {
   for (const e of rows) contributors.set(e.wallet, (contributors.get(e.wallet) || 0) + 1);
   const snap = await prisma.vaultSnapshot.create({
     data: {
+      chain_id: chainId,
       entry_count: rows.length, by_category_json: byCat, replacement_micro_usd: total,
       merkle_root: root, r2_dataset_key: key, dek_wrapped: wrapDek(dek),
       contributors_json: [...contributors].map(([wallet, weight]) => ({ wallet, weight })),

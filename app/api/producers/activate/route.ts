@@ -7,6 +7,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getChainForEnv } from "@/lib/haha-chains";
 import { getServerContracts, isDeployed } from "@/lib/haha-contracts";
 import { bad, getPrisma, readChainEnv } from "@/lib/server";
+import { buildChainDataScope } from "@/lib/chain-data-scope";
 
 export const dynamic = "force-dynamic";
 
@@ -151,8 +152,10 @@ export async function POST(req: Request) {
   let paidAmount = price;
   let paidSplits: Record<string, string> | null = null;
   const contracts = getServerContracts();
+  const chainEnv = readChainEnv();
+  const chainId = getChainForEnv(chainEnv).id;
+  const scope = buildChainDataScope(chainId);
   try {
-    const chainEnv = readChainEnv();
     const chain = getChainForEnv(chainEnv);
     const override =
       chainEnv === "mainnet"
@@ -236,9 +239,9 @@ export async function POST(req: Request) {
   }
 
   try {
-    const boundSnap = await prisma.vaultSnapshot.findUnique({ where: { id: batchId }, select: { r2_dataset_key: true, contributors_json: true } });
+    const boundSnap = await prisma.vaultSnapshot.findFirst({ where: { id: batchId, ...scope.batchSnapshots }, select: { r2_dataset_key: true, contributors_json: true } });
     if (readChainEnv() === "mainnet" && (!boundSnap?.r2_dataset_key || !Array.isArray(boundSnap.contributors_json))) return bad("paid dataset batch is unavailable; funding remains registered", 409);
-    const latestSnap = boundSnap || (readChainEnv() === "testnet" ? await prisma.vaultSnapshot.findFirst({ orderBy: { created_at: "desc" }, select: { r2_dataset_key: true } }) : null);
+    const latestSnap = boundSnap || (chainEnv === "testnet" ? await prisma.vaultSnapshot.findFirst({ where: { chain_id: chainId, r2_dataset_key: { not: null } }, orderBy: { created_at: "desc" }, select: { r2_dataset_key: true } }) : null);
 
     const apiKey = `haha_${randomBytes(24).toString("hex")}`;
     const api_key_hash = createHash("sha256").update(apiKey).digest("hex");
@@ -278,6 +281,7 @@ export async function POST(req: Request) {
     };
     await prisma.revenueEvent.create({
       data: {
+        chain_id: chainId,
         producer_id: producer.id,
         amount_micro_usd: paidAmount,
         type: "producer_activation",

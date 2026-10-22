@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getChainForEnv } from "@/lib/haha-chains";
+import { readChainEnv } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -48,8 +50,9 @@ export async function POST(
 
   try {
     const prisma = getPrisma();
-    const bit = await prisma.bit.findUnique({
-      where: { id },
+    const chainId = getChainForEnv(readChainEnv()).id;
+    const bit = await prisma.bit.findFirst({
+      where: { id, chain_id: chainId },
       select: { id: true },
     });
     if (!bit) return bad("bit not found", 404);

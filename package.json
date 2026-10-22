@@ -15,7 +15,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "npm run test:unit",
-    "test:unit": "node --test tests/chain.test.cjs tests/funding.test.cjs tests/micdrop.test.cjs tests/pons-launch.test.cjs tests/rewards.test.cjs tests/retired-mock-deploy.test.cjs tests/product-copy.test.cjs tests/standalone-sync.test.cjs && node --import tsx --test tests/stake-check.test.ts tests/contracts-registry.test.ts tests/usdg-display.test.ts tests/wallets.test.ts"
+    "test:unit": "node --test tests/chain.test.cjs tests/funding.test.cjs tests/micdrop.test.cjs tests/pons-launch.test.cjs tests/rewards.test.cjs tests/retired-mock-deploy.test.cjs tests/product-copy.test.cjs tests/standalone-sync.test.cjs && node --import tsx --test tests/stake-check.test.ts tests/contracts-registry.test.ts tests/usdg-display.test.ts tests/wallets.test.ts tests/chain-data-scope.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.0.0",

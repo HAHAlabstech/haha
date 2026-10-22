@@ -1,32 +1,25 @@
 import { NextResponse } from "next/server";
 import { getPrisma, jsonBig } from "@/lib/server";
+import { getChainForEnv } from "@/lib/haha-chains";
+import { readChainEnv } from "@/lib/server";
+import { buildChainDataScope } from "@/lib/chain-data-scope";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/leaderboard -> top comedians (by killed-it bits & reputation) and top crowd jurors (by consensus accuracy & reputation).
+// GET /api/leaderboard -> chain-scoped verified comedians and voted jurors.
 export async function GET() {
   try {
     const prisma = getPrisma();
-    const [topComedians, killedItGroups, voteGroups] = await Promise.all([
-      prisma.user.findMany({
-        orderBy: [{ comedian_rep: "desc" }, { created_at: "asc" }],
-        take: 15,
-        select: {
-          id: true,
-          wallet: true,
-          handle: true,
-          comedian_tier: true,
-          comedian_rep: true,
-        },
-      }),
+    const scope = buildChainDataScope(getChainForEnv(readChainEnv()).id);
+    const [killedItGroups, voteGroups] = await Promise.all([
       prisma.bit.groupBy({
         by: ["user_id"],
-        where: { status: "killed_it" },
+        where: scope.killedBits,
         _count: { id: true },
       }),
       prisma.crowdAssignment.groupBy({
         by: ["juror_id"],
-        where: { is_plant: false, voted_at: { not: null } },
+        where: scope.votedAssignments,
         _count: { id: true },
       }),
     ]);
@@ -37,20 +30,23 @@ export async function GET() {
     const voteMap = new Map<string, number>();
     for (const g of voteGroups) voteMap.set(g.juror_id, g._count.id);
 
-    const comedians = topComedians
-      .map((u) => ({
-        wallet: u.wallet,
-        handle: u.handle,
-        comedian_tier: u.comedian_tier,
-        comedian_rep: u.comedian_rep,
-        killed_it_count: killedMap.get(u.id) ?? 0,
-      }))
-      .sort(
-        (a, b) =>
-          b.killed_it_count - a.killed_it_count ||
-          b.comedian_rep - a.comedian_rep,
-      )
-      .slice(0, 10);
+    const comedianIds = [...killedMap.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 10)
+      .map(([id]) => id);
+    const topComedians = comedianIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: comedianIds } },
+          select: { id: true, wallet: true, handle: true },
+        })
+      : [];
+    const comedians = comedianIds
+      .map((id) => {
+        const u = topComedians.find((x) => x.id === id);
+        if (!u) return null;
+        return { wallet: u.wallet, handle: u.handle, killed_it_count: killedMap.get(id) ?? 0 };
+      })
+      .filter(Boolean);
 
     // Jurors: rank by ACTUAL votes cast (aggregate first), then fetch those
     // users: the crowd_rep-ordered pre-select pushed real voters out of the
@@ -67,8 +63,6 @@ export async function GET() {
               id: true,
               wallet: true,
               handle: true,
-              crowd_tier: true,
-              crowd_rep: true,
             },
           })
         : [];
@@ -79,8 +73,6 @@ export async function GET() {
         return {
           wallet: u.wallet,
           handle: u.handle,
-          crowd_tier: u.crowd_tier,
-          crowd_rep: u.crowd_rep,
           votes_cast: voteMap.get(id) ?? 0,
         };
       })

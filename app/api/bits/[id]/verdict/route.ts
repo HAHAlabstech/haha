@@ -5,9 +5,11 @@ import {
   getPrisma,
   isColluding,
   requireWalletSession,
+  readChainEnv,
   shuffleInPlace,
   TIER_WEIGHT,
 } from "@/lib/server";
+import { getChainForEnv } from "@/lib/haha-chains";
 
 export const dynamic = "force-dynamic";
 
@@ -49,11 +51,12 @@ export async function POST(
 
   try {
     const prisma = getPrisma();
+    const chainId = getChainForEnv(readChainEnv()).id;
     const auth = await requireWalletSession(req, prisma, wallet);
     if (!auth.ok) return auth.response;
 
-    const bit = await prisma.bit.findUnique({
-      where: { id },
+    const bit = await prisma.bit.findFirst({
+      where: { id, chain_id: chainId },
       select: {
         id: true,
         status: true,

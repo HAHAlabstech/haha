@@ -79,7 +79,7 @@ async function importFundingReceipt(prisma, client, hash, config, snapshotId = n
   const receipt = await client.getTransactionReceipt({ hash });
   const rows = decodeFundingReceipt(receipt, config);
   let snapshot = null;
-  if (snapshotId) snapshot = await prisma.vaultSnapshot.findUnique({ where: { id: snapshotId }, select: { id: true, contributors_json: true } });
+  if (snapshotId) snapshot = await prisma.vaultSnapshot.findFirst({ where: { id: snapshotId, chain_id: config.chainId }, select: { id: true, contributors_json: true } });
   for (const row of rows) {
     const manifest = snapshot && row.batch_id === keccak256(toBytes(snapshot.id)) ? snapshot.contributors_json : null;
     // Never reset consumed amounts on a receipt replay. Binding a previously

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { bad, getPrisma, requireWalletSession } from "@/lib/server";
+import { getChainForEnv } from "@/lib/haha-chains";
+import { readChainEnv } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,7 @@ const CALIB_FAIR: boolean[] = [
 export async function GET(req: Request) {
   try {
     const prisma = getPrisma();
+    const chainId = getChainForEnv(readChainEnv()).id;
     let status: { onboarded: boolean; crowd_tier: string | null } | null = null;
     let authenticated = false;
     const wallet = (new URL(req.url).searchParams.get("wallet") ?? "")
@@ -47,7 +50,7 @@ export async function GET(req: Request) {
       }
     }
     const bank = await prisma.bit.findMany({
-      where: { is_plant_bank: true },
+      where: { chain_id: chainId, is_plant_bank: true },
       orderBy: { created_at: "asc" },
       take: 10,
       select: {

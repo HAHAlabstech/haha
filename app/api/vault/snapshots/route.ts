@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getChainForEnv } from "@/lib/haha-chains";
+import { readChainEnv } from "@/lib/server";
+import { buildChainDataScope } from "@/lib/chain-data-scope";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +29,9 @@ function jsonBig(data: unknown, status = 200) {
 export async function GET() {
   try {
     const prisma = getPrisma();
+    const scope = buildChainDataScope(getChainForEnv(readChainEnv()).id);
     const rows = await prisma.vaultSnapshot.findMany({
+      where: scope.publishedSnapshots,
       orderBy: { created_at: "desc" },
       take: 100,
     });

@@ -9,16 +9,12 @@ import { Trophy, Flame, CheckCircle2 } from "lucide-react";
 interface ComedianRow {
   wallet: string;
   handle: string;
-  comedian_tier: string;
-  comedian_rep: number;
   killed_it_count: number;
 }
 
 interface JurorRow {
   wallet: string;
   handle: string;
-  crowd_tier: string;
-  crowd_rep: number;
   votes_cast: number;
 }
 
@@ -105,7 +101,7 @@ export default function LeaderboardView() {
                           </span>
                         </td>
                         <td className="py-3.5 text-right font-mono text-xs text-[#ffc53d]">
-                          {c.killed_it_count} · {c.comedian_rep} rep
+                          {c.killed_it_count} verified wins
                         </td>
                       </tr>
                     ))
@@ -150,7 +146,7 @@ export default function LeaderboardView() {
                           </span>
                         </td>
                         <td className="py-3.5 text-right font-mono text-xs text-[#ffc53d]">
-                          {j.crowd_rep} rep · {j.votes_cast} votes
+                          {j.votes_cast} votes
                         </td>
                       </tr>
                     ))

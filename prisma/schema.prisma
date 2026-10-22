@@ -306,6 +306,7 @@ model VaultPricing {
 
 model VaultSnapshot {
   id                    String   @id @default(cuid())
+  chain_id              Int      @default(46630)
   entry_count           Int
   by_category_json      Json
   replacement_micro_usd BigInt   @default(0)
@@ -315,6 +316,8 @@ model VaultSnapshot {
   tx_hash               String?
   contributors_json     Json?
   created_at            DateTime @default(now())
+
+  @@index([chain_id, created_at])
 }
 
 model Producer {
@@ -334,6 +337,7 @@ model Producer {
 
 model RevenueEvent {
   id               String   @id @default(cuid())
+  chain_id         Int      @default(46630)
   producer_id      String
   amount_micro_usd BigInt   @default(0)
   type             String
@@ -342,6 +346,8 @@ model RevenueEvent {
   created_at       DateTime @default(now())
 
   producer Producer @relation(fields: [producer_id], references: [id])
+
+  @@index([chain_id, created_at])
 }
 
 // Only successful, USDG-transfer-backed gateway receipts enter this ledger.

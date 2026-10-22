@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { constants, createHash, publicEncrypt } from "node:crypto";
-import { bad, getPrisma } from "@/lib/server";
+import { bad, getPrisma, readChainEnv } from "@/lib/server";
+import { getChainForEnv } from "@/lib/haha-chains";
+import { buildChainDataScope } from "@/lib/chain-data-scope";
 
 export const dynamic = "force-dynamic";
 
@@ -37,14 +39,15 @@ async function exchangeToken(token: string, publicKeyPem?: string) {
     if (row.expires_at.getTime() < Date.now()) {
       return bad("token expired", 410);
     }
+    const scope = buildChainDataScope(getChainForEnv(readChainEnv()).id);
+    const snap = await prisma.vaultSnapshot.findFirst({
+      where: { id: row.batch_id, ...scope.batchSnapshots },
+      select: { dek_wrapped: true, r2_dataset_key: true },
+    });
+    if (!snap) return bad("published dataset batch unavailable on this chain", 404);
     await prisma.producerKeyToken.update({
       where: { id: row.id },
       data: { used_at: new Date() },
-    });
-
-    const snap = await prisma.vaultSnapshot.findFirst({
-      orderBy: { created_at: "desc" },
-      select: { dek_wrapped: true, r2_dataset_key: true },
     });
     const dekWrapped = snap?.dek_wrapped ?? "kmsv1:stub";
     const dekBase64 = snap?.dek_wrapped ? unwrapDek(snap.dek_wrapped) : null;

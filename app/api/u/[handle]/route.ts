@@ -4,7 +4,12 @@ import {
   getPrisma,
   jsonBig,
   requireWalletSession,
+  readChainEnv,
 } from "@/lib/server";
+import { getChainForEnv } from "@/lib/haha-chains";
+import { getServerContracts } from "@/lib/haha-contracts";
+import { buildChainDataScope } from "@/lib/chain-data-scope";
+import { epochScope } from "@/worker/lib/funding";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +24,9 @@ export async function GET(
 
   try {
     const prisma = getPrisma();
+    const chainId = getChainForEnv(readChainEnv()).id;
+    const scope = buildChainDataScope(chainId);
+    const contracts = getServerContracts();
     const isWallet = /^0x[0-9a-fA-F]{40}$/.test(cleaned);
     const user = await prisma.user.findFirst({
       where: isWallet
@@ -59,30 +67,26 @@ export async function GET(
 
     const [bitsCount, killedItCount, crowdVotesCount, rewardAgg, recentBits] =
       await Promise.all([
-        prisma.bit.count({ where: { user_id: user.id } }),
+        prisma.bit.count({ where: { user_id: user.id, chain_id: chainId } }),
         prisma.bit.count({
-          where: {
-            user_id: user.id,
-            status: "killed_it",
-          },
+          where: { ...scope.killedBits, user_id: user.id },
         }),
         prisma.crowdAssignment.count({
-          where: { juror_id: user.id, is_plant: false, voted_at: { not: null } },
+          where: { ...scope.votedAssignments, juror_id: user.id },
         }),
         prisma.reward.aggregate({
-          where: { user_id: user.id },
+          where: {
+            user_id: user.id,
+            epoch: epochScope({ chainId, tipJar: contracts.tipJar }),
+          },
           _sum: { amount_micro_usdg: true },
         }),
         prisma.bit.findMany({
           where: isOwner
-            ? { user_id: user.id }
+            ? { user_id: user.id, chain_id: chainId }
             : {
+                ...scope.publicBits,
                 user_id: user.id,
-                is_holdout: false,
-                share_public: true,
-                status: {
-                  in: ["killed_it", "bombed", "in_crowd", "answered"],
-                },
               },
           orderBy: { created_at: "desc" },
           take: isOwner ? 20 : 10,
@@ -106,18 +110,22 @@ export async function GET(
           },
         }),
       ]);
+    const hasMainnetComedianActivity = bitsCount > 0;
+    const hasMainnetCrowdActivity = crowdVotesCount > 0;
 
     return jsonBig({
       ok: true,
       found: true,
       is_owner: isOwner,
+      profile_has_chain_activity:
+        hasMainnetComedianActivity || hasMainnetCrowdActivity || (rewardAgg._sum.amount_micro_usdg ?? 0n) > 0n,
       profile: {
         wallet: user.wallet,
         handle: user.handle,
-        comedian_tier: user.comedian_tier,
-        comedian_rep: user.comedian_rep,
-        crowd_tier: user.crowd_tier,
-        crowd_rep: user.crowd_rep,
+        comedian_tier: hasMainnetComedianActivity ? user.comedian_tier : "open_mic",
+        comedian_rep: hasMainnetComedianActivity ? user.comedian_rep : 0,
+        crowd_tier: hasMainnetCrowdActivity ? user.crowd_tier : "walk_in",
+        crowd_rep: hasMainnetCrowdActivity ? user.crowd_rep : 0,
         onboarding_passed: user.onboarding_passed,
       },
       stats: {
