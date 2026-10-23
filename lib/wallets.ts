@@ -1,3 +1,4 @@
+import { getAddress } from "viem";
 import {
   getChainById,
   robinhoodMainnet,
@@ -429,6 +430,14 @@ export async function ensureSiweSession(
   }
   if (!account) {
     return { ok: false, error: "No account is currently authorized in the connected wallet. Reconnect and try again." };
+  }
+  try {
+    // Wallets differ in the casing returned from eth_accounts. SIWE requires
+    // EIP-55 casing; Phantom rejects a recognized SIWE request when the
+    // message address is not checksummed, even if it identifies the same EOA.
+    account = getAddress(account.toLowerCase());
+  } catch {
+    return { ok: false, error: "The connected wallet returned an invalid EVM address. Reconnect and try again." };
   }
 
   if (isTokenValidForAccount(sharedState.sessionToken, account)) {

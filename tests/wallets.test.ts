@@ -4,7 +4,8 @@ import { ensureSiweSession, type Eip1193Provider } from "../lib/wallets";
 
 test("SIWE reconciles a stale saved account with the wallet's currently exposed account", async () => {
   const stale = "0x1111111111111111111111111111111111111111";
-  const active = "0x560E0000000000000000000000000000000014AD";
+  const active = "0x560e0000000000000000000000000000000014ad";
+  const expectedChecksummed = "0x560E0000000000000000000000000000000014ad";
   let signedAddress = "";
   let signedPayload = "";
   const provider: Eip1193Provider = {
@@ -35,9 +36,10 @@ test("SIWE reconciles a stale saved account with the wallet's currently exposed 
     const result = await ensureSiweSession(provider, stale);
     assert.equal(result.ok, true);
     assert.equal(result.wallet, active.toLowerCase());
-    assert.equal(signedAddress.toLowerCase(), active.toLowerCase());
+    assert.equal(signedAddress, expectedChecksummed);
     assert.match(signedPayload, /^0x(?:[0-9a-f]{2})+$/i);
-    assert.match(Buffer.from(signedPayload.slice(2), "hex").toString("utf8"), new RegExp(active));
+    const siweMessage = Buffer.from(signedPayload.slice(2), "hex").toString("utf8");
+    assert.equal(siweMessage.split("\n")[1], expectedChecksummed);
   } finally {
     globalThis.fetch = originalFetch;
   }
