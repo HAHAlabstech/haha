@@ -383,6 +383,12 @@ function randomAlphaNum(len = 16): string {
   return out;
 }
 
+function toPersonalSignHex(message: string): `0x${string}` {
+  const bytes = new TextEncoder().encode(message);
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `0x${hex}`;
+}
+
 export async function ensureSiweSession(
   providerArg?: Eip1193Provider | null,
   accountArg?: string | null,
@@ -460,7 +466,9 @@ export async function ensureSiweSession(
 
     const signature = (await provider.request({
       method: "personal_sign",
-      params: [message, account],
+      // Phantom's EVM provider (and the JSON-RPC convention) expects the
+      // UTF-8 SIWE message encoded as hex, not the raw JavaScript string.
+      params: [toPersonalSignHex(message), account],
     })) as string;
 
     const res = await fetch("/api/auth/verify", {
