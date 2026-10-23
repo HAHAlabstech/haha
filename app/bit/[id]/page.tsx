@@ -12,6 +12,7 @@ import {
   getSharedWalletState,
   subscribeWalletState,
 } from "@/lib/wallets";
+import { shouldAnimateStraightMan } from "@/lib/straightman-state";
 
 interface BitPayload {
   id: string;
@@ -72,6 +73,7 @@ function stageIndexForStatus(status?: string): number {
     case "heckled_off":
       return 3;
     case "rejected_prescreen":
+    case "straightman_failed":
       return -1;
     default:
       return 0;
@@ -417,7 +419,7 @@ export default function BitPage({
               tone={
                 bit?.status === "killed_it"
                   ? "green"
-                  : bit?.status === "bombed" || bit?.status === "heckled_off"
+                  : bit?.status === "bombed" || bit?.status === "heckled_off" || bit?.status === "straightman_failed"
                     ? "red"
                     : "amber"
               }
@@ -530,11 +532,23 @@ export default function BitPage({
                     </span>
                   </div>
                 </>
-              ) : (
+              ) : shouldAnimateStraightMan(bit?.status, hasAiAnswer) ? (
                 <StraightManLiveEngine
                   stage={bit?.status === "screening" ? "prescreen" : "straightman"}
                   category={bit?.category}
                 />
+              ) : bit?.status === "straightman_failed" ? (
+                <p className="text-sm leading-relaxed text-rose-300" role="alert">
+                  The Straight Man could not finish this bit after its retries. Processing has stopped; no AI verdict or Crowd review was created.
+                </p>
+              ) : bit?.status === "rejected_prescreen" ? (
+                <p className="text-sm leading-relaxed text-rose-300" role="alert">
+                  Prescreen rejected this bit, so the Straight Man did not run.
+                </p>
+              ) : (
+                <p className="text-sm leading-relaxed text-zinc-400">
+                  No Straight Man answer is available for this bit.
+                </p>
               )}
             </div>
           </div>
@@ -680,8 +694,7 @@ export default function BitPage({
             )}
           </SectionTitle>
 
-          {bit?.status === "screening" ||
-          (bit?.status === "answered" && !hasAiAnswer) ? (
+          {shouldAnimateStraightMan(bit?.status, hasAiAnswer) ? (
             <Card hot>
               <StraightManLiveEngine
                 stage={bit?.status === "screening" ? "prescreen" : "straightman"}
@@ -692,6 +705,20 @@ export default function BitPage({
                 written and stored. This page will keep checking; you do not
                 need to reload.
               </p>
+            </Card>
+          ) : null}
+
+          {bit?.status === "straightman_failed" ? (
+            <Card hot>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">
+                Straight Man stopped
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                The AI could not complete this bit after its retries. The animation has stopped, and this bit was not sent to the Crowd.
+              </p>
+              <Link href="/app?tab=stage" className="pill-btn hot mt-5">
+                Return to Stage →
+              </Link>
             </Card>
           ) : null}
 

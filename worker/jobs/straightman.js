@@ -37,4 +37,24 @@ async function run(job) {
   return { stage, model_version: out.model_version, responseHash };
 }
 
-module.exports = { run };
+async function markTerminalFailure(job, db = prisma) {
+  if (!job || job.name !== "straightman") return false;
+  const maxAttempts = Number(job.opts?.attempts ?? 1);
+  if (job.attemptsMade < maxAttempts) return false;
+
+  const bitId = job.data?.bitId;
+  if (!bitId) return false;
+  const answer = await db.straightManAnswer.findUnique({
+    where: { bit_id: bitId },
+    select: { id: true },
+  });
+  if (answer) return false;
+
+  const updated = await db.bit.updateMany({
+    where: { id: bitId, status: "answered" },
+    data: { status: "straightman_failed" },
+  });
+  return updated.count > 0;
+}
+
+module.exports = { run, markTerminalFailure };

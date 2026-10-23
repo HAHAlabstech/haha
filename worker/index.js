@@ -44,7 +44,19 @@ async function main() {
   }
 
   for (const w of enabled) {
-    w.on("failed", (job, err) => console.error(`[worker] ${w.name}/${job?.name} failed: ${err.message}`));
+    w.on("failed", async (job, err) => {
+      console.error(`[worker] ${w.name}/${job?.name} failed: ${err.message}`);
+      if (w.name === "bits" && job?.name === "straightman") {
+        try {
+          const marked = await require("./jobs/straightman").markTerminalFailure(job);
+          if (marked) {
+            console.error(`[worker] straightman/${job.data.bitId} exhausted retries; animation stopped`);
+          }
+        } catch (failureStateError) {
+          console.error(`[worker] failed to record terminal Straight Man state: ${failureStateError.message}`);
+        }
+      }
+    });
     w.on("completed", (job) => console.log(`[worker] ${w.name}/${job?.name} done`));
   }
   console.log(`[worker] HAHA queues serving (${enabled.map((w) => w.name).join(", ")})`);

@@ -20,6 +20,7 @@ enum Category {
 enum BitStatus {
   screening
   answered
+  straightman_failed
   disputed
   in_crowd
   killed_it
