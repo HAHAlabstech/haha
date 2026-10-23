@@ -70,4 +70,4 @@ OFFICIAL LINKS
 Web Application: https://hahastage.xyz
 Contracts Registry: https://hahastage.xyz/contracts
 GitHub Repository: https://github.com/HAHAlabstech/haha
-Official X: https://x.com/HAHAlabstech
+Official X: https://x.com/HAHAstage

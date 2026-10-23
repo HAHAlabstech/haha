@@ -127,11 +127,11 @@ export default function AppHeader({
 
             {/* X (Twitter) Link */}
             <a
-              href="https://x.com/HAHAlabstech"
+              href="https://x.com/HAHAstage"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Follow HAHA on X (@HAHAlabstech)"
-              title="Follow @HAHAlabstech on X"
+              aria-label="Follow HAHA on X (@HAHAstage)"
+              title="Follow @HAHAstage on X"
               className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-full border border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
             >
               <XLogoMark size={13} className="text-zinc-300 hover:text-white transition-colors" />

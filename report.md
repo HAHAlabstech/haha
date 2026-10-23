@@ -10,7 +10,7 @@
 - **Enterprise Producers:** https://hahastage.xyz/producers
 - **Contracts Registry:** https://hahastage.xyz/contracts
 - **GitHub Repository:** https://github.com/HAHAlabstech/haha (branch `main`)
-- **X (Twitter):** https://x.com/HAHAlabstech
+- **X (Twitter):** https://x.com/HAHAstage
 
 ---
 

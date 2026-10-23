@@ -54,11 +54,11 @@ export default function SiteFooter() {
               <span>Open The Vault</span>
             </Link>
             <a
-              href="https://x.com/HAHAlabstech"
+              href="https://x.com/HAHAstage"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Follow HAHA on X (@HAHAlabstech)"
-              title="Follow @HAHAlabstech on X"
+              aria-label="Follow HAHA on X (@HAHAstage)"
+              title="Follow @HAHAstage on X"
               className="inline-flex items-center justify-center h-10 w-10 rounded-full border border-white/10 bg-[#12121a] hover:bg-white/10 hover:border-white/20 text-zinc-300 hover:text-white transition-all shadow-sm"
             >
               <XLogoMark size={14} />
@@ -115,15 +115,15 @@ export default function SiteFooter() {
               Contracts
             </Link>
             <a
-              href="https://x.com/HAHAlabstech"
+              href="https://x.com/HAHAstage"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Follow HAHA on X (@HAHAlabstech)"
+              aria-label="Follow HAHA on X (@HAHAstage)"
               className="hover:text-[#ffc53d] transition-colors flex items-center gap-1.5 text-zinc-300"
-              title="Follow @HAHAlabstech on X"
+              title="Follow @HAHAstage on X"
             >
               <XLogoMark size={12} />
-              <span>@HAHAlabstech</span>
+              <span>@HAHAstage</span>
             </a>
           </nav>
           <span className="text-zinc-500">Good night &middot; Drive safe &middot; Tip your waitstaff</span>

@@ -107,15 +107,15 @@ export default function AppShell({ initialTab = "stage" }: AppShellProps) {
 
           <div className="flex items-center gap-4 sm:gap-6">
             <a
-              href="https://x.com/HAHAlabstech"
+              href="https://x.com/HAHAstage"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Follow HAHA on X (@HAHAlabstech)"
+              aria-label="Follow HAHA on X (@HAHAstage)"
               className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors"
-              title="Follow @HAHAlabstech on X"
+              title="Follow @HAHAstage on X"
             >
               <XLogoMark size={13} className="text-zinc-300" />
-              <span>@HAHAlabstech</span>
+              <span>@HAHAstage</span>
             </a>
             <Link href="/contracts" className="hover:text-white transition-colors">
               Contracts

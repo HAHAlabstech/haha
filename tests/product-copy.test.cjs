@@ -40,3 +40,17 @@ test('public UI copy does not reference MiMo model',()=>{
  assert.doesNotMatch(liveEngine,/MIMO/i);
  assert.doesNotMatch(contractsPage,/MIMO/i);
 });
+
+test('public X links point to @HAHAstage and not legacy handle',()=>{
+ const footer=read('components/SiteFooter.tsx');
+ const nav=read('components/SiteNav.tsx');
+ const header=read('components/app/AppHeader.tsx');
+ const shell=read('components/app/AppShell.tsx');
+ const all=[footer,nav,header,shell].join('\n');
+ assert.match(footer,/https:\/\/x\.com\/HAHAstage/);
+ assert.match(nav,/https:\/\/x\.com\/HAHAstage/);
+ assert.match(header,/https:\/\/x\.com\/HAHAstage/);
+ assert.match(shell,/https:\/\/x\.com\/HAHAstage/);
+ assert.doesNotMatch(all,/x\.com\/HAHAlabstech/i);
+ assert.doesNotMatch(all,/@HAHAlabstech/i);
+});
