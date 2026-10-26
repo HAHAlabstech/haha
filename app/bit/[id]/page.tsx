@@ -884,7 +884,7 @@ export default function BitPage({
             {STAGES.map((s, i) => (
               <Card key={s} hot={i === currentStage}>
                 <div className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-                  Stage 0{i + 1}
+                  Phase {i + 1}
                 </div>
                 <p className="display-serif mt-2 text-xl text-white">{s}</p>
                 {i === currentStage ? (

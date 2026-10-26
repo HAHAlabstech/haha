@@ -67,7 +67,7 @@ export default function VaultTerminal() {
         <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-end mb-16">
           <ScrollReveal direction="left">
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
-              04 / The Data Engine
+              The Data Engine
             </p>
             <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
               The Joke Vault: <em className="italic text-[#ffc53d]">Provenance-signed nuance data.</em>

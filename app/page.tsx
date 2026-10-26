@@ -119,7 +119,7 @@ export default function HomePage() {
 
         <ScrollReveal direction="scale" className="relative z-10 max-w-3xl mx-auto space-y-6">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold text-center">
-            07 / Open Mic Is Live
+            Open Mic Is Live
           </p>
 
           <h2 className="display-serif text-4xl sm:text-6xl lg:text-7xl text-white font-bold tracking-tight leading-[1.04]">

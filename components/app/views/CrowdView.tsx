@@ -14,16 +14,14 @@ import {
 } from "@/lib/wallets";
 
 const TIERS = [
-  { num: "TIER 01", name: "Walk-in", votes: "15 votes / day", weight: "1.00×" },
-  { num: "TIER 02", name: "Regular", votes: "30 votes / day", weight: "1.15×" },
+  { name: "Walk-in", votes: "15 votes / day", weight: "1.00×" },
+  { name: "Regular", votes: "30 votes / day", weight: "1.15×" },
   {
-    num: "TIER 03",
     name: "Front Row",
     votes: "50 votes / day",
     weight: "1.30×",
   },
   {
-    num: "TIER 04",
     name: "Critic",
     votes: "80 votes / day",
     weight: "1.50× max",
@@ -298,12 +296,12 @@ export default function CrowdView() {
             </span>
             <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
               {!account
-                ? "Step 01: Connect Wallet"
+                ? "Status: Connect Wallet"
                 : !stakeInfo?.onboarding_passed
-                  ? "Step 02: Pass Juror Calibration Quiz"
+                  ? "Status: Pass Juror Calibration Quiz"
                   : assignment
-                    ? "Step 03: Cast Blind Consensus Vote"
-                    : "Step 04: Waiting for Next Ballot"}
+                    ? "Status: Cast Blind Consensus Vote"
+                    : "Status: Waiting for Next Ballot"}
             </span>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -315,7 +313,7 @@ export default function CrowdView() {
               }`}
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 01</span>
+                <span className="text-zinc-400">Step 1</span>
                 <span className={account ? "text-emerald-400 font-semibold" : "text-zinc-500"}>
                   {account ? "Connected ✓" : "Required"}
                 </span>
@@ -337,7 +335,7 @@ export default function CrowdView() {
               }`}
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 02</span>
+                <span className="text-zinc-400">Step 2</span>
                 <span
                   className={
                     stakeInfo?.onboarding_passed
@@ -362,7 +360,7 @@ export default function CrowdView() {
               }`}
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 03</span>
+                <span className="text-zinc-400">Step 3</span>
                 <span className={assignment ? "text-[#ffc53d] font-semibold" : "text-zinc-500"}>
                   {assignment ? "Ballot Drawn" : "Queue Watch"}
                 </span>
@@ -378,7 +376,7 @@ export default function CrowdView() {
               className="rounded-xl border border-white/10 bg-[#070709]/60 p-3.5 transition-all hover:border-[#ffc53d]/40"
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 04</span>
+                <span className="text-zinc-400">Step 4</span>
                 <span className="text-zinc-300">Tip Jar →</span>
               </div>
               <p className="mt-1 font-serif text-base text-white">Earn USDG Share</p>

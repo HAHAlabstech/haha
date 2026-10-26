@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sparkles, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
-/* 01 · The Science of Stumped AI (Dojang IdeaScene Architecture).
+/* The Science of Stumped AI (Dojang IdeaScene Architecture).
    A sticky 2-column scene on desktop:
    - Left: Editorial narrative, display headline, and 3-step scrub rail with vertical golden progress line
    - Right: One gorgeous focal card (lp-vcard) showing the acoustic FFT visualizer, sample bit, and verdict
@@ -164,7 +164,7 @@ export default function HumorSpectrogram() {
               ========================================================================= */}
           <div className="haha-spec-copy">
             <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#ffc53d] font-semibold mb-3">
-              01 / The Science
+              The Science
             </p>
 
             <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04] mb-5">
@@ -189,7 +189,7 @@ export default function HumorSpectrogram() {
                     data-on={state === i}
                     onClick={() => goTo(i)}
                   >
-                    <span className="haha-istep-num">{`0${i + 1}`}</span>
+                    <span className="haha-istep-num">{i + 1}</span>
                     <div className="flex flex-col text-left">
                       <b className="font-display text-base text-zinc-100">{s.name}</b>
                       <span className="haha-istep-note">{s.note}</span>

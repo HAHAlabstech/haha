@@ -661,11 +661,11 @@ export default function ShowtimeExperience() {
 
       {/* Pinned Editorial Slides Overlay */}
       <div className="fixed inset-0 z-10 pointer-events-none flex flex-col justify-end p-[clamp(20px,4vw,56px)] pb-20">
-        {/* Slide 01: Tell a Joke */}
+        {/* Opening slide: Tell a Joke */}
         {activeSlide === 0 && (
           <div className="max-w-2xl pointer-events-auto animate-fadeIn">
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
-              Chapter 01 · The Human Challenge
+              The Human Challenge
             </span>
             <h1 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
               Tell a <em className="italic text-[#ffb13b]">Joke.</em>
@@ -676,11 +676,11 @@ export default function ShowtimeExperience() {
           </div>
         )}
 
-        {/* Slide 02: Fool the AI */}
+        {/* Next slide: Fool the AI */}
         {activeSlide === 1 && (
           <div className="max-w-2xl pointer-events-auto animate-fadeIn">
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
-              Chapter 02 · The Straight Man
+              The Straight Man
             </span>
             <h2 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
               Fool the <em className="italic text-[#ffb13b]">AI.</em>
@@ -691,11 +691,11 @@ export default function ShowtimeExperience() {
           </div>
         )}
 
-        {/* Slide 03: Blind Consensus */}
+        {/* Next slide: Blind Consensus */}
         {activeSlide === 2 && (
           <div className="max-w-2xl pointer-events-auto animate-fadeIn">
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
-              Chapter 03 · Blind Consensus
+              Blind Consensus
             </span>
             <h2 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
               Win the <em className="italic text-[#ffb13b]">Room.</em>
@@ -706,11 +706,11 @@ export default function ShowtimeExperience() {
           </div>
         )}
 
-        {/* Slide 04: The Joke Vault */}
+        {/* Closing slide: The Joke Vault */}
         {activeSlide === 3 && (
           <div className="max-w-2xl pointer-events-auto animate-fadeIn">
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#ffb13b] block mb-3">
-              Chapter 04 · The Joke Vault
+              The Joke Vault
             </span>
             <h2 className="display-serif text-6xl sm:text-8xl text-white font-normal tracking-tight leading-[0.95] mb-4">
               Get the <em className="italic text-[#ffb13b]">Joke.</em>
@@ -741,7 +741,7 @@ export default function ShowtimeExperience() {
         {/* Bottom HUD Bar */}
         <div className="pointer-events-none mt-8 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-t border-white/10 pt-4">
           <span>Scroll to orbit 360° · Click statue to poke</span>
-          <span>Chapter 0{activeSlide + 1} / 04</span>
+          <span>Part {activeSlide + 1} of 4</span>
         </div>
       </div>
     </div>

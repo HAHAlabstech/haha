@@ -91,7 +91,7 @@ export default function CategorySets() {
             onMouseEnter={() => setHoveredCat("punchline")}
             onMouseLeave={() => setHoveredCat(null)}
           >
-            <span className="idx">SET 01</span>
+            <span className="idx">PUNCHLINE</span>
             <span className="title">Punchline</span>
             <span className="premise">
               Set up a confident assumption, then flip it on the last word.
@@ -106,7 +106,7 @@ export default function CategorySets() {
             onMouseEnter={() => setHoveredCat("subtext")}
             onMouseLeave={() => setHoveredCat(null)}
           >
-            <span className="idx">SET 02</span>
+            <span className="idx">SUBTEXT</span>
             <span className="title">Subtext</span>
             <span className="premise">
               Say something polite while every human in the room hears the
@@ -122,7 +122,7 @@ export default function CategorySets() {
             onMouseEnter={() => setHoveredCat("irl")}
             onMouseLeave={() => setHoveredCat(null)}
           >
-            <span className="idx">SET 03</span>
+            <span className="idx">IRL</span>
             <span className="title">IRL</span>
             <span className="premise">
               Physical comedy, gravity, and awkward bodies that text-only models
@@ -138,7 +138,7 @@ export default function CategorySets() {
             onMouseEnter={() => setHoveredCat("double-meaning")}
             onMouseLeave={() => setHoveredCat(null)}
           >
-            <span className="idx">SET 04</span>
+            <span className="idx">DOUBLE MEANING</span>
             <span className="title">Double Meaning</span>
             <span className="premise">
               One sentence holding two complete worlds at the exact same time.
@@ -160,7 +160,7 @@ export default function CategorySets() {
             <span className="flex items-center gap-1.5">
               {hoveredCat?.toUpperCase() ?? "SET"}
             </span>
-            <span className="text-zinc-500">SM-01 Telemetry</span>
+            <span className="text-zinc-500">Straight Man Telemetry</span>
           </div>
           <div className="font-serif text-lg leading-snug text-white">
             {hoveredCat === "punchline" &&
@@ -179,11 +179,11 @@ export default function CategorySets() {
         </div>
       </section>
 
-      {/* ==================== SET 01 · PUNCHLINE ==================== */}
+      {/* ==================== PUNCHLINE ==================== */}
       <article className="case" id="punchline">
         <div className="case-head">
           <div>
-            <span className="eyebrow">Set 01 · Expectation Flip</span>
+            <span className="eyebrow">Expectation Flip · Punchline</span>
             <h2>
               Punch<em>line.</em>
             </h2>
@@ -316,13 +316,13 @@ export default function CategorySets() {
           </svg>
 
           <div className="caption flex items-center justify-between border-t border-[#efe8dc]/10 pt-3 font-mono text-[11px] text-[#a49b8e]">
-            <span>Fig 01 · Non-Linear Expectation Collapse vs. Model Greed</span>
-            <span className="text-[#ffb13b]">Category: PUNCHLINE (SET 01)</span>
+            <span>Non-Linear Expectation Collapse vs. Model Greed</span>
+            <span className="text-[#ffb13b]">Category: PUNCHLINE</span>
           </div>
         </div>
 
         <div className="prose">
-          <div className="side">01 · Anatomy of the Flip</div>
+          <div className="side">Anatomy of the Flip</div>
           <div className="body">
             <p className="lead">
               A great punchline doesn&apos;t invent a new world; it reveals
@@ -343,11 +343,11 @@ export default function CategorySets() {
           </div>
         </div>
 
-        {/* Pinned 280vh Signature Moment 01 */}
+        {/* Pinned 280vh Signature Moment */}
         <div ref={sig0Ref} className="sig">
           <div className="sig-Stage">
             <div className="sig-chrome">
-              <span>Signature Moment 01 · Pronoun &amp; Idiom Pivot</span>
+              <span>Signature Moment · Pronoun &amp; Idiom Pivot</span>
               <div className="flex items-center gap-3">
                 <span>Scroll to flip frame</span>
                 <div className="sig-meter">
@@ -443,7 +443,7 @@ export default function CategorySets() {
             </div>
 
             <div className="sig-foot">
-              <span>Bit #0417 · Verified Stumper</span>
+              <span>Bit #417 · Verified Stumper</span>
               <span>
                 {p0 >= 0.5
                   ? "VERDICT: STUMPED (Entered Joke Vault)"
@@ -478,7 +478,7 @@ export default function CategorySets() {
           <div className="screen laocoon-card">
             <div className="screen-bar">
               <span>2 · Straight Man</span>
-              <span>SM-01</span>
+              <span>Straight Man AI</span>
             </div>
             <div className="screen-body">
               <div className="ai">
@@ -510,11 +510,11 @@ export default function CategorySets() {
         </div>
       </article>
 
-      {/* ==================== SET 02 · SUBTEXT ==================== */}
+      {/* ==================== SUBTEXT ==================== */}
       <article className="case" id="subtext">
         <div className="case-head">
           <div>
-            <span className="eyebrow">Set 02 · Polite vs. Real</span>
+            <span className="eyebrow">Polite vs. Real · Subtext</span>
             <h2>
               Sub<em>text.</em>
             </h2>
@@ -546,11 +546,11 @@ export default function CategorySets() {
           </dl>
         </div>
 
-        {/* Pinned 280vh Signature Moment 02 with Frequency Spectrum */}
+        {/* Pinned 280vh Signature Moment with Frequency Spectrum */}
         <div ref={sig1Ref} className="sig">
           <div className="sig-Stage">
             <div className="sig-chrome">
-              <span>Signature Moment 02 · Passive-Aggressive Spectrum Decoder</span>
+              <span>Signature Moment · Passive-Aggressive Spectrum Decoder</span>
               <div className="flex items-center gap-3">
                 <span>Scroll to X-ray subtext</span>
                 <div className="sig-meter">
@@ -645,18 +645,18 @@ export default function CategorySets() {
             </div>
 
             <div className="sig-foot">
-              <span>Set 02 · Subtext Calibration</span>
+              <span>Subtext Calibration</span>
               <span>Polite Surface Syntax ≠ Real Human Intent</span>
             </div>
           </div>
         </div>
       </article>
 
-      {/* ==================== SET 03 · IRL (PHYSICS & INERTIA) ==================== */}
+      {/* ==================== IRL (PHYSICS & INERTIA) ==================== */}
       <article className="case" id="irl">
         <div className="case-head">
           <div>
-            <span className="eyebrow">Set 03 · Physical World</span>
+            <span className="eyebrow">Physical World · IRL</span>
             <h2>
               I<em>RL.</em>
             </h2>
@@ -692,7 +692,7 @@ export default function CategorySets() {
         <div ref={sig2Ref} className="sig">
           <div className="sig-Stage">
             <div className="sig-chrome">
-              <span>Signature Moment 03 · Inertial Fluid Dynamics &amp; Deceleration HUD</span>
+              <span>Signature Moment · Inertial Fluid Dynamics &amp; Deceleration HUD</span>
               <div className="flex items-center gap-3">
                 <span>Scroll to brake</span>
                 <div className="sig-meter">
@@ -822,7 +822,7 @@ export default function CategorySets() {
             </div>
 
             <div className="sig-foot">
-              <span>Set 03 · Embodied World Physics</span>
+              <span>Embodied World Physics</span>
               <span>
                 Tilt Angle: {(p2 * 26).toFixed(0)}°{" "}
                 {p2 > 0.45 ? "· SPLASH DETECTED" : "· Decelerating"}
@@ -832,11 +832,11 @@ export default function CategorySets() {
         </div>
       </article>
 
-      {/* ==================== SET 04 · DOUBLE MEANING ==================== */}
+      {/* ==================== DOUBLE MEANING ==================== */}
       <article className="case pb-20" id="double-meaning">
         <div className="case-head">
           <div>
-            <span className="eyebrow">Set 04 · Two Readings</span>
+            <span className="eyebrow">Two Readings · Double Meaning</span>
             <h2>
               Double <em>Meaning.</em>
             </h2>
@@ -868,11 +868,11 @@ export default function CategorySets() {
           </dl>
         </div>
 
-        {/* Pinned 280vh Signature Moment 04 with Superposition Matrix */}
+        {/* Pinned 280vh Signature Moment with Superposition Matrix */}
         <div ref={sig3Ref} className="sig">
           <div className="sig-Stage">
             <div className="sig-chrome">
-              <span>Signature Moment 04 · Quantum Syntactic Superposition</span>
+              <span>Signature Moment · Quantum Syntactic Superposition</span>
               <div className="flex items-center gap-3">
                 <span>Scroll to split readings</span>
                 <div className="sig-meter">
@@ -933,7 +933,7 @@ export default function CategorySets() {
             </div>
 
             <div className="sig-foot">
-              <span>Set 04 · Syntactic Superposition</span>
+              <span>Syntactic Superposition</span>
               <span>One Sentence · Two Complete Worlds</span>
             </div>
           </div>

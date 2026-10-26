@@ -35,35 +35,30 @@ type StageKind = "open_mic" | "pro";
 
 const CATEGORIES: {
   id: CategoryId;
-  num: string;
   name: string;
   sub: string;
   prompt: string;
 }[] = [
   {
     id: "punchline",
-    num: "SET 01",
     name: "Punchline",
     sub: "Expectation Flip",
     prompt: "Why is this funny? / What's the punchline?",
   },
   {
     id: "subtext",
-    num: "SET 02",
     name: "Subtext",
     sub: "Polite vs. Real",
     prompt: "What do they actually feel / mean?",
   },
   {
     id: "irl",
-    num: "SET 03",
     name: "IRL",
     sub: "Physical World",
     prompt: "What is wrong / what happens here?",
   },
   {
     id: "double_meaning",
-    num: "SET 04",
     name: "Double Meaning",
     sub: "Two Readings",
     prompt: "What does this really mean in context?",
@@ -397,9 +392,9 @@ export default function StageView() {
             </span>
             <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
               {!account
-                ? "Step 01 Active: Connect Wallet"
+                ? "Active: Connect Wallet"
                 : calibrated === false
-                  ? "Step 02 Active: Calibrate or Perform"
+                  ? "Active: Calibrate or Perform"
                   : "Ready: Perform on Stage or Judge in Crowd"}
             </span>
           </div>
@@ -412,7 +407,7 @@ export default function StageView() {
               }`}
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 01</span>
+                <span className="text-zinc-400">Step 1</span>
                 <span className={account ? "text-[#ffc53d]" : "text-zinc-500"}>
                   {account ? "Connected ✓" : "Required"}
                 </span>
@@ -432,7 +427,7 @@ export default function StageView() {
               }`}
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 02</span>
+                <span className="text-zinc-400">Step 2</span>
                 <span className={calibrated ? "text-[#ffc53d]" : "text-zinc-300"}>
                   {calibrated ? "Calibrated ✓" : "Quiz (8/10) →"}
                 </span>
@@ -451,7 +446,7 @@ export default function StageView() {
               }`}
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 03</span>
+                <span className="text-zinc-400">Step 3</span>
                 <span className="text-[#ffc53d]">Active Here</span>
               </div>
               <p className="mt-1 font-serif text-base text-white">Stump the AI</p>
@@ -465,7 +460,7 @@ export default function StageView() {
               className="rounded-xl border border-white/10 bg-[#070709]/60 p-3.5 transition-all hover:border-[#ffc53d]/40"
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 04</span>
+                <span className="text-zinc-400">Step 4</span>
                 <span className="text-zinc-300">Funded epochs →</span>
               </div>
               <p className="mt-1 font-serif text-base text-white">Claim USDG</p>

@@ -56,7 +56,7 @@ export default function LeaderboardView() {
   return (
     <div className="mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] py-8 space-y-12">
       <div className="border-b border-white/10 pb-8">
-        <span className="eyebrow">Club Standings · Season 01</span>
+        <span className="eyebrow">Club Standings · Season 1</span>
         <h1 className="display-serif mt-2 text-4xl text-white md:text-5xl">
           The sharpest humans <em>in the room.</em>
         </h1>

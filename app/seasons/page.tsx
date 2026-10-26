@@ -4,7 +4,7 @@ import { Card, Disclaimer, PageHero, SectionTitle, Stamp } from "@/components/ui
 export const metadata: Metadata = {
   title: "Seasons & Rules: HAHA",
   description:
-    "Season 01 rulebook: two Straight Man tables (Open Mic vs Pro Stage), reward formula, Crowd jury tiers, quorum rules, and pilot disclosures.",
+    "Season 1 rulebook: two Straight Man tables (Open Mic vs Pro Stage), reward formula, Crowd jury tiers, quorum rules, and pilot disclosures.",
 };
 
 const STAGE_ROWS = [
@@ -54,7 +54,7 @@ export default function SeasonsPage() {
     <div className="relative min-h-screen bg-[#070709] text-white overflow-x-clip">
       <div className="relative z-10 mx-auto max-w-[1440px] px-[clamp(20px,4vw,56px)] pt-28 pb-16 space-y-12">
         <PageHero
-          kicker="Season 01 · Disclosure"
+          kicker="Season 1 · Disclosure"
           title={
             <>
               The <em>rulebook.</em>

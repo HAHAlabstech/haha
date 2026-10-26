@@ -488,9 +488,9 @@ export default function TipJarView() {
             </span>
             <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
               {!account
-                ? "Step 01: Connect Wallet"
+                ? "Status: Connect Wallet"
                 : reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n
-                  ? "Step 04: Rewards Available to Claim"
+                  ? "Status: Rewards Available to Claim"
                   : "Perform or judge; payouts require funded USDG"}
             </span>
           </div>
@@ -503,7 +503,7 @@ export default function TipJarView() {
               }`}
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 01</span>
+                <span className="text-zinc-400">Step 1</span>
                 <span className={account ? "text-emerald-400 font-semibold" : "text-zinc-500"}>
                   {account ? "Connected ✓" : "Required"}
                 </span>
@@ -519,7 +519,7 @@ export default function TipJarView() {
               className="rounded-xl border border-white/10 bg-[#070709]/60 p-3.5 transition-all hover:border-[#ffc53d]/40"
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 02</span>
+                <span className="text-zinc-400">Step 2</span>
                 <span className="text-zinc-300">Stage (80%) →</span>
               </div>
               <p className="mt-1 font-serif text-base text-white">Perform &amp; Stump</p>
@@ -533,7 +533,7 @@ export default function TipJarView() {
               className="rounded-xl border border-white/10 bg-[#070709]/60 p-3.5 transition-all hover:border-[#ffc53d]/40"
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 03</span>
+                <span className="text-zinc-400">Step 3</span>
                 <span className="text-zinc-300">Crowd (20%) →</span>
               </div>
               <p className="mt-1 font-serif text-base text-white">Judge in Quorum</p>
@@ -550,7 +550,7 @@ export default function TipJarView() {
               }`}
             >
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-                <span className="text-zinc-400">Step 04</span>
+                <span className="text-zinc-400">Step 4</span>
                 <span
                   className={
                     reward && BigInt(reward.cumulativeMicroUsdg || "0") > 0n

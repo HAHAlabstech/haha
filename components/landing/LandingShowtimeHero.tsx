@@ -51,28 +51,24 @@ function SplitChars({
 
 const CHAPTERS = [
   {
-    num: "01",
     tag: "The Human Challenge",
     titleLead: "Tell a ",
     titleEm: "Joke.",
     desc: "AI has ingested almost everything humanity ever wrote. But the most human nuances were never written down: the pause before 'I'm fine', deadpan irony, and why a bit kills in one room and bombs in another.",
   },
   {
-    num: "02",
     tag: "The Straight Man AI",
     titleLead: "Fool the ",
     titleEm: "AI.",
     desc: "Tell the Straight Man something only a human would understand: subtext, innuendo, or double meanings. If it misses with deadpan confidence and the blind crowd agrees, you killed it.",
   },
   {
-    num: "03",
     tag: "Blind Quorum",
     titleLead: "Win the ",
     titleEm: "Room.",
     desc: "Verified human jurors judge blind with zero author or AI labels. Eligible rewards require verified USDG funding and an activated Tip Jar settlement root; payouts are not guaranteed.",
   },
   {
-    num: "04",
     tag: "The Joke Vault",
     titleLead: "The Joke ",
     titleEm: "Vault.",
@@ -738,7 +734,8 @@ export default function LandingShowtimeHero() {
         ? 0
         : Math.max(-0.28, Math.min(0.28, 0.17 * ease + 0.27 * g(0.34) - 0.2 * g(0.62) + 0.2 * g(0.95, 0.12)));
       camera.setViewOffset(sizes.width, sizes.height, -shift * sizes.width, 0, sizes.width, sizes.height);
-      lookAt.set(0, portrait ? -1.75 : -0.15, 0);
+      lookAt.set(0, portrait ? -1.1 : -0.15, 0);
+      modelPivot.position.y = portrait ? -0.45 : -0.3;
 
       // Dojang Exit: Camera pushes through towards/past the statue into the dark stage light
       if (q > 0) {
@@ -851,11 +848,11 @@ export default function LandingShowtimeHero() {
               className="flex items-center justify-end gap-3 transition-all duration-300"
             >
               <span
-                className={`font-mono text-[11px] tracking-widest transition-colors duration-300 ${
-                  activeSlide === i ? "text-[#ffc53d] font-semibold" : "text-white/25"
+                className={`font-mono text-[10px] uppercase tracking-widest transition-all duration-300 ${
+                  activeSlide === i ? "text-[#ffc53d] font-semibold opacity-100" : "text-white/30 opacity-60"
                 }`}
               >
-                0{i + 1}
+                {ch.tag}
               </span>
               <div
                 className={`transition-all duration-300 rounded-full ${
@@ -869,9 +866,9 @@ export default function LandingShowtimeHero() {
         </div>
 
         {/* Editorial Text Overlay: Left Half (Centered vertically to prevent button sinking) */}
-        <div className="haha-story-wrapper absolute inset-0 z-10 pointer-events-none flex flex-col justify-center px-[clamp(24px,5vw,72px)] pt-[calc(var(--topbar-height,68px)+0.5rem)] pb-8 max-w-[1440px] mx-auto">
+        <div className="haha-story-wrapper absolute inset-0 z-10 pointer-events-none flex flex-col justify-end lg:justify-center px-[clamp(16px,4vw,72px)] pt-[calc(var(--topbar-height,68px)+0.5rem)] pb-[max(1rem,env(safe-area-inset-bottom))] lg:pb-8 max-w-[1440px] mx-auto">
           <div className="haha-story-col max-w-xl pointer-events-auto">
-            <div className="haha-story-deck w-full">
+            <div className="haha-story-deck w-full rounded-2xl bg-[#070709]/95 sm:bg-[#070709]/90 lg:bg-transparent backdrop-blur-xl lg:backdrop-blur-none border border-white/20 lg:border-none p-4 sm:p-6 lg:p-0 shadow-[0_20px_50px_rgba(0,0,0,0.85)] lg:shadow-none">
               {CHAPTERS.map((ch, i) => {
                 const isCurrent = activeSlide === i;
                 return (
@@ -883,22 +880,23 @@ export default function LandingShowtimeHero() {
                     aria-hidden={!isCurrent}
                   >
                     {/* Clean Monospace Category Kicker */}
-                    <div className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-2.5">
-                      {ch.num} / {ch.tag}
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#ffc53d]/35 bg-[#ffc53d]/15 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-[#ffc53d] font-semibold mb-3 backdrop-blur-md shadow-[0_0_12px_rgba(255,197,61,0.2)]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#ffc53d] animate-pulse" />
+                      <span>{ch.tag}</span>
                     </div>
 
                     {/* Editorial Display Headline - Clamped to Viewport Height */}
-                    <h2 className="display-serif text-3xl sm:text-5xl lg:text-[clamp(2.2rem,min(4.8vw,7.4svh),4.6rem)] text-white font-bold tracking-tight leading-[1.02] mb-3.5">
+                    <h2 className="display-serif text-3xl sm:text-5xl lg:text-[clamp(2.2rem,min(4.8vw,7.4svh),4.6rem)] text-white font-bold tracking-tight leading-[1.04] mb-3.5 drop-shadow-[0_2px_14px_rgba(0,0,0,0.95)]">
                       {ch.titleLead}
                       <em className="italic text-[#ffc53d]">{ch.titleEm}</em>
                     </h2>
 
                     {/* Narrative Paragraph */}
-                    <p className="text-sm sm:text-base lg:text-[clamp(0.95rem,1.4svh,1.08rem)] text-zinc-300 leading-relaxed font-light mb-5 max-w-lg">
+                    <p className="text-[15px] sm:text-base lg:text-[clamp(0.95rem,1.4svh,1.08rem)] text-white/95 sm:text-zinc-100 leading-relaxed font-normal mb-5 max-w-lg drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
                       {ch.desc}
                     </p>
 
-                    {/* Launch App CTAs (Chapter 04 and Chapter 01) */}
+                    {/* Launch App CTAs on the opening and closing chapters */}
                     {i === 3 ? (
                       <div className="flex flex-wrap items-center gap-3.5 pt-1">
                         <Link

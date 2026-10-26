@@ -298,7 +298,7 @@ export default function ProducersPage() {
     setActivateError(null);
     try {
       if (!orderId.trim()) {
-        setBuyError("Enter an organization / order reference first (step 01).");
+        setBuyError("Enter an organization / order reference first (step 1).");
         return;
       }
       if ((await getChainId(activeProv)) !== chainId) {

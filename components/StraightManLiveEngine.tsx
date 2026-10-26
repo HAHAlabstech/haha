@@ -68,10 +68,10 @@ export function StraightManLiveEngine({
       <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3 font-mono text-[10px] uppercase tracking-[0.18em]">
         <span className="text-[#ffc53d] font-semibold">
           {stage === "prescreen"
-            ? "STAGE 01 · SEMANTIC PRESCREEN"
+            ? "SEMANTIC PRESCREEN"
             : stage === "straightman"
-              ? "STAGE 02 · STRAIGHT MAN ENGINE"
-              : "STAGE 03 · BLIND QUORUM DISPATCH"}
+              ? "STRAIGHT MAN ENGINE"
+              : "BLIND QUORUM DISPATCH"}
         </span>
         <span className="text-zinc-400 tabular-nums">
           {category.replace(/_/g, " ").toUpperCase()} · T+{elapsed}S

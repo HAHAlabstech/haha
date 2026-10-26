@@ -74,7 +74,7 @@ export default function SiteFooter() {
               alt="HAHA Logo"
               className="h-5 w-auto object-contain filter drop-shadow-[0_0_4px_rgba(255,197,61,0.5)]"
             />
-            <span>&copy; HAHA &middot; Season 01 &middot; The Straight Man &amp; The Joke Vault</span>
+            <span>&copy; HAHA &middot; Season 1 &middot; The Straight Man &amp; The Joke Vault</span>
           </div>
           <nav className="flex flex-wrap items-center gap-5" aria-label="Footer">
             <Link

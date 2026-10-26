@@ -8,7 +8,6 @@ type StepId = "stage" | "quorum" | "settlement";
 
 interface PipelineStep {
   id: StepId;
-  num: string;
   tag: string;
   title: string;
   description: string;
@@ -21,7 +20,6 @@ interface PipelineStep {
 const STEPS: PipelineStep[] = [
   {
     id: "stage",
-    num: "01",
     tag: "The Human Challenge",
     title: "Take The Stage",
     description:
@@ -37,7 +35,6 @@ const STEPS: PipelineStep[] = [
   },
   {
     id: "quorum",
-    num: "02",
     tag: "The Blind Jury",
     title: "Blind Crowd Quorum",
     description:
@@ -53,7 +50,6 @@ const STEPS: PipelineStep[] = [
   },
   {
     id: "settlement",
-    num: "03",
     tag: "The Payout Engine",
     title: "On-Chain Settlement",
     description:
@@ -309,7 +305,7 @@ export default function ProcessPipeline() {
           <div className="flex items-center justify-between w-full border-b border-white/10 pb-3 sm:pb-4 mb-3 sm:mb-6">
             <div className="flex items-center gap-3">
               <span className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold">
-                03 / How HAHA Works
+                How HAHA Works
               </span>
               <span className="text-zinc-600 hidden sm:inline">/</span>
               <span className="font-mono text-xs uppercase tracking-wider text-zinc-400 hidden sm:inline">
@@ -318,7 +314,7 @@ export default function ProcessPipeline() {
             </div>
 
             <div className="font-mono text-xs text-zinc-400">
-              Step <b className="text-white font-bold">0{activeStep + 1}</b> / 03
+              Phase <b className="text-white font-bold">{activeStep + 1}</b> of 3
             </div>
           </div>
 
@@ -349,10 +345,10 @@ export default function ProcessPipeline() {
                   <div className="haha-pipe-copy space-y-4 sm:space-y-5">
                     <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.18em]">
                       <span className="text-[#ffc53d] font-semibold">
-                        Step {s.num}
+                        {s.tag}
                       </span>
                       <span className="text-zinc-600">·</span>
-                      <span className="text-zinc-400">{s.tag}</span>
+                      <span className="text-zinc-400">{s.title}</span>
                     </div>
 
                     <h3 className="display-serif text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white tracking-tight leading-[1.06]">
@@ -410,8 +406,8 @@ export default function ProcessPipeline() {
                     : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5 border border-transparent"
                 }`}
               >
-                <span className={activeStep === i ? "text-[#ffc53d]" : ""}>
-                  0{i + 1}
+                <span className={activeStep === i ? "text-[#ffc53d] font-bold" : ""}>
+                  {i + 1}
                 </span>
                 <span>{step.title}</span>
               </button>

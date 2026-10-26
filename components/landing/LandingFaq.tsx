@@ -64,7 +64,7 @@ export default function LandingFaq() {
         {/* Left Column Header */}
         <ScrollReveal direction="left" className="lg:sticky lg:top-28">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-[#ffc53d] font-semibold mb-3">
-            06 / Box Office FAQ
+            Box Office FAQ
           </p>
           <h2 className="display-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-[1.04]">
             Common Questions from <em className="italic text-[#ffc53d]">the Crowd.</em>

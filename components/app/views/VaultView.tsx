@@ -38,28 +38,24 @@ interface SnapshotItem {
 const CATEGORY_META = [
   {
     key: "punchline",
-    num: "SET 01",
     name: "Punchline",
     sub: "Expectation Flip",
     icon: Sparkles,
   },
   {
     key: "subtext",
-    num: "SET 02",
     name: "Subtext",
     sub: "Polite vs. Real",
     icon: Layers,
   },
   {
     key: "irl",
-    num: "SET 03",
     name: "IRL",
     sub: "Physical World",
     icon: Orbit,
   },
   {
     key: "double_meaning",
-    num: "SET 04",
     name: "Double Meaning",
     sub: "Two Readings",
     icon: Scale,
